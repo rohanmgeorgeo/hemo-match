@@ -475,6 +475,42 @@ INSERT INTO districts (slug, name, state) VALUES
   ('dist-cen', 'Central District',  'Kerala')
 ON CONFLICT (slug) DO NOTHING;
 
+
+-- ---------------------------------------------------------------------------
+-- 13. DATA API PRIVILEGES
+-- Enforce explicit least-privilege table permissions for Data API roles.
+-- First strip any inherited default privileges (TRUNCATE, REFERENCES, TRIGGER),
+-- then grant only the operations required by the Hemo Match architecture.
+-- ---------------------------------------------------------------------------
+
+-- 1. Revoke all existing table privileges from Data API roles across all application tables
+REVOKE ALL ON TABLE
+  public.districts,
+  public.donors,
+  public.blood_requests,
+  public.matches,
+  public.donor_responses,
+  public.notifications,
+  public.contact_reveals,
+  public.audit_logs
+FROM anon, authenticated, service_role;
+
+-- 2. Public reference data: allow anon and authenticated to read districts only
+GRANT SELECT ON TABLE public.districts TO anon, authenticated;
+
+-- 3. Server backend: allow service_role exact CRUD operations needed by Next.js backend
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+  public.districts,
+  public.donors,
+  public.blood_requests,
+  public.matches,
+  public.donor_responses,
+  public.notifications,
+  public.contact_reveals,
+  public.audit_logs
+TO service_role;
+
 -- ---------------------------------------------------------------------------
 -- END OF MIGRATION 0001
 -- ---------------------------------------------------------------------------
+

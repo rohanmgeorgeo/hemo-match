@@ -2,45 +2,60 @@
 
 **Project:** Hemo Match  
 **Challenge:** SC-12 — District Blood Donor Matching  
-**Status:** Database Foundation Established (Milestone 4)  
+**Status:** Database Foundation & Persistence Wiring Complete (Milestone 5)  
 
 ---
 
 ## 1. High-Level System Overview
 
-**Hemo Match** is designed to connect verified blood donors with urgent patient requirements at the district level. The architecture prioritizes rapid matching, strict donor medical eligibility, and privacy-first contact reveal protocols.
+**Hemo Match** connects verified blood donors with urgent patient requirements at the district level. The architecture prioritizes rapid matching, strict donor clinical eligibility, and privacy-first contact reveal protocols.
 
 ```mermaid
 flowchart TD
     subgraph Client ["Client Layer (Web / Mobile-First)"]
-        Landing["Landing Page (App Home)"]
-        RequestFlow["Blood Request Interface"]
-        DonorFlow["Donor Registration & Profile"]
-        AdminView["Admin Dashboard View"]
+        Landing["Landing Page (/)"]
+        RequestNew["Request Blood (/requests/new)"]
+        MatchingDemo["Matching Demo (/requests/matching-demo)"]
+        DonorRegister["Register as Donor (/donors/register)"]
+        DonorProfile["Donor Profile (/donors/profile)"]
     end
 
-    subgraph NextServer ["Next.js App Server Layer"]
-        ServerActions["Server Actions / Route Handlers"]
+    subgraph ServerBoundary ["Next.js App Server Layer (Route Handlers)"]
+        ApiDonors["POST /api/donors"]
+        ApiRequests["POST /api/requests"]
+    end
+
+    subgraph ServerOnlyModules ["Server-Only Database Layer (src/lib/db/)"]
+        DbDistricts["districts.ts (resolveDistrictId)"]
+        DbDonors["donors.ts (createDonor)"]
+        DbRequests["requests.ts (createBloodRequest)"]
+        DbClient["database/index.ts (getServerClient)"]
+    end
+
+    subgraph FutureSubsystems ["Future Subsystems (Stubbed)"]
         MatchingEngine["Matching Subsystem (lib/matching)"]
         EligibilityEngine["Eligibility Rules (lib/eligibility)"]
-        PrivacyEngine["Privacy & Masking (lib/privacy)"]
+        PrivacyEngine["Privacy & Contact Reveal (lib/privacy)"]
         NotificationEngine["Notifications Dispatch (lib/notifications)"]
-        DbClient["Database Client (lib/database)"]
     end
 
     subgraph Persistence ["Persistence Layer (Supabase / Postgres)"]
         DB[(PostgreSQL Database)]
         RLS["Row-Level Security (RLS)"]
-        Enums["Custom Enum Types"]
+        DataApi["Explicit Data API Grants"]
     end
 
-    Client --> NextServer
-    NextServer --> Persistence
-    DbClient --> DB
+    RequestNew -->|"POST JSON"| ApiRequests
+    DonorRegister -->|"POST JSON"| ApiDonors
+    ApiDonors --> DbDonors
+    ApiDonors --> DbDistricts
+    ApiRequests --> DbRequests
+    ApiRequests --> DbDistricts
+    DbDonors --> DbClient
+    DbRequests --> DbClient
+    DbDistricts --> DbClient
+    DbClient -->|"service_role"| DB
 ```
-
-> [!NOTE]
-> **Current phase:** Database foundation (Step 4) is complete. The schema, enums, indexes, RLS policies, and typed Supabase clients are in place. The existing localStorage-based frontend flows remain unchanged. Wiring the UI to real database persistence is deferred to the next milestone.
 
 ---
 
@@ -54,194 +69,145 @@ Hemo Match/
 │   └── DECISIONS.md           # Architectural Decision Records (ADRs)
 ├── supabase/
 │   └── migrations/
-│       └── 0001_initial_schema.sql   # Initial Supabase/PostgreSQL schema
+│       └── 0001_initial_schema.sql   # PostgreSQL schema + RLS + Data API privileges
 ├── src/
-│   ├── app/                   # Next.js App Router (pages, layouts, styles)
-│   │   ├── favicon.ico
-│   │   ├── globals.css        # Global CSS & Tailwind theme tokens
-│   │   ├── layout.tsx         # Root layout with typography & metadata
-│   │   ├── page.tsx           # Landing page
+│   ├── app/                   # Next.js App Router (pages, layouts, styles, APIs)
+│   │   ├── api/               # Dynamic Route Handlers (Server Boundary)
+│   │   │   ├── donors/route.ts       # POST /api/donors (donor intake)
+│   │   │   └── requests/route.ts     # POST /api/requests (blood request intake)
 │   │   ├── requests/
-│   │   │   ├── new/           # Blood request intake form
-│   │   │   └── matching-demo/ # Post-submission matching summary
+│   │   │   ├── new/page.tsx          # Blood request intake form
+│   │   │   └── matching-demo/page.tsx# Matching demo view (drives from local cache)
 │   │   └── donors/
-│   │       ├── register/      # Donor registration form
-│   │       └── profile/       # Donor profile confirmation view
+│   │       ├── register/page.tsx     # Donor registration form
+│   │       └── profile/page.tsx      # Donor profile confirmation view (masked phone)
 │   ├── lib/                   # Isolated subsystem contracts & utilities
+│   │   ├── db/                # Server-only database helper modules
+│   │   │   ├── districts.ts   # Slug-to-UUID resolver
+│   │   │   ├── donors.ts      # createDonor() database helper
+│   │   │   └── requests.ts    # createBloodRequest() database helper
+│   │   ├── database/index.ts  # Supabase client factory (server-only)
+│   │   ├── validation/        # Schema validators, IST date parser, and input guards
 │   │   ├── matching/          # District matching algorithms & filters (stubbed)
 │   │   ├── eligibility/       # Donor interval & medical health checks (stubbed)
 │   │   ├── privacy/           # Phone masking & 2-way contact reveal (stubbed)
-│   │   ├── notifications/     # In-app notification queue & alerts (stubbed)
-│   │   ├── database/          # Supabase client factory & helpers (implemented)
-│   │   └── validation/        # Schema validators & input guards (implemented)
+│   │   └── notifications/     # In-app notification queue & alerts (stubbed)
 │   └── types/
 │       ├── index.ts           # Frontend domain types (form state, localStorage)
-│       └── database.ts        # Database row types (server-side, snake_case)
-├── public/                    # Static brand assets
-├── .env.example               # Safe environment variable template
-├── next.config.ts             # Next.js framework configuration
-├── tsconfig.json              # Strict TypeScript compiler options
-└── package.json               # Dependencies and scripts
+│       └── database.ts        # Database row & insert types (server-side, snake_case)
 ```
 
 ---
 
-## 3. Database Schema
+## 3. End-to-End Persistence Flow
 
-### 3.1 Tables & Relationships
+The intake persistence architecture enforces a strict unidirectional pipeline:
 
 ```
-districts
-  ↑ referenced by donors.district_id
-  ↑ referenced by blood_requests.district_id
-
-donors ──────────────────────────────────────────────────────────────────┐
-  ↑ referenced by matches.donor_id                                       │
-  ↑ referenced by donor_responses.donor_id                               │
-  ↑ referenced by notifications.donor_id                                 │
-  ↑ referenced by contact_reveals.donor_id                               │
-
-blood_requests ──────────────────────────────────────────────────────────┤
-  ↑ referenced by matches.request_id                                     │
-  ↑ referenced by donor_responses.request_id                             │
-  ↑ referenced by notifications.request_id                               │
-  ↑ referenced by contact_reveals.request_id                             │
-
-matches                                                                   │
-  → donors, blood_requests                                                │
-  ↑ referenced by donor_responses.match_id                               │
-  ↑ referenced by notifications.match_id                                 │
-  ↑ referenced by contact_reveals.match_id                               │
-
-donor_responses   → matches, donors, blood_requests                      │
-notifications     → donors, blood_requests, matches                      │
-contact_reveals   → donors, blood_requests, matches (IMMUTABLE LOG)      │
-audit_logs        → standalone append-only log ─────────────────────────┘
+[1. User Input in Client Form]
+          │
+          ▼
+[2. Client-Side Validation (validateDonorProfile / validateBloodRequest)]
+          │ (If invalid, scrolls to error and halts)
+          ▼
+[3. HTTP POST to Route Handler (/api/donors or /api/requests)]
+          │ (Payload contains form fields only; NO client ID, status, or timestamps)
+          ▼
+[4. Server-Side Validation Re-Check]
+          │ (Guarantees input integrity before database operations)
+          ▼
+[5. District Slug Resolution (resolveDistrictId)]
+          │ (Maps frontend slug e.g. 'dist-ekm' -> PostgreSQL foreign key UUID)
+          ▼
+[6. Typed Server-Only Database Helper (createDonor / createBloodRequest)]
+          │ (Enforces server-only boundary, initial lifecycle status 'active', etc.)
+          ▼
+[7. Supabase / PostgreSQL Insertion via Service Role]
+          │ (PostgreSQL generates authoritative UUID via gen_random_uuid())
+          ▼
+[8. Sanitized Public Projection Response (HTTP 201)]
+          │ (donor response strictly omits phone_number; request response contains no PII)
+          ▼
+[9. Post-Success LocalStorage View Caching]
+          │ (Stores object with real database UUID to hemo_match_demo_donor or hemo_match_active_request)
+          ▼
+[10. Client Navigation to Demo Display Page (/donors/profile or /requests/matching-demo)]
 ```
-
-### 3.2 Table Summary
-
-| Table | Purpose |
-| :--- | :--- |
-| `districts` | Reference lookup for administrative districts (public read) |
-| `donors` | Donor profiles (private — phone_number server-only) |
-| `blood_requests` | Blood requirement intake records (no patient PII) |
-| `matches` | Matching engine output: request ↔ donor pairings |
-| `donor_responses` | Donor accept/decline responses to match notifications |
-| `notifications` | In-app notification feed records |
-| `contact_reveals` | **Immutable** audit log of every contact reveal event |
-| `audit_logs` | **Append-only** general privacy/security action audit log |
-
-### 3.3 Custom Enum Types
-
-| Enum | Values |
-| :--- | :--- |
-| `blood_group` | A+, A-, B+, B-, AB+, AB-, O+, O- |
-| `blood_component` | Whole Blood, Red Blood Cells, Platelets, Plasma |
-| `urgency_level` | critical, urgent, routine, standard |
-| `request_status` | draft, active, matching, notified, partially_filled, fulfilled, expired, cancelled |
-| `donor_availability` | available, temporarily_unavailable, paused |
-| `notification_preference` | enabled, disabled |
-| `match_status` | candidate, notified, responded, accepted, declined, withdrawn, expired |
-| `response_status` | accepted, declined, pending |
-| `notification_status` | unread, read, dismissed |
-| `notification_type` | match_found, request_fulfilled, request_expired, contact_reveal, system |
-
-### 3.4 Privacy-Critical Design Decisions
-
-- **`donors.phone_number`** — stored in the `donors` table but never returned in anon-key queries (no permissive RLS policy). It is only surfaced through the `contact_reveals` workflow using the `SUPABASE_SERVICE_ROLE_KEY`.
-- **No exact addresses** — `donors.approximate_area` and `blood_requests.approximate_area` store neighbourhood/locality strings only.
-- **No patient PII** — `blood_requests` has no `patient_name`, `patient_phone`, or `patient_email` columns.
-- **`contact_reveals` is append-only** — the `Update` type for this table is `never` in the TypeScript `Database` interface.
-- **`audit_logs` is append-only** — same `never` pattern.
 
 ---
 
-## 4. Supabase Client Architecture
+## 4. Server-Only Database Boundary & Security Rules
 
-Two distinct clients exist in `src/lib/database/index.ts`:
+### 4.1 Server-Only Protection
+All database access modules:
+- `src/lib/database/index.ts`
+- `src/lib/db/districts.ts`
+- `src/lib/db/donors.ts`
+- `src/lib/db/requests.ts`
 
-| Client | Function | Key Used | RLS | Use Context |
-| :--- | :--- | :--- | :--- | :--- |
-| Server | `getServerClient()` | `SUPABASE_SERVICE_ROLE_KEY` | Bypassed | Route Handlers, Server Actions only |
-| Anon | `getAnonClient()` | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Enforced | Server Components, public reference reads |
+contain `import 'server-only'` at the very top. Any accidental import into a client component will trigger a build-time error.
 
-**Rule:** `getServerClient()` must never be called from a `'use client'` component. The service-role key is never bundled into the client-side JavaScript.
+### 4.2 Service-Role Privilege Isolation
+- Protected database operations (writing to `donors` and `blood_requests`) execute exclusively on the server using `getServerClient()` and `SUPABASE_SERVICE_ROLE_KEY`.
+- The service-role key is **never bundled** into client-side JavaScript.
+- All 7 protected tables (`donors`, `blood_requests`, `matches`, `donor_responses`, `notifications`, `contact_reveals`, `audit_logs`) have **zero privileges** granted to `anon` or `authenticated` roles.
+- Only `public.districts` has `SELECT` granted to `anon` and `authenticated` for public reference reads.
+
+### 4.3 Donor Phone Privacy & Projections
+- Donor phone numbers are stored **PLAINTEXT** in PostgreSQL `public.donors.phone_number`. There is currently **no application-level phone encryption or hashing**.
+- `POST /api/donors` strictly projects public columns:
+  `id, full_name, blood_group, district_id, approximate_area, last_donation_date, availability, notification_preference, consent_given, created_at, updated_at`
+- `phone_number` is never included in API responses.
+- In the client, the phone number is retained in `localStorage` under `hemo_match_demo_donor` solely to display the masked phone format (`••••••4321`) on `/donors/profile`.
+
+### 4.4 Deterministic Timezone Handling
+- For the India-focused MVP, all blood request intake dates (`requiredByDate`) and times (`requiredByTime`) represent **India Standard Time (Asia/Kolkata, UTC+05:30)**.
+- `parseIstDateTime()` in `src/lib/validation/index.ts` appends `+05:30` and validates calendar bounds.
+- `POST /api/requests` converts the validated datetime into an absolute UTC ISO timestamp (`.toISOString()`), which is persisted to the `required_by` `TIMESTAMPTZ` column in PostgreSQL.
+- This conversion is **100% independent** of the server or client local timezone.
 
 ---
 
-## 5. Row Level Security Model
+## 5. Database Schema & Tables
 
-| Table | Anon Select | Anon Insert/Update | Service Role |
-| :--- | :--- | :--- | :--- |
-| `districts` | ✅ Public read | ❌ | ✅ Full access |
-| `donors` | ❌ Denied | ❌ | ✅ Full access |
-| `blood_requests` | ❌ Denied | ❌ | ✅ Full access |
-| `matches` | ❌ Denied | ❌ | ✅ Full access |
-| `donor_responses` | ❌ Denied | ❌ | ✅ Full access |
-| `notifications` | ❌ Denied | ❌ | ✅ Full access |
-| `contact_reveals` | ❌ Denied | ❌ | ✅ Full access |
-| `audit_logs` | ❌ Denied | ❌ | ✅ Full access |
+### 5.1 Table Summary
 
-> [!IMPORTANT]
-> This is the **mock-auth phase** RLS model. All protected tables are locked to anon access to prevent accidental exposure of `donors.phone_number`. When real authentication (Supabase Auth / OTP) is integrated, add `auth.uid()`-scoped policies to allow donors to read/update their own rows.
+| Table | Purpose | Security & Privacy Controls |
+| :--- | :--- | :--- |
+| `districts` | Reference lookup for administrative districts | Public read (`anon` SELECT). Seeded with 8 Kerala districts. |
+| `donors` | Donor profiles | Service-role only. No anon access. Projections omit `phone_number`. |
+| `blood_requests` | Blood requirement intake records | Service-role only. No anon access. No patient name, phone, or email. |
+| `matches` | Request ↔ donor pairings | Service-role only. Reserved for future matching engine. |
+| `donor_responses` | Donor accept/decline records | Service-role only. Reserved for future notification response flow. |
+| `notifications` | In-app notification feed records | Service-role only. Reserved for future alert delivery. |
+| `contact_reveals` | Audit log of contact reveal events | Service-role only. **Immutable / append-only** (`Update: never`). |
+| `audit_logs` | Security action audit log | Service-role only. **Append-only** (`Update: never`). |
+
+### 5.2 Custom Enum Types
+
+`blood_group`, `blood_component`, `urgency_level`, `request_status`, `donor_availability`, `notification_preference`, `match_status`, `response_status`, `notification_status`, `notification_type`.
 
 ---
 
 ## 6. Subsystem Boundaries & Responsibilities
 
-### 6.1 Donor Management
-* **Planned Responsibility:** Donor onboarding, availability toggling, donation history tracking, and district assignment.
-* **Current State:** Registration form complete (Step 3), domain types implemented, database schema established. Not yet wired to Supabase persistence.
+### 6.1 Donor Management (`src/lib/db/donors.ts`, `src/app/api/donors/`)
+- **Implemented:** Onboarding form, server-side validation, district resolution, Supabase insertion, masked phone profile view.
+- **Future:** Profile editing, availability toggling, authenticated donor dashboard.
 
-### 6.2 Blood Requests
-* **Planned Responsibility:** Intake for emergency blood requirements.
-* **Current State:** Request form complete (Step 2), database schema established. Not yet wired to Supabase persistence.
+### 6.2 Blood Requests (`src/lib/db/requests.ts`, `src/app/api/requests/`)
+- **Implemented:** Request form, server-side validation, IST-to-TIMESTAMPTZ conversion, initial status assignment (`'active'`), Supabase insertion.
+- **Future:** Request fulfillment tracking, cancellation.
 
 ### 6.3 Matching Subsystem (`src/lib/matching/`)
-* **Planned Responsibility:** Queries active eligible donors in district/neighboring districts matching compatible blood groups.
-* **Current State:** Stubs defined. Schema tables (`matches`) ready.
+- **Current State:** Stubs defined. Schema tables (`matches`) ready. Matching algorithms **not yet implemented**.
 
-### 6.4 Eligibility Rules Subsystem (`src/lib/eligibility/`)
-* **Planned Responsibility:** Enforces minimum donation intervals, age/weight criteria, and temporary deferrals.
-* **Current State:** Stubs defined. Eligibility is NOT encoded in the database — it is a runtime matching-stage concern.
+### 6.4 Clinical Eligibility Rules (`src/lib/eligibility/`)
+- **Current State:** Stubs defined. Donation interval evaluation **not yet implemented**.
 
-### 6.5 Privacy & Contact Reveal Subsystem (`src/lib/privacy/`)
-* **Planned Responsibility:** Masking and explicit contact reveal workflow.
-* **Current State:** Phone masking implemented in the profile view. `contact_reveals` table established. Full workflow deferred.
+### 6.5 Privacy & Contact Reveal (`src/lib/privacy/`)
+- **Implemented:** Phone masking in profile view (`maskPhone`).
+- **Future:** Two-way contact reveal workflow after donor acceptance.
 
-### 6.6 Notifications Subsystem (`src/lib/notifications/`)
-* **Planned Responsibility:** In-app notification feed, future SMS/WhatsApp integration.
-* **Current State:** `notifications` table established. Dispatcher stubbed.
-
-### 6.7 Database Subsystem (`src/lib/database/`)
-* **Current State:** Fully implemented.
-  - `getServerClient()` — service role, bypasses RLS.
-  - `getAnonClient()` — anon key, respects RLS.
-  - `getDatabaseConfig()` — environment readiness check.
-
-### 6.8 Admin Dashboard
-* **Planned Responsibility:** District-level oversight, audit log access, donor activity metrics.
-* **Current State:** Reserved. `audit_logs` table established.
-
----
-
-## 7. Environment Variables
-
-| Variable | Prefix | Where Used | Required |
-| :--- | :--- | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Client + Server | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Client + Server | Yes |
-| `SUPABASE_SERVICE_ROLE_KEY` | Private | Server only | For server mutations |
-| `NEXT_PUBLIC_APP_URL` | Public | Absolute URL generation | Optional |
-
----
-
-## 8. Design System & Aesthetics Guidelines
-
-The UI follows an **Apple Health & Modern Fintech** inspired visual design:
-* **Background & Elevation:** Crisp, neutral canvas (`#FFFFFF` / `#FAFAFA`) with subtle surface elevations.
-* **Accents:** Restrained crimson/rose tones (`rose-600` / `#E11D48`) for emergency signals and primary actions.
-* **Containers:** Generously rounded cards (`rounded-2xl` to `rounded-3xl`) with hairline borders.
-* **Typography:** System fonts / Geist Sans with accessible type hierarchy.
-* **Responsive Paradigm:** Mobile-first layout with single-thumb accessibility.
+### 6.6 Notifications (`src/lib/notifications/`)
+- **Current State:** Stubs defined. Dispatcher **not yet implemented**.

@@ -86,6 +86,50 @@ export function isValidBloodComponent(val: unknown): val is BloodComponent {
 }
 
 /**
+ * Normalizes date and time strings entered in India Standard Time (Asia/Kolkata, UTC+05:30)
+ * into a Date object representing the exact instant.
+ * Returns null if input is invalid or represents a non-existent calendar date.
+ */
+export function parseIstDateTime(dateStr: string, timeStr: string): Date | null {
+  const cleanDate = dateStr.trim();
+  const cleanTime = timeStr.trim();
+  if (!cleanDate || !cleanTime) return null;
+
+  // Validate YYYY-MM-DD format
+  const dateMatch = cleanDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateMatch) return null;
+  const year = parseInt(dateMatch[1], 10);
+  const month = parseInt(dateMatch[2], 10);
+  const day = parseInt(dateMatch[3], 10);
+
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  if (day > daysInMonth) return null;
+
+  // Validate time format (HH:mm or HH:mm:ss)
+  const timeMatch = cleanTime.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!timeMatch) return null;
+  const hours = parseInt(timeMatch[1], 10);
+  const minutes = parseInt(timeMatch[2], 10);
+  const seconds = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
+
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
+    return null;
+  }
+
+  const paddedH = String(hours).padStart(2, '0');
+  const paddedM = String(minutes).padStart(2, '0');
+  const paddedS = String(seconds).padStart(2, '0');
+
+  const istIso = `${cleanDate}T${paddedH}:${paddedM}:${paddedS}+05:30`;
+  const d = new Date(istIso);
+  if (isNaN(d.getTime())) return null;
+
+  return d;
+}
+
+/**
  * Validates blood request form submissions.
  * Checks required fields, positive integer quantities, and future datetime.
  */
@@ -169,11 +213,10 @@ export function validateBloodRequest(
     errors.requiredByTime = 'Required time is required';
   }
 
-  // 9. Required date/time must be in the future
+  // 9. Required date/time must be in the future (evaluated in India Standard Time, UTC+05:30)
   if (requiredByDate && requiredByTime) {
-    const combinedIso = `${requiredByDate}T${requiredByTime}`;
-    const targetDate = new Date(combinedIso);
-    if (isNaN(targetDate.getTime())) {
+    const targetDate = parseIstDateTime(requiredByDate, requiredByTime);
+    if (!targetDate) {
       errors.requiredByDate = 'Please enter a valid date and time';
     } else if (targetDate.getTime() <= Date.now()) {
       errors.requiredByDate = 'Required date and time must be in the future';

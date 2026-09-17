@@ -22,6 +22,8 @@
  * This file must not be imported from client components.
  */
 
+import 'server-only';
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 

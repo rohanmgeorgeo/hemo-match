@@ -2,39 +2,69 @@
 
 **Project:** Hemo Match  
 **Challenge:** SC-12 — District Blood Donor Matching  
-**Branch:** `feature/supabase-schema`  
-**Current Milestone:** Step 4: Supabase/PostgreSQL Database Foundation  
-**Last Updated:** 2026-09-17  
+**Branch:** `feature/persistence-wiring`  
+**Current Milestone:** Step 5: Supabase Persistence Wiring (COMPLETE)  
+**Last Updated:** 2026-09-18  
 
 ---
 
 ## 1. Current Project State
 
-Four milestones complete. The system now has a clean relational schema and typed server-side Supabase connection ready for future persistence wiring.
+Five milestones complete. The application now persists real donor registrations and blood requests to PostgreSQL via Supabase Data API Route Handlers, with authoritative database UUID generation, server-side district slug resolution, and deterministic IST timezone handling.
 
-Active user-facing flows (all still localStorage-based, unchanged):
-1. **Request Blood** — `/ → /requests/new → /requests/matching-demo`
-2. **Donor Registration** — `/ → /donors/register → /donors/profile`
+Active user-facing flows:
+1. **Request Blood** — `/ → /requests/new → POST /api/requests → /requests/matching-demo`
+2. **Donor Registration** — `/ → /donors/register → POST /api/donors → /donors/profile`
 
-> [!IMPORTANT]
-> The existing localStorage frontend flows are intentionally **NOT yet wired to Supabase**.  
-> Wiring real persistence is the next milestone (Step 5).
+> [!NOTE]
+> Both intake flows now write directly to PostgreSQL via server-only Route Handlers.  
+> `localStorage` is retained strictly as a temporary post-persistence demo view cache to drive `/donors/profile` and `/requests/matching-demo`.  
+> Real matching engine, clinical eligibility intervals, notifications, and contact reveal workflows remain to be built in subsequent milestones.
 
 ---
 
-## 2. Active Flows
+## 2. Active Flows & Persistence Pipeline
 
 ```
 Landing Page (/)
 │
-├── "Request Blood" ──► /requests/new ──► /requests/matching-demo
+├── "Request Blood" ──► /requests/new
+│                         │
+│                         ▼ (POST JSON)
+│                       /api/requests [Route Handler]
+│                         │ Server validation
+│                         │ Slug -> district_id UUID resolution
+│                         │ IST (UTC+05:30) -> TIMESTAMPTZ ISO conversion
+│                         │ createBloodRequest() [server-only]
+│                         ▼
+│                       Supabase / PostgreSQL (public.blood_requests)
+│                         │ Authoritative UUID generated
+│                         ▼
+│                       HTTP 201 Response (sanitized)
+│                         │
+│                         ▼ Local cache: hemo_match_active_request
+│                       /requests/matching-demo (demo display page)
 │
-└── "Find Donors"  ──► /donors/register ──► /donors/profile
+└── "Find Donors"   ──► /donors/register
+                          │
+                          ▼ (POST JSON)
+                        /api/donors [Route Handler]
+                          │ Server validation
+                          │ Slug -> district_id UUID resolution
+                          │ createDonor() [server-only]
+                          ▼
+                        Supabase / PostgreSQL (public.donors)
+                          │ Authoritative UUID generated
+                          ▼
+                        HTTP 201 Response (omits phone_number)
+                          │
+                          ▼ Local cache: hemo_match_demo_donor
+                        /donors/profile (masked phone display: ••••••4321)
 ```
 
-**localStorage keys still in use (frontend only):**
-- `hemo_match_active_request` — temporary blood request from `/requests/new`
-- `hemo_match_demo_donor` — temporary donor profile from `/donors/register`
+**localStorage usage (post-persistence view cache only):**
+- `hemo_match_active_request` — populates matching demo view state after HTTP 201 confirmation.
+- `hemo_match_demo_donor` — populates donor profile view state after HTTP 201 confirmation (includes phone number locally solely for masked display).
 
 ---
 
@@ -44,94 +74,41 @@ Landing Page (/)
 - Next.js App Router, strict TypeScript, Tailwind CSS, lib module stubs, docs, `.env.example`.
 
 ### Step 2: Request Blood Flow (complete)
-- Blood request form with full client-side validation (`validateBloodRequest`).
+- Blood request form with client-side validation (`validateBloodRequest`).
 - Clinical safety disclaimer.
 - Matching demo page at `/requests/matching-demo`.
 
 ### Step 3: Donor Registration Flow (complete)
-- Donor registration form with full client-side validation (`validateDonorProfile`).
-- Profile view page with masked phone number.
+- Donor registration form with client-side validation (`validateDonorProfile`).
+- Profile view page with masked phone number (`maskPhone`).
 - Privacy notice cards on both pages.
 
 ### Step 4: Supabase/PostgreSQL Database Foundation (complete)
+- Full relational schema in `supabase/migrations/0001_initial_schema.sql` (8 tables, 10 custom enums, indexes, triggers).
+- RLS enabled on all application tables.
+- Server-side DB row types in `src/types/database.ts`.
+- Two-client architecture in `src/lib/database/index.ts` (`getServerClient()` and `getAnonClient()`).
 
-#### Files Created / Modified
+### Step 5: Supabase Persistence Wiring (complete)
 
-| File | Status | Purpose |
-| :--- | :--- | :--- |
-| `supabase/migrations/0001_initial_schema.sql` | Created | Full PostgreSQL schema (see below) |
-| `src/types/database.ts` | Created | Server-side DB row types (snake_case, mirrors DB columns) |
-| `src/lib/database/index.ts` | Modified | Real Supabase client factories (was a stub) |
-| `.env.example` | Modified | Added `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL`, improved docs |
-| `docs/ARCHITECTURE.md` | Modified | Added DB schema section, RLS model, client architecture |
-| `docs/DECISIONS.md` | Modified | Added ADRs 10–15 for enum strategy, type files, RLS, immutable tables |
-| `docs/PROJECT_STATUS.md` | Modified | This file |
-
-#### Database Tables Created
-
-| Table | Rows stored | Notes |
-| :--- | :--- | :--- |
-| `districts` | 8 demo seed rows | Public read; slug matches `DEMO_DISTRICTS` in TypeScript |
-| `donors` | — | `phone_number` private; no exact home address |
-| `blood_requests` | — | No patient name/phone/email |
-| `matches` | — | Created by future matching engine |
-| `donor_responses` | — | Donor accept/decline records |
-| `notifications` | — | In-app notification feed |
-| `contact_reveals` | — | **Immutable** privacy audit log |
-| `audit_logs` | — | **Append-only** security action audit log |
-
-#### Custom PostgreSQL Enum Types
-
-`blood_group`, `blood_component`, `urgency_level`, `request_status`,  
-`donor_availability`, `notification_preference`, `match_status`,  
-`response_status`, `notification_status`, `notification_type`
-
-#### Key Relationships
-
-```
-districts ← donors.district_id
-districts ← blood_requests.district_id
-donors + blood_requests → matches
-matches → donor_responses
-matches → notifications
-matches + donors + blood_requests → contact_reveals (immutable log)
-```
-
-#### RLS / Privacy Decisions
-
-| Table | Anon key | Service-role key |
-| :--- | :--- | :--- |
-| `districts` | ✅ SELECT | ✅ Full |
-| `donors` | ❌ Denied | ✅ Full |
-| `blood_requests` | ❌ Denied | ✅ Full |
-| All other tables | ❌ Denied | ✅ Full |
-
-- **Mock-auth phase:** All protected tables denied to anon key. Service-role key used server-side only.
-- **`donors.phone_number`** is never returned through anon-key queries by RLS design.
-- **Future:** When real auth (Supabase Auth / OTP) is integrated, add `auth.uid()`-scoped policies.
-
-#### Server-Side Supabase Client
-
-`src/lib/database/index.ts` now exports:
-- `getServerClient()` — service-role key, bypasses RLS, server-only.
-- `getAnonClient()` — anon key, respects RLS, safe for server components.
-- `getDatabaseConfig()` — returns env readiness status with placeholder detection.
-
-#### TypeScript Database Types
-
-`src/types/database.ts` contains:
-- Row types for all 8 tables (snake_case, mirrors PostgreSQL column names).
-- `DonorPublicRow` — `DonorRow` with `phone_number` omitted, for safe projections.
-- `Database` interface — used as a generic parameter to type the Supabase client.
-
-#### Environment Variables Added
-
-| Variable | Where Used |
-| :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Client + Server (already existed) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server (already existed) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only (activated, was commented out) |
-| `NEXT_PUBLIC_APP_URL` | Absolute URL generation (new) |
+#### What Was Implemented:
+1. **Server-Only Guard**: Installed `server-only` dependency and added `import 'server-only'` to `src/lib/database/index.ts` and all database helpers (`src/lib/db/*`).
+2. **District Resolver**: Created `src/lib/db/districts.ts` to resolve frontend district slugs (`dist-ekm`, etc.) to PostgreSQL UUIDs via privileged server client.
+3. **Data API Privileges**: Enforced explicit least-privilege in `0001_initial_schema.sql` Section 13:
+   - `anon` & `authenticated`: `SELECT` on `public.districts` only; 0 privileges on the other 7 tables.
+   - `service_role`: `SELECT, INSERT, UPDATE, DELETE` on all 8 tables (no TRUNCATE, REFERENCES, or TRIGGER).
+4. **Donor Persistence**:
+   - `src/lib/db/donors.ts`: server-only helper inserting into `public.donors`. Authoritative UUID generated by PostgreSQL. Projections strictly omit `phone_number`.
+   - `src/app/api/donors/route.ts`: `POST` Route Handler with server validation, slug resolution, and sanitized HTTP 201 response.
+   - `src/app/donors/register/page.tsx`: wired to `POST /api/donors` with loading state, double-submit protection, safe error mapping, and post-201 `localStorage` caching.
+5. **Blood Request Persistence**:
+   - `src/lib/db/requests.ts`: server-only helper inserting into `public.blood_requests`. Initial status hardcoded to `'active'` (caller cannot override).
+   - `src/app/api/requests/route.ts`: `POST` Route Handler with server validation, slug resolution, and deterministic IST datetime conversion.
+   - `src/app/requests/new/page.tsx`: wired to `POST /api/requests` with loading state, double-submit protection, safe error mapping, and post-201 `localStorage` caching.
+6. **Deterministic IST Timezone Handling**:
+   - Added `parseIstDateTime(dateStr, timeStr)` in `src/lib/validation/index.ts` with calendar validation and explicit `+05:30` offset.
+   - Re-aligned future-time validation in `validateBloodRequest()` to evaluate against IST wall-clock time.
+   - Server converts IST date and time to UTC ISO string for PostgreSQL `TIMESTAMPTZ` insertion (100% independent of server/runtime local timezone).
 
 ---
 
@@ -141,60 +118,50 @@ matches + donors + blood_requests → contact_reveals (immutable log)
 | :--- | :--- |
 | `npm run typecheck` | ✅ 0 errors |
 | `npm run lint` | ✅ 0 errors, 0 warnings |
-| `npm run build` | ✅ All 6 routes generated |
-| SQL: all 8 tables present | ✅ Confirmed via script |
-| SQL: all 10 enum types present | ✅ Confirmed via script |
-| SQL: no patient_name / patient_phone / patient_email | ✅ Confirmed via script |
-| SQL: no anon SELECT on donors table | ✅ Confirmed via script |
-| SQL: phone_number not in any RLS POLICY statement | ✅ Confirmed (only in a comment) |
-| SQL: all FK references valid | ✅ Confirmed via script |
-| Supabase CLI validation | ⚠ Not available locally (CLI not installed, no linked project) |
+| `npm run build` | ✅ All routes generated (`/api/donors` & `/api/requests` dynamic) |
+| Live Supabase Connectivity | ✅ Verified via temporary server verification script |
+| District Resolver (`dist-ekm`) | ✅ Successfully resolves to PostgreSQL UUID |
+| Controlled Donor Insert | ✅ Successfully persists to `donors`; returns PostgreSQL UUID |
+| Controlled Blood Request Insert | ✅ Successfully persists to `blood_requests`; returns PostgreSQL UUID |
+| Blood Request Timezone Verification | ✅ 16:53 IST persisted as 11:23 UTC and converts back to 16:53 Asia/Kolkata |
+| Service-Role Secret Isolation | ✅ Server-only; 0 client leaks |
+| Unsafe TypeScript Bypasses | ✅ 0 occurrences (`as never`, `as any`, `@ts-ignore`, `@ts-expect-error`) |
 
 ---
 
-## 5. Known Issues / Limitations
+## 5. Security Architecture & Current MVP Limitations
 
-- **Supabase CLI not installed.** The migration cannot be validated via `supabase db push` locally. Apply via the Supabase Dashboard SQL Editor.
-- **Real persistence not yet wired.** The UI still uses localStorage. This is intentional for this milestone.
-- **No real authentication.** Mock auth phase continues. RLS policies will need updating when auth is integrated.
+> [!IMPORTANT]
+> The following security and privacy postures are explicitly documented for this hackathon milestone:
 
----
+1. **Donor Phone Storage (Plaintext at Rest)**:
+   - Donor phone numbers are stored **PLAINTEXT** in PostgreSQL `public.donors.phone_number`.
+   - **No application-level encryption or hashing currently exists.**
+   - Current privacy protection relies entirely on architectural boundaries:
+     - Table-level RLS and Data API privileges completely deny access to `anon` and `authenticated` roles.
+     - Only server-side code using `service_role` can access `donors`.
+     - `POST /api/donors` response projection strictly excludes `phone_number`.
+     - Client UI renders the phone number in masked form (`••••••4321`).
+   - *This is an accepted hackathon MVP tradeoff and must be revisited during production security hardening (e.g., column encryption via pgcrypto or application-layer AEAD).*
 
-## 6. How to Apply the Migration
+2. **Client-Side `localStorage` Retention**:
+   - `hemo_match_demo_donor` retains the phone number locally in the browser strictly to allow the demo profile view (`/donors/profile`) to display masked contact info without implementing pseudo-auth.
+   - `hemo_match_active_request` retains request data in the browser to drive `/requests/matching-demo`.
+   - *This client caching is temporary for demo purposes and should be replaced by authenticated session retrieval when full authentication is added.*
 
-### Option A: Supabase Dashboard (recommended for now)
-1. Open your Supabase project → SQL Editor.
-2. Paste the contents of `supabase/migrations/0001_initial_schema.sql`.
-3. Click **Run**.
-
-### Option B: Supabase CLI
-```bash
-# Install CLI if not already installed
-brew install supabase/tap/supabase
-
-# Link your project (one-time)
-supabase link --project-ref YOUR_PROJECT_REF
-
-# Push migrations
-supabase db push
-```
-
-### Option C: psql direct
-```bash
-psql "$SUPABASE_DB_URL" \
-  -f supabase/migrations/0001_initial_schema.sql
-```
+3. **Unimplemented Subsystems (Not Yet Built)**:
+   - **Matching Engine**: Not implemented. Matching demo page currently renders static demonstration cards.
+   - **Clinical Eligibility Rules**: Not implemented. Medical eligibility intervals are not evaluated in this milestone.
+   - **Notifications Dispatch**: Not implemented. Notification feed is not active.
+   - **Contact Reveal Workflow**: Not implemented. Two-way reveal protocol is not active.
+   - **User Authentication**: Not implemented. All intake operates in public mode; RLS policies are deny-all for protected tables.
 
 ---
 
-## 7. Recommended Next Milestone
+## 6. Recommended Next Milestone
 
-**Step 5: Persistence Wiring — API Routes**
+**Step 6: District Donor Matching Engine & Clinical Eligibility**
 
-Replace the localStorage flows with real Supabase persistence:
-- Create `POST /api/requests` route handler → inserts into `blood_requests` using `getServerClient()`.
-- Create `POST /api/donors` route handler → inserts into `donors` using `getServerClient()`.
-- Create `GET /api/districts` route handler → reads from `districts` using `getAnonClient()`.
-- Update `/requests/new` to call `POST /api/requests` instead of writing to localStorage.
-- Update `/donors/register` to call `POST /api/donors` instead of writing to localStorage.
-- Update district selects to fetch from `/api/districts` instead of the static `DEMO_DISTRICTS` constant.
+- Implement core matching algorithm in `src/lib/matching/` querying candidate donors matching requested blood group and district.
+- Implement clinical interval evaluation in `src/lib/eligibility/` checking `last_donation_date` against donation safety guidelines.
+- Connect `/requests/matching-demo` to real candidate matches generated by the matching engine.

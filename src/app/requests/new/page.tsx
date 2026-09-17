@@ -30,6 +30,7 @@ export default function NewBloodRequestPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Field change helper
   const updateField = <K extends keyof BloodRequestFormData>(
@@ -37,6 +38,9 @@ export default function NewBloodRequestPage() {
     value: BloodRequestFormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (submitError) {
+      setSubmitError(null);
+    }
     // Clear error for that field on change
     if (errors[field]) {
       setErrors((prev) => {
@@ -47,8 +51,11 @@ export default function NewBloodRequestPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setSubmitError(null);
     setIsSubmitting(true);
 
     const validation = validateBloodRequest(formData);
@@ -69,44 +76,101 @@ export default function NewBloodRequestPage() {
       return;
     }
 
-    // Prepare temporary client request object
-    const selectedDistrict = DEMO_DISTRICTS.find(
-      (d) => d.id === validation.data?.districtId
-    );
+    const d = validation.data;
 
-    const temporaryRequest: BloodRequest = {
-      id: `req-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-      bloodGroup: validation.data.bloodGroup,
-      component: validation.data.component,
-      unitsNeeded: validation.data.unitsNeeded,
-      districtId: validation.data.districtId,
-      districtName: selectedDistrict?.name ?? validation.data.districtId,
-      approximateArea: validation.data.approximateArea,
-      hospitalName: validation.data.hospitalName,
-      requiredByDate: validation.data.requiredByDate,
-      requiredByTime: validation.data.requiredByTime,
-      urgency: validation.data.urgency,
-      notes: validation.data.notes,
-      status: 'open',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Send validated payload to POST /api/requests without client-generated ID
+    const payload = {
+      bloodGroup: d.bloodGroup,
+      component: d.component,
+      unitsNeeded: d.unitsNeeded,
+      districtId: d.districtId,
+      approximateArea: d.approximateArea,
+      hospitalName: d.hospitalName,
+      requiredByDate: d.requiredByDate,
+      requiredByTime: d.requiredByTime,
+      urgency: d.urgency,
+      notes: d.notes || undefined,
     };
 
     try {
-      // Store in client-side localStorage for the matching demo page
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(
-          'hemo_match_active_request',
-          JSON.stringify(temporaryRequest)
-        );
-      }
-    } catch {
-      // Graceful fallback if storage fails
-      console.warn('Unable to write request to localStorage');
-    }
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    // Navigate to matching demo page
-    router.push('/requests/matching-demo');
+      const result = await response.json().catch(() => null);
+
+      const hasValidRequestId =
+        typeof result?.request?.id === 'string' &&
+        result.request.id.trim().length > 0;
+
+      if (
+        response.status !== 201 ||
+        !result?.success ||
+        !result?.request ||
+        !hasValidRequestId
+      ) {
+        if (result?.errors && typeof result.errors === 'object') {
+          setErrors(result.errors);
+        }
+        const userMessage =
+          response.status === 503
+            ? 'Database service is temporarily unavailable. Please try again shortly.'
+            : result?.message && response.status === 400
+            ? result.message
+            : 'Unable to create blood request. Please verify your details and try again.';
+        setSubmitError(userMessage);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success: use authoritative PostgreSQL UUID returned from API
+      const dbRequest = result.request;
+      const selectedDistrict = DEMO_DISTRICTS.find(
+        (dist) => dist.id === d.districtId
+      );
+
+      const requestProfile: BloodRequest = {
+        id: dbRequest.id,
+        bloodGroup: d.bloodGroup,
+        component: d.component,
+        unitsNeeded: d.unitsNeeded,
+        districtId: d.districtId,
+        districtName: selectedDistrict?.name ?? d.districtId,
+        approximateArea: d.approximateArea,
+        hospitalName: d.hospitalName,
+        requiredByDate: d.requiredByDate,
+        requiredByTime: d.requiredByTime,
+        urgency: d.urgency,
+        notes: d.notes,
+        status: 'open',
+        createdAt: dbRequest.created_at || new Date().toISOString(),
+        updatedAt: dbRequest.updated_at || new Date().toISOString(),
+      };
+
+      try {
+        // Store in client-side localStorage for the matching demo page
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(
+            'hemo_match_active_request',
+            JSON.stringify(requestProfile)
+          );
+        }
+      } catch {
+        console.warn('Unable to write request to localStorage');
+      }
+
+      // Navigate to matching demo page
+      router.push('/requests/matching-demo');
+    } catch {
+      setSubmitError(
+        'A network error occurred while submitting your blood request. Please check your connection and try again.'
+      );
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -569,29 +633,66 @@ export default function NewBloodRequestPage() {
 
           {/* Submission Action */}
           <div className="pt-2">
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-4 p-4 rounded-2xl border border-rose-200 bg-rose-50/80 text-rose-800 text-sm flex items-start gap-3"
+              >
+                <svg
+                  className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                  />
+                </svg>
+                <div>
+                  <p className="font-semibold text-rose-900">Request Error</p>
+                  <p className="mt-0.5 text-xs text-rose-700 leading-relaxed">{submitError}</p>
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               id="find-matching-donors-btn"
               disabled={isSubmitting}
               className="w-full py-4 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-semibold text-base transition-all duration-150 shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
-              Find Matching Donors
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  <span>Saving Blood Request...</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    />
+                  </svg>
+                  <span>Find Matching Donors</span>
+                </>
+              )}
             </button>
             <p className="text-center text-xs text-neutral-400 mt-3">
-              Request will be processed in temporary local matching demo mode.
+              Your request will be securely saved to the database and initialized in matching demo mode.
             </p>
           </div>
         </form>

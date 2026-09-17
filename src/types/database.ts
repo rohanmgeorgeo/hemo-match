@@ -57,20 +57,20 @@ export type DbNotificationType =
 // Row types — one type per table
 // ---------------------------------------------------------------------------
 
-export interface DistrictRow {
+export type DistrictRow = {
   id: string;
   slug: string;
   name: string;
   state: string | null;
   created_at: string;
-}
+};
 
 /**
  * DonorRow — server-side only.
  * phone_number is included here but MUST NOT be returned in public API
  * responses or matching previews. Use DonorPublicRow for safe projections.
  */
-export interface DonorRow {
+export type DonorRow = {
   id: string;
   full_name: string;
   blood_group: DbBloodGroup;
@@ -84,7 +84,7 @@ export interface DonorRow {
   consent_given: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
 /**
  * DonorPublicRow — safe projection of DonorRow without private fields.
@@ -93,7 +93,7 @@ export interface DonorRow {
  */
 export type DonorPublicRow = Omit<DonorRow, 'phone_number'>;
 
-export interface BloodRequestRow {
+export type BloodRequestRow = {
   id: string;
   blood_group: DbBloodGroup;
   component: DbBloodComponent;
@@ -108,9 +108,9 @@ export interface BloodRequestRow {
   notes: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface MatchRow {
+export type MatchRow = {
   id: string;
   request_id: string;
   donor_id: string;
@@ -119,9 +119,9 @@ export interface MatchRow {
   match_metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface DonorResponseRow {
+export type DonorResponseRow = {
   id: string;
   request_id: string;
   donor_id: string;
@@ -130,9 +130,9 @@ export interface DonorResponseRow {
   responded_at: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface NotificationRow {
+export type NotificationRow = {
   id: string;
   donor_id: string;
   request_id: string | null;
@@ -143,9 +143,9 @@ export interface NotificationRow {
   payload: Record<string, unknown> | null;
   created_at: string;
   read_at: string | null;
-}
+};
 
-export interface ContactRevealRow {
+export type ContactRevealRow = {
   id: string;
   request_id: string;
   donor_id: string;
@@ -153,9 +153,9 @@ export interface ContactRevealRow {
   trigger: string;
   reason: string | null;
   revealed_at: string;
-}
+};
 
-export interface AuditLogRow {
+export type AuditLogRow = {
   id: string;
   actor_ref: string | null;
   action: string;
@@ -164,55 +164,65 @@ export interface AuditLogRow {
   /** Audit metadata. Must not contain phone_number or sensitive PII. */
   metadata: Record<string, unknown> | null;
   created_at: string;
-}
+};
 
 // ---------------------------------------------------------------------------
 // Database schema type (used to type the Supabase client generics)
 // ---------------------------------------------------------------------------
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       districts: {
         Row: DistrictRow;
         Insert: Omit<DistrictRow, 'id' | 'created_at'> & { id?: string };
         Update: Partial<Omit<DistrictRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       donors: {
         Row: DonorRow;
         Insert: Omit<DonorRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Omit<DonorRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       blood_requests: {
         Row: BloodRequestRow;
         Insert: Omit<BloodRequestRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Omit<BloodRequestRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       matches: {
         Row: MatchRow;
         Insert: Omit<MatchRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Omit<MatchRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       donor_responses: {
         Row: DonorResponseRow;
         Insert: Omit<DonorResponseRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Omit<DonorResponseRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       notifications: {
         Row: NotificationRow;
         Insert: Omit<NotificationRow, 'id' | 'created_at'> & { id?: string };
         Update: Partial<Omit<NotificationRow, 'id' | 'created_at'>>;
+        Relationships: [];
       };
       contact_reveals: {
         Row: ContactRevealRow;
         Insert: Omit<ContactRevealRow, 'id' | 'revealed_at'> & { id?: string };
-        Update: never; // contact_reveals is append-only / immutable
+        Update: Record<string, never>; // contact_reveals is append-only / immutable
+        Relationships: [];
       };
       audit_logs: {
         Row: AuditLogRow;
         Insert: Omit<AuditLogRow, 'id' | 'created_at'> & { id?: string };
-        Update: never; // audit_logs is append-only / immutable
+        Update: Record<string, never>; // audit_logs is append-only / immutable
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 }

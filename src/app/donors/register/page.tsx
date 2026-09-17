@@ -27,12 +27,16 @@ export default function DonorRegisterPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const updateField = <K extends keyof DonorProfileFormData>(
     field: K,
     value: DonorProfileFormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (submitError) {
+      setSubmitError(null);
+    }
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -42,8 +46,11 @@ export default function DonorRegisterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setSubmitError(null);
     setIsSubmitting(true);
 
     const validation = validateDonorProfile(formData);
@@ -63,32 +70,78 @@ export default function DonorRegisterPage() {
     }
 
     const d = validation.data;
-    const selectedDistrict = DEMO_DISTRICTS.find((dist) => dist.id === d.districtId);
 
-    const profile: DonorProfile = {
-      id: `donor-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+    // Send validated payload to POST /api/donors without client-generated ID
+    const payload = {
       fullName: d.fullName,
       bloodGroup: d.bloodGroup,
       districtId: d.districtId,
-      districtName: selectedDistrict?.name,
       approximateArea: d.approximateArea,
       phoneNumber: d.phoneNumber,
-      lastDonationDate: d.lastDonationDate ?? null,
+      lastDonationDate: d.lastDonationDate || undefined,
       availability: d.availability,
       notificationPreference: d.notificationPreference,
-      consentGiven: true,
-      createdAt: new Date().toISOString(),
+      consentGiven: d.consentGiven,
     };
 
     try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('hemo_match_demo_donor', JSON.stringify(profile));
-      }
-    } catch {
-      console.warn('Unable to write donor profile to localStorage');
-    }
+      const response = await fetch('/api/donors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    router.push('/donors/profile');
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success || !result?.donor?.id) {
+        if (result?.errors && typeof result.errors === 'object') {
+          setErrors(result.errors);
+        }
+        const userMessage =
+          response.status === 503
+            ? 'Database service is temporarily unavailable. Please try again shortly.'
+            : result?.message && response.status === 400
+            ? result.message
+            : 'Unable to complete donor registration. Please verify your details and try again.';
+        setSubmitError(userMessage);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success: use authoritative PostgreSQL UUID returned from API
+      const dbDonor = result.donor;
+      const selectedDistrict = DEMO_DISTRICTS.find((dist) => dist.id === d.districtId);
+
+      const profile: DonorProfile = {
+        id: dbDonor.id,
+        fullName: d.fullName,
+        bloodGroup: d.bloodGroup,
+        districtId: d.districtId,
+        districtName: selectedDistrict?.name,
+        approximateArea: d.approximateArea,
+        phoneNumber: d.phoneNumber,
+        lastDonationDate: d.lastDonationDate ?? null,
+        availability: d.availability,
+        notificationPreference: d.notificationPreference,
+        consentGiven: true,
+        createdAt: dbDonor.created_at || new Date().toISOString(),
+      };
+
+      try {
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('hemo_match_demo_donor', JSON.stringify(profile));
+        }
+      } catch {
+        console.warn('Unable to write donor profile to localStorage');
+      }
+
+      router.push('/donors/profile');
+    } catch {
+      setSubmitError('A network error occurred while submitting your registration. Please check your connection and try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -510,19 +563,56 @@ export default function DonorRegisterPage() {
 
           {/* Submit */}
           <div className="pt-2">
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-4 p-4 rounded-2xl border border-rose-200 bg-rose-50/80 text-rose-800 text-sm flex items-start gap-3"
+              >
+                <svg
+                  className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                  />
+                </svg>
+                <div>
+                  <p className="font-semibold text-rose-900">Registration Error</p>
+                  <p className="mt-0.5 text-xs text-rose-700 leading-relaxed">{submitError}</p>
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               id="submit-donor-registration-btn"
               disabled={isSubmitting}
               className="w-full py-4 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-semibold text-base transition-all duration-150 shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-              </svg>
-              Register as Donor
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  <span>Saving Registration...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                  </svg>
+                  <span>Register as Donor</span>
+                </>
+              )}
             </button>
             <p className="text-center text-xs text-neutral-400 mt-3">
-              Your profile will be stored locally in this session only.
+              Your profile will be securely saved to the database and cached locally for this session.
             </p>
           </div>
         </form>
