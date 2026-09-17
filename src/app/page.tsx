@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function HomePage() {
   return (
@@ -58,8 +59,8 @@ export default function HomePage() {
 
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mx-auto">
-            <button
-              type="button"
+            <Link
+              href="/requests/new"
               id="request-blood-btn"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm transition-all duration-150 shadow-sm hover:shadow active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 cursor-pointer"
             >
@@ -78,7 +79,7 @@ export default function HomePage() {
                 />
               </svg>
               Request Blood
-            </button>
+            </Link>
 
             <button
               type="button"

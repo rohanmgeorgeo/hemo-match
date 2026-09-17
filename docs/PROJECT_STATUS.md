@@ -2,90 +2,111 @@
 
 **Project:** Hemo Match  
 **Challenge:** SC-12 — District Blood Donor Matching  
-**Current Milestone:** Foundation Phase Initialized  
+**Branch:** `feature/request-flow`  
+**Current Milestone:** Step 2: Request Blood Flow Completed  
 **Last Updated:** 2026-09-17  
 
 ---
 
 ## 1. Current Project State
 
-The project foundation for **Hemo Match** has been initialized as a clean, strict Next.js (App Router) + TypeScript + Tailwind CSS web application. The core architectural domains and library modules have been partitioned into dedicated boundaries with contracts and placeholder stubs, ready for subsequent functional milestones. No business logic, persistence schemas, real maps, or external messaging providers have been implemented at this stage.
+The first user-facing flow for **Hemo Match** is implemented and verified. Requesters can initiate a blood request directly from the landing page, complete a mobile-first, healthcare-grade form (`/requests/new`) with full client-side validation, review a clinical safety notice, and proceed to the temporary matching demonstration view (`/requests/matching-demo`).
+
+The workflow operates entirely client-side using transient state and `localStorage`. Real database persistence (Supabase), production matching algorithms, authentication, live maps, and external messaging gateways remain intentionally unbuilt for future milestones.
 
 ---
 
-## 2. Completed Work
+## 2. Current Workflow
 
-- [x] Initialized Next.js 15+ App Router project with TypeScript and Tailwind CSS v4.
-- [x] Enforced strict TypeScript configuration (`"strict": true` in `tsconfig.json`).
-- [x] Created domain type definitions (`src/types/index.ts`) for BloodGroup, UrgencyLevel, DonorProfile, BloodRequest, and DistrictInfo.
-- [x] Established logical subsystem modules under `src/lib/` with clean interface contracts and typed stubs:
-  - `src/lib/matching/` — Stubs for district-level donor matching queries and filters.
-  - `src/lib/eligibility/` — Stubs for donor rest interval checks and health eligibility assessments.
-  - `src/lib/privacy/` — Stubs for phone masking and two-way contact reveal protocols.
-  - `src/lib/notifications/` — Stubs for in-app alert dispatches and payloads.
-  - `src/lib/database/` — Configuration contracts and environment accessor for Supabase/PostgreSQL.
-  - `src/lib/validation/` — Input validation contracts and blood group guards.
-- [x] Created `.env.example` with Supabase configuration placeholders (without real secrets).
-- [x] Created minimal Apple Health / Fintech inspired landing page (`src/app/page.tsx`):
-  - Project name and district status badge.
-  - Clear, accessible short value proposition.
-  - Interactive placeholder action buttons: **Request Blood** (`#request-blood-btn`) and **Find Donors** (`#find-donors-btn`).
-  - Rounded cards detailing District Proximity, Donor Wellbeing, and Masked Contact Reveal.
-  - Mobile-first, spacious layout with restrained red/rose accents.
-- [x] Documented architectural decisions in `docs/DECISIONS.md`.
-- [x] Documented system structure and domain contracts in `docs/ARCHITECTURE.md`.
-- [x] Configured `typecheck` npm script in `package.json`.
+```
+Landing Page (/)
+    │
+    ▼ [Click "Request Blood"]
+Create Blood Request Form (/requests/new)
+    │
+    ├── Client-Side Form Validation (Required fields, quantity > 0, future datetime)
+    ├── Clinical Safety & Transparency Notice
+    │
+    ▼ [Click "Find Matching Donors"]
+Temporary Matching Stage (/requests/matching-demo)
+    │
+    ├── Summary of submitted blood request (Group, component, units, district, locality, urgency)
+    ├── "Finding eligible nearby donors..." animated radar indicator
+    └── Prototype notice explaining future matching engine & criteria
+```
 
 ---
 
-## 3. Files and Folders Created / Modified
+## 3. Completed Work
 
-| Path | Type | Purpose |
+- [x] **Landing Page Navigation (`src/app/page.tsx`):**
+  - Updated "Request Blood" (`#request-blood-btn`) to navigate via Next.js `Link` to `/requests/new`.
+  - Preserved existing Apple Health styling and visual tokens.
+- [x] **Create Blood Request Page (`src/app/requests/new/page.tsx`):**
+  - Mobile-first, healthcare/fintech UI with rounded cards and restrained rose accents.
+  - Header with back navigation to Home.
+  - Interactive blood group selection chips (`A+` through `O-`).
+  - Blood component selector (`Whole Blood`, `Red Blood Cells`, `Platelets`, `Plasma`).
+  - Units/quantity counter with positive integer validation.
+  - District dropdown populated with curated demo districts (`DEMO_DISTRICTS`).
+  - Approximate locality input with privacy prompt (no exact home addresses).
+  - Hospital / blood centre input.
+  - Required By Date & Time inputs with future datetime validation.
+  - Urgency tier cards (`Critical`, `Urgent`, `Routine`).
+  - Optional coordination note field with privacy warning.
+  - Safety & clinical trust disclaimer prominently displayed.
+  - Client-side validation with field-level error messages and auto-scroll to errors.
+  - Submit button (`#find-matching-donors-btn`) storing request in `localStorage` and navigating to demo page.
+- [x] **Matching Demo Page (`src/app/requests/matching-demo/page.tsx`):**
+  - Displays submitted request summary (blood group, component, units, district, locality, hospital, required by, urgency).
+  - Clean "Finding eligible nearby donors..." radar matching indicator.
+  - Explanatory copy describing the upcoming matching sequence (compatibility, eligibility checks, privacy shield).
+  - Temporary demonstration banner clarifying that real matching and dispatches will be activated in later milestones.
+  - Graceful fallback for empty/cleared state with link to create a new request.
+- [x] **Validation & Domain Types (`src/lib/validation/index.ts`, `src/types/index.ts`):**
+  - Extended domain types (`BloodComponent`, `UrgencyLevel`, `BloodRequest`, `DEMO_DISTRICTS`).
+  - Implemented client-side `validateBloodRequest` with strict checking of all required fields and future datetime requirements.
+
+---
+
+## 4. Files Created / Modified
+
+| Path | Status | Purpose |
 | :--- | :--- | :--- |
-| `.env.example` | File | Safe environment variable template with Supabase placeholders |
-| `package.json` | File | Project scripts and dependency manifest (added `typecheck`) |
-| `tsconfig.json` | File | Strict TypeScript compiler options with `@/*` path mapping |
-| `docs/PROJECT_STATUS.md` | File | Project handoff, verification status, and next tasks |
-| `docs/ARCHITECTURE.md` | File | High-level system structure and subsystem boundaries |
-| `docs/DECISIONS.md` | File | Architectural decision records (ADR) and rationales |
-| `src/types/index.ts` | File | Core domain types (BloodGroup, UrgencyLevel, Donor, Request) |
-| `src/lib/matching/index.ts` | File | Matching subsystem stubs and interfaces |
-| `src/lib/eligibility/index.ts` | File | Eligibility subsystem stubs and interfaces |
-| `src/lib/privacy/index.ts` | File | Privacy & contact reveal stubs and phone masking helper |
-| `src/lib/notifications/index.ts` | File | In-app notification queue stubs and interfaces |
-| `src/lib/database/index.ts` | File | Supabase database config stubs |
-| `src/lib/validation/index.ts` | File | Blood group guards and payload validation stubs |
-| `src/app/globals.css` | File | Global CSS and typography styling |
-| `src/app/layout.tsx` | File | Root layout with SEO metadata and viewport config |
-| `src/app/page.tsx` | File | Minimal Apple Health inspired landing page |
+| `src/app/requests/new/page.tsx` | Created | Create Blood Request page with validation and safety notice |
+| `src/app/requests/matching-demo/page.tsx` | Created | Matching stage demo page with request summary card |
+| `src/app/page.tsx` | Modified | Connected "Request Blood" button to `/requests/new` |
+| `src/types/index.ts` | Modified | Added `BloodComponent`, `DEMO_DISTRICTS`, and updated `BloodRequest` |
+| `src/lib/validation/index.ts` | Modified | Implemented `validateBloodRequest` with client rules |
+| `docs/PROJECT_STATUS.md` | Modified | Updated project status and milestone tracking |
 
 ---
 
-## 4. Verification Commands & Results
+## 5. Verification Commands & Results
 
 | Command | Status | Notes |
 | :--- | :--- | :--- |
-| `npm run typecheck` (`tsc --noEmit`) | Passing | Strict TypeScript compilation succeeded with 0 errors |
-| `npm run lint` (`eslint`) | Passing | ESLint passed with 0 warnings or errors |
-| `npm run build` (`next build`) | Passing | Production build created successfully |
-| `npm run dev` (Dev server smoke test) | Passing | Landing page served and verified |
+| `npm run typecheck` (`tsc --noEmit`) | Passing | Strict TypeScript passed with 0 errors |
+| `npm run lint` (`eslint`) | Passing | ESLint passed with 0 warnings and 0 errors |
+| `npm run build` (`next build`) | Passing | Production Turbopack build succeeded with all static routes |
+| `GET /` | Passing | HTTP 200 OK, confirmed `href="/requests/new"` link present |
+| `GET /requests/new` | Passing | HTTP 200 OK, form and safety notice rendered |
+| `GET /requests/matching-demo` | Passing | HTTP 200 OK, summary card and empty fallback rendered |
+| Client Validation Logic Test | Passing | Verified empty submission rejection and future datetime checks |
 
 ---
 
-## 5. Known Issues
+## 6. Known Issues
 
-* None. All dependencies, types, styles, and scripts compile cleanly without errors or warnings.
+* None. All routes, types, styles, and scripts compile cleanly without warnings or errors.
 
 ---
 
-## 6. Next Recommended Step
+## 7. Next Recommended Step
 
-**Milestone 2: Database Schema & Supabase Client Setup**
-* Define the PostgreSQL database schema for:
-  - `districts` (administrative districts, taluks/blocks)
-  - `donors` (profile, blood group, masked contact, availability status, last donation date)
-  - `blood_requests` (urgency tier, units, hospital, status)
-  - `contact_reveals` (two-way consent tracking)
-  - `in_app_notifications` (recipient alerts)
-* Set up Supabase migration SQL or schema definitions.
-* Implement `@supabase/supabase-js` client wrapper in `src/lib/database/index.ts`.
+**Milestone 3: Find Donors Flow & Donor Profile Registration**
+* Implement the donor intake flow (`/donors/register`):
+  - Donor blood group, district, availability status, and last donation date.
+  - Phone number masking and privacy controls.
+  - Preliminary eligibility check based on configured health and interval criteria.
+* Connect "Find Donors" button on the landing page to the donor flow.

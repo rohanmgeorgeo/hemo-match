@@ -13,7 +13,13 @@ export type BloodGroup =
   | 'O+'
   | 'O-';
 
-export type UrgencyLevel = 'standard' | 'urgent' | 'critical';
+export type BloodComponent =
+  | 'Whole Blood'
+  | 'Red Blood Cells'
+  | 'Platelets'
+  | 'Plasma';
+
+export type UrgencyLevel = 'critical' | 'urgent' | 'routine' | 'standard';
 
 export type RequestStatus =
   | 'open'
@@ -29,6 +35,17 @@ export interface DistrictInfo {
   name: string;
   state?: string;
 }
+
+export const DEMO_DISTRICTS: readonly DistrictInfo[] = [
+  { id: 'dist-ekm', name: 'Ernakulam', state: 'Kerala' },
+  { id: 'dist-tvm', name: 'Thiruvananthapuram', state: 'Kerala' },
+  { id: 'dist-clt', name: 'Kozhikode', state: 'Kerala' },
+  { id: 'dist-tsr', name: 'Thrissur', state: 'Kerala' },
+  { id: 'dist-ktm', name: 'Kottayam', state: 'Kerala' },
+  { id: 'dist-pkd', name: 'Palakkad', state: 'Kerala' },
+  { id: 'dist-mpm', name: 'Malappuram', state: 'Kerala' },
+  { id: 'dist-cen', name: 'Central District', state: 'Kerala' },
+] as const;
 
 export interface DonorProfile {
   id: string;
@@ -46,15 +63,20 @@ export interface DonorProfile {
 
 export interface BloodRequest {
   id: string;
-  patientName?: string;
-  requesterContact: string;
   bloodGroup: BloodGroup;
+  component: BloodComponent;
   unitsNeeded: number;
   districtId: string;
-  hospitalName?: string;
+  districtName?: string;
+  approximateArea: string;
+  hospitalName: string;
+  requiredByDate: string;
+  requiredByTime: string;
   urgency: UrgencyLevel;
   status: RequestStatus;
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  patientName?: string;
+  requesterContact?: string;
 }
