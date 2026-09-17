@@ -217,16 +217,141 @@ export function validateBloodRequest(
   };
 }
 
+
+export interface DonorProfileFormData {
+  fullName: string;
+  bloodGroup: BloodGroup;
+  districtId: string;
+  approximateArea: string;
+  phoneNumber: string;
+  lastDonationDate?: string;
+  availability: 'available' | 'temporarily_unavailable' | 'paused';
+  notificationPreference: 'enabled' | 'disabled';
+  consentGiven: boolean;
+}
+
 /**
- * Placeholder for donor registration payload validation.
- * Business logic will be implemented in the validation milestone.
+ * Validates a donor registration profile form submission.
+ * Does NOT implement medical eligibility — eligibility will be evaluated
+ * during the matching stage using configured rules and clinical guidance.
  */
-export function validateDonorRegistration(
-  _input: unknown
-): ValidationResult<DonorRegistrationInput> {
-  // Stubbed for initial foundation
+export function validateDonorProfile(
+  input: unknown
+): ValidationResult<DonorProfileFormData> {
+  const errors: Record<string, string> = {};
+
+  if (!input || typeof input !== 'object') {
+    return {
+      isValid: false,
+      errors: { form: 'Invalid form submission' },
+    };
+  }
+
+  const data = input as Record<string, unknown>;
+
+  // 1. Full name
+  const fullName =
+    typeof data.fullName === 'string' ? data.fullName.trim() : '';
+  if (!fullName) {
+    errors.fullName = 'Full name is required';
+  } else if (fullName.length < 2) {
+    errors.fullName = 'Full name must be at least 2 characters';
+  }
+
+  // 2. Blood group
+  const bloodGroup =
+    typeof data.bloodGroup === 'string' ? data.bloodGroup.trim() : '';
+  if (!bloodGroup) {
+    errors.bloodGroup = 'Blood group is required';
+  } else if (!isValidBloodGroup(bloodGroup)) {
+    errors.bloodGroup = 'Please select a valid blood group';
+  }
+
+  // 3. District
+  const districtId =
+    typeof data.districtId === 'string' ? data.districtId.trim() : '';
+  if (!districtId) {
+    errors.districtId = 'District is required';
+  }
+
+  // 4. Approximate area
+  const approximateArea =
+    typeof data.approximateArea === 'string' ? data.approximateArea.trim() : '';
+  if (!approximateArea) {
+    errors.approximateArea = 'Approximate area or locality is required';
+  } else if (approximateArea.length < 2) {
+    errors.approximateArea = 'Approximate area must be at least 2 characters';
+  }
+
+  // 5. Phone number — basic format: 7–15 digits, optional leading +
+  const phoneNumber =
+    typeof data.phoneNumber === 'string' ? data.phoneNumber.trim() : '';
+  if (!phoneNumber) {
+    errors.phoneNumber = 'Phone number is required for coordination purposes';
+  } else if (!/^\+?[0-9]{7,15}$/.test(phoneNumber.replace(/[\s\-()]/g, ''))) {
+    errors.phoneNumber =
+      'Please enter a valid phone number (7–15 digits, optional + prefix)';
+  }
+
+  // 6. Last donation date — must NOT be in the future (optional field)
+  const lastDonationDate =
+    typeof data.lastDonationDate === 'string'
+      ? data.lastDonationDate.trim()
+      : '';
+  if (lastDonationDate) {
+    const donationDate = new Date(lastDonationDate);
+    if (isNaN(donationDate.getTime())) {
+      errors.lastDonationDate = 'Please enter a valid date';
+    } else if (donationDate.getTime() > Date.now()) {
+      errors.lastDonationDate = 'Last donation date cannot be in the future';
+    }
+  }
+
+  // 7. Availability
+  const validAvailabilities = ['available', 'temporarily_unavailable', 'paused'] as const;
+  const availability =
+    typeof data.availability === 'string' ? data.availability.trim() : '';
+  if (!availability) {
+    errors.availability = 'Availability status is required';
+  } else if (!validAvailabilities.includes(availability as typeof validAvailabilities[number])) {
+    errors.availability = 'Please select a valid availability status';
+  }
+
+  // 8. Notification preference
+  const validPreferences = ['enabled', 'disabled'] as const;
+  const notificationPreference =
+    typeof data.notificationPreference === 'string'
+      ? data.notificationPreference.trim()
+      : '';
+  if (!notificationPreference) {
+    errors.notificationPreference = 'Notification preference is required';
+  } else if (!validPreferences.includes(notificationPreference as typeof validPreferences[number])) {
+    errors.notificationPreference = 'Please select a notification preference';
+  }
+
+  // 9. Consent
+  const consentGiven = data.consentGiven === true;
+  if (!consentGiven) {
+    errors.consentGiven = 'You must agree to the consent statement to register';
+  }
+
+  const isValid = Object.keys(errors).length === 0;
+
   return {
-    isValid: true,
-    errors: {},
+    isValid,
+    errors,
+    data: isValid
+      ? {
+          fullName,
+          bloodGroup: bloodGroup as BloodGroup,
+          districtId,
+          approximateArea,
+          phoneNumber,
+          lastDonationDate: lastDonationDate || undefined,
+          availability: availability as DonorProfileFormData['availability'],
+          notificationPreference: notificationPreference as DonorProfileFormData['notificationPreference'],
+          consentGiven: true,
+        }
+      : undefined,
   };
 }

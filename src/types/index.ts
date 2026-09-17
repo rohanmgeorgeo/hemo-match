@@ -28,7 +28,9 @@ export type RequestStatus =
   | 'cancelled'
   | 'expired';
 
-export type DonorAvailability = 'available' | 'paused' | 'ineligible';
+export type DonorAvailability = 'available' | 'temporarily_unavailable' | 'paused';
+
+export type NotificationPreference = 'enabled' | 'disabled';
 
 export interface DistrictInfo {
   id: string;
@@ -47,18 +49,25 @@ export const DEMO_DISTRICTS: readonly DistrictInfo[] = [
   { id: 'dist-cen', name: 'Central District', state: 'Kerala' },
 ] as const;
 
+/**
+ * DonorProfile — complete donor intake record.
+ * Compatible with future Supabase/PostgreSQL `donors` table.
+ * phoneNumber is private and must never be surfaced in matching previews.
+ */
 export interface DonorProfile {
   id: string;
   fullName: string;
   bloodGroup: BloodGroup;
   districtId: string;
-  districtName: string;
-  phone: string;
-  isPhoneMasked: boolean;
+  districtName?: string;
+  approximateArea: string;
+  /** Private — must remain masked in all public-facing matching views. */
+  phoneNumber: string;
+  lastDonationDate?: string | null;
   availability: DonorAvailability;
-  lastDonatedAt?: string | null;
+  notificationPreference: NotificationPreference;
+  consentGiven: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface BloodRequest {

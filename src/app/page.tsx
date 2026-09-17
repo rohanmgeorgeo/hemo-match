@@ -81,8 +81,8 @@ export default function HomePage() {
               Request Blood
             </Link>
 
-            <button
-              type="button"
+            <Link
+              href="/donors/register"
               id="find-donors-btn"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-sm border border-neutral-200/90 transition-all duration-150 shadow-xs hover:shadow-sm active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-400 cursor-pointer"
             >
@@ -101,7 +101,7 @@ export default function HomePage() {
                 />
               </svg>
               Find Donors
-            </button>
+            </Link>
           </div>
         </section>
 
