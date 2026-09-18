@@ -341,3 +341,100 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Discovery reflects the system state at match evaluation time.
   * Revalidation before dispatch belongs to Step 7 (Notification Dispatch), and final revalidation belongs to Step 8/9 (Acceptance and Contact Reveal).
+
+---
+
+## 35. DB-Enforced Uniqueness: One match_found Notification per Match
+
+* **Decision:** Enforce database-level uniqueness for `match_found` notifications via a partial unique index on `(match_id, type)` in `supabase/migrations/0002_notification_idempotency.sql`.
+* **Rationale:**
+  * Application-level pre-checks are necessary but insufficient under high concurrency; the database must serve as the authoritative final backstop.
+  * Ensures that a given match record produces at most one discovery notification, preventing duplicate alerts to candidate donors.
+
+---
+
+## 36. Partial Unique Index Rationale for notifications Table
+
+* **Decision:** Implement uniqueness as `CREATE UNIQUE INDEX idx_notifications_match_found_unique ON notifications (match_id, type) WHERE match_id IS NOT NULL AND type = 'match_found';` rather than a broad table-level unique constraint across `(donor_id, request_id, type)`.
+* **Rationale:**
+  * `matches` already guarantees `UNIQUE(request_id, donor_id)`, so `match_id` directly identifies the candidate pair.
+  * Other notification types (e.g. `system`, `request_fulfilled`, `request_expired`) or notifications with null `match_id` must not be artificially restricted.
+
+---
+
+## 37. Atomic Dispatch Requirement (Notification Creation + Match Status Transition)
+
+* **Decision:** The upcoming Step 7C notification dispatch workflow must guarantee that creating the notification row and transitioning `matches.status` from `'candidate'` to `'notified'` cannot leave a partial state.
+* **Rationale:**
+  * A sequence of independent PostgREST calls is not atomic and could fail mid-way, leaving a match marked as candidate despite notification or vice versa.
+  * Step 7C must employ a PostgreSQL transaction, RPC function, or single atomic database boundary. The partial unique index provides the ultimate concurrency defense.
+
+---
+
+## 38. Server-Controlled Dispatch Limit & Explicit User Action
+
+* **Decision:**
+  * Dispatch limit is an internal, server-controlled application configuration (default 5, maximum cap 10).
+  * Clients must not choose or override this limit; no `limit` field will exist in public dispatch request payloads.
+  * Notification dispatch is triggered by an explicit user action ("Notify Candidates") rather than an implicit side-effect of querying matches.
+* **Rationale:**
+  * Dispatch limits are operational anti-fatigue safeguards, not clinical scores or requester preferences.
+  * Explicit triggers give requesters visibility and control over outbound communications.
+
+---
+
+## 39. Request Status Advancement Gated on Successful Notification
+
+* **Decision:** `blood_requests.status` advances from `'active'` to `'notified'` if and only if at least one candidate notification is successfully created.
+* **Rationale:**
+  * If zero candidates are eligible or notified, the request remains `'active'` for future matching runs.
+  * Marking a request as `'notified'` with 0 outbound notifications would create a false representation of discovery progress.
+
+---
+
+## 40. Strict Terminology Boundary: Step 8 Accept, Step 9 Reveal
+
+* **Decision:** Enforce precise lifecycle terminology across documentation and code:
+  * **Step 7**: Notification Dispatch (in-app notification to donor).
+  * **Step 8**: Donor Response (donor explicitly Accepts or Declines).
+  * **Step 9**: Authorized Minimum Contact Reveal (requester obtains donor phone number after donor acceptance).
+* **Rationale:**
+  * Matching or notifying never reveals donor contact information.
+  * Contact reveal is an authorized, audited workflow triggered by donor acceptance, not a "mutual acceptance" broadcast.
+
+---
+
+## 41. Atomic Dispatch RPC & Server-Only Privilege Boundary
+
+* **Decision:** Implement atomic candidate notification dispatch via the PostgreSQL function `claim_match_and_create_notification` in `supabase/migrations/0003_atomic_notification_dispatch.sql`. Explicitly revoke default execution privileges from `PUBLIC`, `anon`, and `authenticated`, granting execution exclusively to `service_role`.
+* **Rationale:**
+  * PostgreSQL grants `PUBLIC` execute on new functions by default, which would expose the RPC to unauthenticated PostgREST callers if not revoked.
+  * Executing within a single function boundary guarantees that `matches.status` transition (`'candidate' → 'notified'`) and `notifications` insertion succeed or fail atomically.
+  * `SECURITY INVOKER` with fixed `search_path = public, pg_temp` prevents privilege elevation and search_path poisoning.
+
+---
+
+## 42. Demo Authorization Boundary for Dispatch API
+
+* **Decision:** `POST /api/requests/notifications/dispatch` accepts and validates `requestId` as a well-formed UUID for demo coordination, but explicitly documents that UUID validation is identification, not production authorization.
+* **Rationale:**
+  * Until Supabase Auth (SMS OTP / user sessions) is integrated, real user credentials do not exist.
+  * Faking authorization with cookies or tokens would create an illusion of security. The endpoint is explicitly scoped as a hackathon demo boundary while preserving all underlying RLS and service-role protections.
+
+---
+
+## 43. Narrow Public Notification Projections for Donor Inbox
+
+* **Decision:** Implement `GET /api/donors/notifications?donorId=<uuid>` returning a strictly limited projection of logistical fields (`bloodGroup`, `component`, `unitsNeeded`, `districtName`, `approximateArea`, `hospitalName`, `urgency`, `requiredBy`, `compatibilityType`, `createdAt`, `readAt`). Donor UUID, donor name, donor phone, requester contact, patient name, and match ID are explicitly prohibited from public responses.
+* **Rationale:**
+  * Candidate donors need sufficient logistical facts to decide whether to respond (urgency, facility, component), but must not receive requester contact details or patient PII.
+  * Stripping donor UUID and match ID prevents clients from attempting cross-entity correlation or unauthorized state mutation.
+
+---
+
+## 44. Server-Side Donor Ownership Enforcement for Notification Read Status
+
+* **Decision:** `PATCH /api/donors/notifications` requires `{ notificationId, donorId }` and executes a server-side update where `id = notificationId AND donor_id = donorId`. If the notification does not exist or does not belong to the supplied donor identity, the update fails and returns `404 Not Found`.
+* **Rationale:**
+  * Prevents cross-donor state tampering where one demo identity could mark another donor's notifications as read.
+  * Enforces ownership validation at the SQL query boundary via `getServerClient()`.
