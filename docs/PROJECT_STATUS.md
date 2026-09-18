@@ -2,28 +2,28 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Branch:** `feature/matching-engine`
-**Current Milestone:** Step 6: Request → Match (COMPLETE)
+**Branch:** `feature/notifications`
+**Current Milestone:** Step 7: Notify (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
 
 ## 1. Current Project State
 
-Six milestones are complete. The application features a fully verified, privacy-safe, end-to-end Request → Match pipeline. Blood requests are persisted to PostgreSQL and matched via an authoritative server-only matching engine backed by deterministic RBC biological compatibility and configurable donation interval rules, persisting candidate matches with database-enforced idempotency, and rendering privacy-safe candidate cards in the matching UI.
+Seven milestones are complete. The application features a fully verified, privacy-safe, end-to-end Request → Match → Notify pipeline. Blood requests are persisted to PostgreSQL, matched via an authoritative server-only matching engine, and notified through an atomic database RPC with server-controlled revalidation and deterministic dispatch limits. Candidate donors receive in-app notifications in a private inbox without exposing phone numbers, names, or patient details.
 
 Active user-facing flows:
-1. **Request Blood & Match** — `/ → /requests/new → POST /api/requests → /requests/matching-demo → POST /api/requests/matches`
-2. **Donor Registration** — `/ → /donors/register → POST /api/donors → /donors/profile`
+1. **Request Blood & Match & Notify** — `/ → /requests/new → POST /api/requests → /requests/matching-demo → POST /api/requests/matches → POST /api/requests/notifications/dispatch`
+2. **Donor Registration & Inbox** — `/ → /donors/register → POST /api/donors → /donors/profile → /donors/notifications → GET/PATCH /api/donors/notifications`
 
 > [!NOTE]
-> All intake and matching operations persist to PostgreSQL via server-only Route Handlers.
-> `localStorage` is used solely as a temporary post-persistence demo view cache to bridge the request UUID to `/requests/matching-demo`.
-> Notification dispatch, donor response/acceptance, and two-way contact reveal belong to subsequent milestones (Step 7+).
+> All intake, matching, dispatch, and inbox operations persist to PostgreSQL via server-only Route Handlers.
+> `localStorage` is used solely as a temporary demo view cache to bridge demo identities (`hemo_match_active_request`, `hemo_match_demo_donor`).
+> Donor response/acceptance (Step 8) and two-way contact reveal (Step 9) belong to subsequent milestones.
 
 ---
 
-## 2. Active Flows & Matching Pipeline
+## 2. Active Flows & Notification Pipeline
 
 ```
 Landing Page (/)
@@ -62,6 +62,23 @@ Landing Page (/)
 │                         │ Factual match reasons & compatibility badge
 │                         ▼
 │                       Rendered Candidate Cards on /requests/matching-demo
+│                         │
+│                         ▼ "Notify Eligible Donors" (Requester Action)
+│                       /api/requests/notifications/dispatch [Route Handler]
+│                         │ Validates { requestId } UUID strictly
+│                         │ Revalidates candidate eligibility & consent immediately prior to dispatch
+│                         │ Filters donors with notification_preference = 'enabled'
+│                         │ Enforces server dispatch limit (default 5)
+│                         │ Calls PostgreSQL RPC claim_match_and_create_notification()
+│                         ▼
+│                       Supabase / PostgreSQL (public.notifications & public.matches)
+│                         │ Transitions match status: 'candidate' -> 'notified'
+│                         │ Inserts notification row (status: 'unread', type: 'match_found')
+│                         │ Idempotency protected by partial unique index idx_notifications_match_found_unique
+│                         │ Advances request status to 'notified'
+│                         │ Writes aggregate non-PII audit record
+│                         ▼
+│                       HTTP 200 Response (aggregate count: "N eligible donors notified")
 │
 └── "Find Donors"   ──► /donors/register
                           │
@@ -78,6 +95,16 @@ Landing Page (/)
                           │
                           ▼ Local cache: hemo_match_demo_donor
                         /donors/profile (masked phone display: ••••••4321)
+                          │
+                          ▼ "Notifications" Navigation Link
+                        /donors/notifications (Donor Inbox)
+                          │
+                          ▼ (GET /api/donors/notifications?donorId=<uuid>)
+                        Strict server-side ownership query
+                          │ Omission of donor UUID, names, phones, and patient details
+                          │ Displays urgency, blood group, component, hospital, requiredBy
+                          │ Mark as read via PATCH /api/donors/notifications
+                          │ Clear placeholder: "Response available in the next step"
 ```
 
 ---
@@ -112,37 +139,43 @@ Landing Page (/)
 - Deterministic IST (UTC+05:30) datetime parsing and timezone conversion.
 
 ### Step 6: Request → Match Milestone (complete)
+- Pure RBC ABO/Rh Compatibility Engine (`src/lib/matching/compatibility.ts`).
+- Configurable Preliminary Donation Interval Evaluation (`src/lib/eligibility/intervals.ts`).
+- Deterministic Multi-Factor Ranking (`src/lib/matching/engine.ts`).
+- Server-Only Database Matching Helper (`src/lib/db/matches.ts`).
+- HTTP Boundary `POST /api/requests/matches`.
+- Real Matching UI Integration (`src/app/requests/matching-demo/page.tsx`).
+
+### Step 7: Request → Match → Notify Milestone (complete)
 
 #### What Was Implemented:
-1. **Pure RBC ABO/Rh Compatibility Engine** (`src/lib/matching/compatibility.ts`):
-   - Exhaustive 64-combination matrix for Whole Blood and Red Blood Cells.
-   - Classification into `homologous` (exact ABO/Rh) and `compatible` (safe alternative donor).
-   - Strict rejection of unsupported components (Platelets, Plasma).
-2. **Configurable Preliminary Donation Interval Evaluation** (`src/lib/eligibility/intervals.ts`, `src/lib/eligibility/rules.ts`):
-   - Conservative 120-calendar-day application matching policy (`RULE_IN_CONSERVATIVE_INTERVAL_120D`) due to schema not collecting donor sex.
-   - Deterministic, timezone-independent calendar-day math via UTC midnight normalization.
-   - Safe exclusion of missing/unknown donation history (`EXCLUDE_DONATION_HISTORY_UNKNOWN`).
-3. **Deterministic Multi-Factor Ranking** (`src/lib/matching/engine.ts`):
-   - Homologous exact matches rank ahead of compatible alternative matches.
-   - Greater elapsed recovery time ranks ahead within the same compatibility tier.
-   - Deterministic lexicographic donor UUID tie-break used internally only (never exposed or persisted in metadata).
-   - Absolute prohibition of arbitrary 0–100 clinical scoring.
-4. **Server-Only Database Matching Helper** (`src/lib/db/matches.ts`):
-   - `findAndCreateMatches()` runs exclusively server-side via `getServerClient()`.
-   - Idempotent match insertion using PostgreSQL `UNIQUE(request_id, donor_id)` and PostgREST `.upsert(..., { onConflict: 'request_id,donor_id', ignoreDuplicates: true })`.
-   - Non-PII structured `match_metadata` recording matching facts only.
-5. **HTTP Boundary** (`src/app/api/requests/matches/route.ts`):
-   - Thin POST route handler validating RFC 4122 UUID in `requestId`.
-   - Returns sanitized `PublicMatchCandidate[]` with anonymized references (`Donor •••• [SUFFIX]`).
-6. **Controlled Live Supabase Verification** (Step 6E):
-   - Proved end-to-end flow with controlled test fixtures (Donors A–I proving exact match, compatible match, incompatible blood group, 119-day interval rejection, 120-day interval approval, unknown history rejection, unavailable rejection, consent rejection, and different district rejection).
-   - Verified idempotency, non-PII metadata, error status mapping, and 100% cleanup of test rows without modifying pre-existing data.
-7. **Real Matching UI Integration** (`src/app/requests/matching-demo/page.tsx`):
-   - Connected `/requests/matching-demo` to real `POST /api/requests/matches`.
-   - Clean UI states for loading (calm pulse), candidate cards, zero-matches, error/retry, and missing request.
-   - Prominent privacy card ("Contact details stay private") and clinical safety disclaimer.
-8. **Automated Test Suite**:
-   - 90 automated tests passing across 25 suites covering compatibility, interval math, matching engine, route validation, and UI state parsing.
+1. **Database Integrity & Idempotency Foundation (Step 7B)**:
+   - Migration `supabase/migrations/0002_notification_idempotency.sql`.
+   - Partial unique index `idx_notifications_match_found_unique` on `(match_id, type) WHERE match_id IS NOT NULL AND type = 'match_found'`.
+   - Prevents duplicate notification creation per candidate match at the database constraint level.
+2. **Atomic Dispatch RPC (Step 7C)**:
+   - Migration `supabase/migrations/0003_atomic_notification_dispatch.sql`.
+   - PostgreSQL function `claim_match_and_create_notification()` with `SECURITY INVOKER` and fixed `search_path`.
+   - Execution revoked from `PUBLIC`/`anon`/`authenticated`; granted exclusively to `service_role`.
+   - Pure pre-dispatch revalidation (`src/lib/notifications/revalidation.ts`) verifying donor consent, availability, notification preference (`enabled`), biological compatibility, and 120-day interval rest.
+   - Server-controlled dispatch limit (`DEFAULT_DISPATCH_LIMIT = 5`, `MAX_DISPATCH_LIMIT = 10` in `src/lib/notifications/config.ts`).
+   - Server-only DB orchestrator (`src/lib/db/notifications.ts`) and HTTP route `POST /api/requests/notifications/dispatch`.
+3. **Privacy-Safe Donor Inbox API & Screen (Step 7D)**:
+   - `GET /api/donors/notifications?donorId=<uuid>` returns narrow public notification projections.
+   - `PATCH /api/donors/notifications` marks notifications as read with strict server-side donor ownership verification.
+   - Donor notification screen at `/donors/notifications` displaying urgency, hospital, district, approximate area, units, component, compatibility badge, and "Your contact details are still private" card.
+   - Non-functioning placeholder for Step 8: "Response available in the next step".
+   - Integrated navigation from donor profile header and action list.
+4. **Matching Page Notify Action**:
+   - Updated `/requests/matching-demo` with explicit requester action "Notify Eligible Donors".
+   - Displays aggregate result only (e.g. "3 eligible donors notified • In-app notifications sent").
+   - Preserves displayed candidate match cards without failing re-query when request status advances to `'notified'`.
+5. **Controlled Live Verification**:
+   - 14-point live verification against configured Supabase project using disposable fixtures.
+   - Verified: exact match notified, compatible match notified, preference-disabled skipped, stale/unavailable skipped, match status updated to `'notified'`, request status updated to `'notified'`, repeated dispatch idempotent (0 duplicates), donor inbox isolation verified, read state update verified, cross-donor read rejected (`not_found`), payload and audit privacy verified.
+   - 100% cleanup of temporary rows with baseline counts fully restored.
+6. **Automated Test Suite**:
+   - 128 automated tests passing across 31 suites covering revalidation, ranking, interval math, dispatch limits, UUID validation, inbox queries, read status updates, and UI response parsing.
 
 ---
 
@@ -150,51 +183,42 @@ Landing Page (/)
 
 | Check | Result |
 | :--- | :--- |
-| `npm test` | ✅ 90 tests passing (0 failing, 25 suites) |
+| `npm test` | ✅ 128 tests passing (0 failing, 31 suites) |
 | `npm run typecheck` | ✅ 0 errors |
 | `npm run lint` | ✅ 0 errors, 0 warnings |
-| `npm run build` | ✅ All routes compiled (`/api/requests/matches` dynamic) |
+| `npm run build` | ✅ All routes compiled (`/api/donors/notifications`, `/api/requests/notifications/dispatch` dynamic) |
 | `git diff --check` | ✅ 0 formatting/whitespace issues |
-| Live Supabase Verification | ✅ Proved real DB matching, idempotency, and non-PII metadata |
+| Live Supabase Verification | ✅ Proved real dispatch, atomic RPC, idempotency, inbox isolation, and 100% cleanup |
 | Service-Role Secret Isolation | ✅ Server-only; 0 client leaks |
 | Direct Supabase Queries in UI | ✅ 0 occurrences |
-| Sensitive Fields in Public UI/API | ✅ 0 occurrences (`phone_number`, `full_name`, `donor_id`, etc.) |
+| Sensitive Fields in Public UI/API | ✅ 0 occurrences (`phone_number`, `full_name`, `donor_id`, `match_id`, patient info) |
 | Unsafe TypeScript Bypasses | ✅ 0 occurrences (`as any`, `as never`, `@ts-ignore`, `@ts-expect-error`) |
 
 ---
 
-## 5. Security Architecture & Current MVP Limitations
+## 5. Security Architecture & Demo Auth Limitations
 
 > [!IMPORTANT]
-> The following security, clinical, and architectural boundaries are locked for this milestone:
+> The following security and architectural boundaries are active:
 
-1. **Donor Phone Storage (Plaintext at Rest)**:
-   - Stored plaintext in PostgreSQL `public.donors.phone_number`. Protected via RLS deny-all on Data API and server-only service-role queries.
-2. **Preliminary Discovery Only (No Clinical Clearance)**:
-   - Algorithmic matching performs preliminary donor discovery only. Final donor eligibility, crossmatching, and transfusion compatibility are determined by qualified blood-bank/clinical personnel.
-3. **Application Interval Policy (120 Days)**:
-   - 120 calendar days is an MVP application matching policy applied because the current schema does not record donor sex. It is not a universal clinical rule.
-4. **Same-District Scope**:
-   - Matching evaluates donors within the same administrative district only. No real GPS/distance calculations are performed.
-5. **Supported Components**:
-   - Whole Blood and Red Blood Cells only. Platelets and Plasma are unsupported.
-6. **Notification Preference Deferred**:
-   - Donors with notification preference `disabled` are matched and returned as candidates in Step 6; preference filtering is evaluated during notification dispatch (Step 7).
-7. **Historical Match Rows**:
-   - Existing candidate rows in `matches` are treated as historical records; donor revalidation belongs to later notification/acceptance workflows.
-8. **Unimplemented Subsystems (Next Milestones)**:
-   - **Step 7: Notifications Dispatch** (in-app alerts, notification feed).
-   - **Step 8: Donor Response & Acceptance**.
-   - **Step 9: Two-Way Contact Reveal Protocol**.
-   - **User Authentication** (Supabase Auth / SMS OTP).
+1. **Demo Identity vs Production Authorization**:
+   - User authentication is not yet integrated (Mock Auth stage).
+   - `donorId` in queries and bodies represents demo identification, NOT cryptographically verified authorization.
+   - Production will require Supabase Auth JWT / session verification to assert donor ownership.
+2. **In-App Notifications Only**:
+   - Notifications are stored in `public.notifications` and viewed in-app.
+   - No external SMS, WhatsApp, or email messaging is implemented.
+3. **Strict Public Projection Isolation**:
+   - Donor notification payloads and public projections strictly omit donor UUID, phone number, full name, requester contact, patient name, and match ID.
+4. **Authoritative Server Revalidation**:
+   - Dispatch limit, donor availability, and communication preferences are revalidated on the server immediately before creating notifications.
 
 ---
 
-## 6. Next Active Milestone
+## 6. Next Milestone: Step 8 — Accept / Decline
 
-**Step 7: Notification Dispatch Subsystem (Notify)**
-
-- Implement notification generation for matched candidate donors (`public.notifications`).
-- Respect `notification_preference` during dispatch.
-- Implement in-app notification inbox / alert polling for candidate donors.
-- Prepare notification acknowledgement workflow without exposing requester contact details prematurely.
+The next planned milestone is **Step 8: Donor Response (Accept / Decline)**:
+- Donor response model in `public.donor_responses`.
+- Donor action on `/donors/notifications` to accept or decline matching requests.
+- Transition candidate match states based on donor response.
+- Step 9 (Two-Way Contact Reveal Protocol) follows mutual acceptance.

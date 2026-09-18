@@ -2,18 +2,19 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Milestone:** Step 6 — Request → Match (COMPLETE)
+**Milestone:** Step 7 — Request → Match → Notify (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
 
-## 1. Verified Live Demonstration Flow
+## 1. Verified Live Demonstration Flow (Request → Match → Notify)
 
-The following sequence demonstrates the completed, privacy-safe **Request → Match** workflow:
+The following 9-step sequence demonstrates the completed, privacy-safe **Request → Match → Notify** workflow:
 
 ```
-Step 1: Donor Registration (/donors/register)
+Step 1: Register Demo Donor (/donors/register)
   │ Fill out donor profile (blood group, district, approximate area, last donation date, contact)
+  │ Notification preference set to "Enabled"
   │ Client validates inputs
   ▼
 POST /api/donors
@@ -23,17 +24,18 @@ POST /api/donors
   ▼
 Donor Profile View (/donors/profile)
   │ Displays confirmed registration with masked phone number: ••••••4321
+  │ Features "Notifications" button in header and profile action cards
 
 ────────────────────────────────────────────────────────────────────────
 
-Step 2: Blood Request Creation (/requests/new)
-  │ Enter blood group requirement (e.g. A+, Red Blood Cells, 1 unit, district, required-by)
+Step 2: Create Blood Request (/requests/new)
+  │ Enter blood group requirement (e.g. O+, Whole Blood, 2 units, district, required-by)
   │ Client validates input and clinical safety disclaimer
   ▼
 POST /api/requests
   │ Resolves district slug to UUID
   │ Converts local IST (UTC+05:30) datetime to authoritative UTC TIMESTAMPTZ
-  │ Privileged insert into public.blood_requests (authoritative UUID created)
+  │ Privileged insert into public.blood_requests (authoritative UUID created, status='active')
   │ Returns sanitized HTTP 201 response
   ▼
 Handoff to Matching Screen (/requests/matching-demo)
@@ -42,63 +44,109 @@ Handoff to Matching Screen (/requests/matching-demo)
 
 ────────────────────────────────────────────────────────────────────────
 
-Step 3: Server Matching & Candidate Display (/requests/matching-demo)
+Step 3: Generate Eligible Matches (/requests/matching-demo)
   ▼
 POST /api/requests/matches { "requestId": "<uuid>" }
-  │ Server validates request state, component compatibility, and expiration
-  │ Queries registered donors within the matching district
-  │ Evaluates biological RBC ABO/Rh compatibility (homologous vs compatible)
-  │ Evaluates 120-day preliminary recovery interval using UTC midnight normalization
-  │ Enforces hard filters: availability, consent, district, known donation date
-  │ Persists candidate matches to public.matches with UNIQUE(request_id, donor_id) guard
-  │ Generates non-PII match_metadata
+  │ Server evaluates biological RBC ABO/Rh compatibility & 120-day interval rule
+  │ Sorts candidates deterministically (homologous tier first, recovery time, donor UUID)
+  │ Inserts candidate matches to public.matches with UNIQUE(request_id, donor_id) guard
   ▼
 HTTP 200 Response (PublicMatchCandidate[])
-  │ Returned candidate cards display:
-  │ • Anonymized Reference: "Donor •••• [SUFFIX]"
-  │ • Compatibility Badge: "Exact blood-group match" or "Compatible blood-group match"
-  │ • Factual Verified Reasons: Exact ABO/Rh, Interval satisfied, Same district
-  │ • Status: "Candidate"
-  │ • Contact Details: Strictly hidden and protected
+  │ Displays candidate cards with anonymized references: "Donor •••• [SUFFIX]"
+  │ Shows verified criteria (compatibility, rest period, district locality)
+  │ Donor names, phone numbers, and raw UUIDs remain strictly hidden
+
+────────────────────────────────────────────────────────────────────────
+
+Step 4: Click "Notify Eligible Donors"
+  │ Requester reviews eligible candidate cards
+  │ Clicks "Notify Eligible Donors" button
+  ▼
+POST /api/requests/notifications/dispatch { "requestId": "<uuid>" }
+  │ Browser sends strictly requestId (no donor IDs, limits, or payloads)
+  │ Server revalidates candidate availability, consent, and notification_preference = 'enabled'
+  │ Clamps dispatch to server limit (default 5)
+  │ Executes atomic PostgreSQL RPC claim_match_and_create_notification()
+
+────────────────────────────────────────────────────────────────────────
+
+Step 5: Show Aggregate Notification Success
+  │ UI transitions cleanly without refetching matches
+  │ Displays aggregate outcome: "N eligible donors notified • In-app notifications sent"
+  │ Matches preserve visual candidate cards; status advanced to 'notified'
+  │ Repeated clicks are prevented (idempotent; 0 duplicates)
+
+────────────────────────────────────────────────────────────────────────
+
+Step 6: Open Donor Notifications (/donors/notifications)
+  │ User navigates to /donors/notifications (or clicks Notifications from Donor Profile)
+  │ Automatically detects demo donor identity
+  ▼
+GET /api/donors/notifications?donorId=<uuid>
+  │ Server queries notifications scoped strictly to donor_id = donorId
+  │ Returns narrow public notification projection
+
+────────────────────────────────────────────────────────────────────────
+
+Step 7: Show Privacy-Safe In-App Request Notification
+  │ Donor inbox displays request notification card:
+  │ • Urgency level ("CRITICAL" / "URGENT")
+  │ • Blood group, component, units needed
+  │ • District and hospital / blood centre facility
+  │ • Compatibility badge ("Exact ABO/Rh" or "Compatible Match")
+  │ • Required-by timestamp
+  │ • "Mark as Read" action button (triggers PATCH /api/donors/notifications)
+
+────────────────────────────────────────────────────────────────────────
+
+Step 8: Emphasize Donor Contact Remains Hidden
+  │ Prominent privacy banner on notification card: "Your contact details are still private."
+  │ Requesters cannot see donor phone number, name, or identity.
+  │ Clinical safety notice: "Hemo Match coordinates donor discovery only. Final donor eligibility
+  │ is determined by qualified blood-bank/clinical personnel."
+
+────────────────────────────────────────────────────────────────────────
+
+Step 9: Explain Accept is the Next Milestone
+  │ Action placeholder explicitly reads: "Response available in the next step"
+  │ No fake functioning Accept button
+  │ Step 8 (Donor Accept/Decline) and Step 9 (Authorized Two-Way Contact Reveal) are the next milestones.
 ```
 
 ---
 
 ## 2. Privacy & Security Guarantees Proven in Live Demo
 
-- **Zero Donor PII Exposed**: Donor names, raw UUIDs, phone numbers, email addresses, and coordinates are never sent across the network or displayed in matching results.
+- **Zero Donor PII Exposed**: Donor names, raw UUIDs, phone numbers, email addresses, and coordinates are never sent across the network or displayed in matching results or inbox projections.
 - **Anonymized Reference Format**: Requesters see only `Donor •••• [SUFFIX]` (derived from the last 4 characters of the donor UUID).
-- **Non-PII Metadata**: Match audit records in `matches.match_metadata` store biological matching facts only (compatibility tier, days elapsed, rule ID, evaluation timestamp).
+- **Non-PII Metadata**: Match and audit records store aggregate matching facts only.
 - **Service-Role Isolation**: The browser makes standard JSON HTTP requests to Next.js Route Handlers; `SUPABASE_SERVICE_ROLE_KEY` is completely isolated in server-only modules.
-- **Idempotent Matching**: Repeated calls or clicking "Re-evaluate Matches" will never create duplicate match rows or overwrite existing candidate statuses.
+- **Idempotent Dispatch**: Repeated dispatch calls or duplicate requests will never create duplicate notifications (enforced by `idx_notifications_match_found_unique` and atomic RPC).
+- **Inbox Isolation**: Donors only ever receive notifications for their own donor ID; cross-donor updates are rejected with `404 Not Found`.
 
 ---
 
-## 3. Controlled Verification Fixtures (Step 6E Live Audit)
+## 3. Controlled Live Verification Summary (Step 7 Live Audit)
 
-During Step 6E live verification, controlled temporary test rows (Donors A–I and one temporary request) were created against the live Supabase database to verify all individual matching filters:
-
-1. **Exact Homologous Match** (Donor A): Matched with `compatibilityType: 'homologous'`.
-2. **Compatible Alternative Match** (Donor B): Matched with `compatibilityType: 'compatible'`.
-3. **Incompatible Blood Group** (Donor C): Correctly excluded; 0 match rows created.
-4. **Interval Too Short (119 days)** (Donor D): Correctly excluded; 0 match rows created.
-5. **Exact 120-Day Boundary** (Donor E): Correctly approved and matched.
-6. **Unknown Donation History (`NULL`)** (Donor F): Correctly excluded; 0 match rows created.
-7. **Unavailable Donor (`paused`)** (Donor G): Correctly excluded; 0 match rows created.
-8. **No Consent Given** (Donor H): Correctly excluded; 0 match rows created.
-9. **Different District** (Donor I): Correctly excluded; 0 match rows created.
-10. **Disabled Notification Preference**: Correctly matched at Step 6 (filter applies at Step 7 dispatch).
-
-> [!NOTE]
-> All temporary verification fixtures were deleted immediately after live testing. Pre-existing database records remained untouched.
+During Step 7 live verification against the configured Supabase database:
+1. Created controlled test request and 4 test donors (A: Exact, B: Compatible, C: Preference Disabled, D: Stale/Unavailable).
+2. Proved Step 6 matched all 4 candidates.
+3. Updated donor D to `temporarily_unavailable` after matching.
+4. Executed real dispatch: Donors A and B were notified; Donor C was skipped (preference disabled); Donor D was skipped (stale availability).
+5. Confirmed match status transitions to `'notified'` for A and B, remaining `'candidate'` for C and D.
+6. Confirmed request status advanced to `'notified'`.
+7. Confirmed repeated dispatch created zero duplicate notifications.
+8. Confirmed inbox isolation: A sees 1, B sees 1, C sees 0.
+9. Confirmed mark as read updated A to read while B remained unread; cross-donor read attempt was rejected.
+10. Confirmed 100% cleanup of test rows and exact baseline restoration across all database tables.
 
 ---
 
-## 4. Upcoming Subsystems (Not Yet Implemented)
+## 4. Next Milestone: Step 8 — Donor Response (Accept / Decline)
 
-The following stages belong to future milestones and are **not** active in Step 6:
-
-- **Step 7 (Notify)**: Outbound dispatch of in-app/SMS alerts to candidate donors.
-- **Step 8 (Accept)**: Donor response (accept/decline) interface and status transitions.
-- **Step 9 (Reveal)**: Two-way contact reveal protocol (unmasking phone numbers only after mutual consent).
-- **Step 10 (Auth)**: Full user authentication replacing demo view caches.
+The next milestone will implement:
+1. `public.donor_responses` recording donor response status (`accepted`, `declined`, `expired`).
+2. Accept/Decline actions on `/donors/notifications`.
+3. Pre-acceptance donor revalidation.
+4. Transition candidate match states based on response.
+5. Paving the path for Step 9: Authorized Two-Way Contact Reveal Protocol.

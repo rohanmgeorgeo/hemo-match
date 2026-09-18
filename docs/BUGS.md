@@ -2,7 +2,7 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Milestone:** Step 6 — Request → Match (COMPLETE)
+**Current Milestone:** Step 7 — Notify (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
@@ -10,18 +10,19 @@
 ## 1. Active Blocking Bugs
 
 **None.**
-The Step 6 final audit confirmed zero blocking bugs across matching algorithms, database persistence, API endpoints, and user interface components. All 90 automated unit tests pass cleanly.
+The Step 7 final audit confirmed zero blocking bugs across notification revalidation, atomic RPC dispatch, database persistence, donor inbox APIs, and user interface components. All 128 automated unit tests pass cleanly.
 
 ---
 
-## 2. Resolved Issues (Step 6)
+## 2. Resolved Issues (Steps 6 & 7)
 
 | Issue | Resolution | Status |
 |:------|:-----------|:-------|
 | Duplicate match detection relied on string parsing (`error.message.includes('duplicate')`) | Switched to explicit PostgreSQL `UNIQUE(request_id, donor_id)` constraint via PostgREST `.upsert(..., { onConflict: 'request_id,donor_id', ignoreDuplicates: true })`. | **Resolved** (Step 6C-2) |
 | Internal `tie_break_id` was persisted in `match_metadata` | Removed `tie_break_id` from persisted metadata. The donor UUID is already stored in `matches.donor_id`. Lexicographic tie-break remains strictly an in-memory comparator detail. | **Resolved** (Step 6C) |
-| Synchronous `setState` in React effect flagged by React 19 linter | Refactored matching page state to use `useMemo` for storage parsing and an idiomatic derived loading state pattern with `useEffect` async fetching. | **Resolved** (Step 6F) |
-| Overly absolute zero-match public wording ("strictly enforces biological compatibility") | Replaced with neutral application-level wording: *"Matching applies preliminary blood-group compatibility, availability, district, consent, and configured donation-interval rules."* | **Resolved** (Step 6G) |
+| Duplicate notification vulnerability under concurrent dispatch | Authored migration `0002_notification_idempotency.sql` with partial unique index `idx_notifications_match_found_unique` on `(match_id, type) WHERE match_id IS NOT NULL AND type = 'match_found'`. | **Resolved** (Step 7B) |
+| Non-atomic match status update and notification creation race condition | Authored migration `0003_atomic_notification_dispatch.sql` with PostgreSQL RPC `claim_match_and_create_notification` executing status transition (`candidate -> notified`) and notification insert within a single atomic transaction. | **Resolved** (Step 7C) |
+| React 19 `set-state-in-effect` warning in donor notifications screen | Converted to derived loading state pattern with `fetchState` async updater, eliminating synchronous state setters in effect body. | **Resolved** (Step 7D) |
 
 ---
 
@@ -45,9 +46,12 @@ The following items are intentional architectural tradeoffs for the hackathon MV
    - Prevents inaccurate straight-line distance calculations and heavy client battery drain.
    - Production requirement: Integrate taluk/hospital cluster routing or GIS district bounding boxes.
 
-4. **LocalStorage View Caching**:
+4. **LocalStorage View Caching & Demo Identity**:
    - `hemo_match_active_request` and `hemo_match_demo_donor` are temporarily cached in browser `localStorage` to bridge view state between forms and confirmation/matching views without pseudo-auth.
    - Production requirement: Replace with real user sessions (Supabase Auth / SMS OTP).
+
+5. **In-App Notifications Only**:
+   - Outbound notifications are stored in `public.notifications` and viewed in-app. No SMS, WhatsApp, or email messaging gateways are configured.
 
 ---
 
@@ -59,3 +63,7 @@ The following items are intentional architectural tradeoffs for the hackathon MV
 
 2. **Server-Only Execution**:
    - Modules under `src/lib/db/` import `server-only`. Standalone test runners or scripts must supply `--conditions=react-server` or execute within Next.js server runtime to satisfy this condition.
+
+3. **Playwright Driver 404 in Testing Environment**:
+   - The standalone browser subagent encountered an upstream CDN 404 downloading Playwright macOS arm64 drivers (`playwright-1.57.0-mac-arm64.zip`).
+   - Impact: App pages render 200 OK locally; dev server and SSR output verified via curl and automated test suites.

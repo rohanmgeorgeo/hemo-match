@@ -2,9 +2,9 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Branch:** `feature/matching-engine`
-**Current Milestone:** Step 6 — Request → Match (COMPLETE)
-**Next Milestone:** Step 7 — Notifications Dispatch (ACTIVE NEXT)
+**Current Branch:** `feature/notifications`
+**Current Milestone:** Step 7 — Notifications Dispatch (COMPLETE)
+**Next Milestone:** Step 8 — Donor Response & Acceptance (ACTIVE NEXT)
 
 ---
 
@@ -51,17 +51,19 @@
   - [x] **Step 6F**: Connect `/requests/matching-demo` to real `POST /api/requests/matches` endpoint with polished UI states
   - [x] **Step 6G**: Final audit, documentation, handoff, and git commit/push
 
----
+- [x] **Step 7: Notifications Dispatch & Privacy-Safe Donor Inbox**
+  - [x] **Step 7A**: Notification subsystem audit and architecture design
+  - [x] **Step 7B**: Migration `0002_notification_idempotency.sql` with partial unique index `idx_notifications_match_found_unique`
+  - [x] **Step 7C**: Migration `0003_atomic_notification_dispatch.sql` with atomic RPC `claim_match_and_create_notification`
+  - [x] **Step 7C**: Pure pre-dispatch revalidation (`revalidation.ts`) enforcing consent, availability, preferences, interval, and limits
+  - [x] **Step 7C**: Server-only dispatch coordinator (`dispatchNotificationsForRequest`) and POST `/api/requests/notifications/dispatch`
+  - [x] **Step 7D**: Donor notification inbox API (`GET/PATCH /api/donors/notifications`) with strict server-side ownership verification
+  - [x] **Step 7D**: Donor notification inbox screen (`/donors/notifications`) with read/unread distinctions, privacy notices, and Step 8 placeholder
+  - [x] **Step 7D**: Donor profile navigation integration ("Notifications" header badge and action CTA)
+  - [x] **Step 7D**: Matching demo page explicit requester action ("Notify Eligible Donors" CTA)
+  - [x] **Step 7E**: Controlled live Supabase verification proving full Request → Match → Notify flow, idempotency, inbox isolation, and 100% baseline restoration
+  - [x] **Step 7F**: 128 automated tests passing across 31 suites
 
-## Active Next Milestone: Step 7 — Notifications Dispatch Subsystem
-
-- [ ] **Step 7A**: Notification architecture inspection and data model review (`public.notifications`)
-- [ ] **Step 7B**: Notification dispatch generator querying candidate matches for active blood requests
-- [ ] **Step 7C**: Enforce `notification_preference` filter (skip outbound dispatch for `disabled` preference)
-- [ ] **Step 7D**: Server-only notification queue helper and API endpoint
-- [ ] **Step 7E**: Controlled live verification of notification generation
-- [ ] **Step 7F**: In-app notification UI component / donor alert drawer
-- [ ] **Step 7G**: Milestone documentation and handoff
 
 ---
 

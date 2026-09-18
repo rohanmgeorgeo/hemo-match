@@ -65,11 +65,22 @@ export default function DonorProfilePage() {
             </svg>
             Home
           </Link>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Donor Profile
-            </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/donors/notifications"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+              </svg>
+              Notifications
+            </Link>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-600" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Donor Profile
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -234,6 +245,15 @@ export default function DonorProfilePage() {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/donors/notifications"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm shadow-xs text-center transition-all flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                </svg>
+                View Notifications
+              </Link>
               <Link
                 href="/donors/register"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-sm border border-neutral-200/90 shadow-xs hover:shadow-sm text-center transition-all"

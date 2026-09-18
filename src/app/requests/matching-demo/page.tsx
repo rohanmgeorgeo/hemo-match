@@ -9,6 +9,10 @@ import {
   getCompatibilityBadgeDetails,
   type MatchUiState,
 } from '@/lib/matching/ui-helpers';
+import {
+  parseDispatchApiResponse,
+  type DispatchUiState,
+} from '@/lib/validation/notifications';
 
 function subscribe(callback: () => void) {
   window.addEventListener('storage', callback);
@@ -107,6 +111,41 @@ export default function MatchingDemoPage() {
   const handleRetry = () => {
     if (requestId && !isLoading) {
       setRetryCounter((c) => c + 1);
+    }
+  };
+
+  const [dispatchState, setDispatchState] = useState<DispatchUiState>({
+    status: 'idle',
+  });
+
+  const handleDispatch = async () => {
+    if (
+      !requestId ||
+      dispatchState.status === 'dispatching' ||
+      dispatchState.status === 'success'
+    ) {
+      return;
+    }
+
+    setDispatchState({ status: 'dispatching' });
+
+    try {
+      const response = await fetch('/api/requests/notifications/dispatch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ requestId }),
+      });
+
+      const data: unknown = await response.json().catch(() => null);
+      const parsed = parseDispatchApiResponse(response.status, data);
+      setDispatchState(parsed);
+    } catch {
+      setDispatchState({
+        status: 'error',
+        message: 'Network error. Please check your connection and try again.',
+      });
     }
   };
 
@@ -525,6 +564,189 @@ export default function MatchingDemoPage() {
                     );
                   })}
                 </div>
+
+                {/* Step 7: Explicit Requester Action — Notify Eligible Donors */}
+                {matchState.matches.length > 0 && (
+                  <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                          In-App Notification Dispatch
+                        </div>
+                        <h3 className="text-base font-bold text-neutral-950">
+                          Notify Eligible Donors
+                        </h3>
+                        <p className="text-xs text-neutral-500 mt-0.5">
+                          Dispatches authoritative in-app notifications to candidate donors in this district.
+                        </p>
+                      </div>
+
+                      <div className="shrink-0">
+                        {dispatchState.status === 'idle' && (
+                          <button
+                            type="button"
+                            onClick={handleDispatch}
+                            id="notify-eligible-donors-btn"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm transition-all shadow-xs active:scale-[0.99] cursor-pointer"
+                          >
+                            <svg
+                              className="w-4 h-4 text-white/90"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="2"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                              />
+                            </svg>
+                            Notify Eligible Donors
+                          </button>
+                        )}
+
+                        {dispatchState.status === 'dispatching' && (
+                          <button
+                            type="button"
+                            disabled
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-400 text-white font-medium text-xs sm:text-sm cursor-not-allowed opacity-80"
+                          >
+                            <svg
+                              className="w-4 h-4 animate-spin text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Sending Notifications...
+                          </button>
+                        )}
+
+                        {dispatchState.status === 'success' && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
+                            <svg
+                              className="w-4 h-4 text-emerald-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="2.5"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
+                            </svg>
+                            In-App Notifications Sent
+                          </div>
+                        )}
+
+                        {dispatchState.status === 'already_notified' && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200 text-xs font-semibold">
+                            <svg
+                              className="w-4 h-4 text-neutral-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="2"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
+                            </svg>
+                            Already Notified
+                          </div>
+                        )}
+
+                        {dispatchState.status === 'zero_notifications' && (
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">
+                            0 Notifications Dispatched
+                          </div>
+                        )}
+
+                        {dispatchState.status === 'error' && (
+                          <button
+                            type="button"
+                            onClick={handleDispatch}
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs transition-all shadow-xs cursor-pointer"
+                          >
+                            Retry Dispatch
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Aggregate Outcome Display */}
+                    {dispatchState.status === 'success' && (
+                      <div className="mt-4 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-900 leading-relaxed">
+                        <div className="font-bold mb-1 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                          {dispatchState.count} eligible donor{dispatchState.count === 1 ? '' : 's'} notified
+                        </div>
+                        <p className="text-emerald-800/90">
+                          In-app notifications sent. Candidate donors have been alerted within their private inboxes. Contact details remain confidential until a donor explicitly accepts the request in the subsequent step.
+                        </p>
+                      </div>
+                    )}
+
+                    {dispatchState.status === 'zero_notifications' && (
+                      <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 leading-relaxed">
+                        <div className="font-bold mb-1">Notice: Zero notifications dispatched</div>
+                        <p className="text-amber-800/90">{dispatchState.message}</p>
+                      </div>
+                    )}
+
+                    {dispatchState.status === 'already_notified' && (
+                      <div className="mt-4 p-4 rounded-2xl bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 leading-relaxed">
+                        <div className="font-bold mb-1">Request Already Notified</div>
+                        <p className="text-neutral-600">{dispatchState.message}</p>
+                      </div>
+                    )}
+
+                    {dispatchState.status === 'error' && (
+                      <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 leading-relaxed">
+                        <div className="font-bold mb-1">Dispatch Error</div>
+                        <p className="text-rose-700">{dispatchState.message}</p>
+                      </div>
+                    )}
+
+                    {dispatchState.status === 'idle' && (
+                      <div className="mt-3 text-xs text-neutral-400 flex items-center gap-1.5">
+                        <svg
+                          className="w-3.5 h-3.5 text-neutral-400 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                          />
+                        </svg>
+                        <span>
+                          In-app notification only. No SMS or WhatsApp messages are sent. Donor identities remain masked.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

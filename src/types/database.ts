@@ -223,6 +223,16 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      claim_match_and_create_notification: {
+        Args: {
+          p_match_id: string;
+          p_donor_id: string;
+          p_request_id: string;
+          p_payload: Record<string, unknown>;
+        };
+        Returns: string | null;
+      };
+    };
   };
 }
