@@ -3,6 +3,7 @@
 import React, { useSyncExternalStore, useMemo } from 'react';
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { Card } from '@/components/ui/Card';
 import type { DonorProfile } from '@/types';
 
 function subscribe(cb: () => void) {
@@ -23,10 +24,13 @@ function maskPhone(phone: string): string {
   return `••••••${visible}`;
 }
 
-const AVAILABILITY_LABELS: Record<DonorProfile['availability'], { label: string; color: string; dot: string }> = {
-  available: { label: 'Available', color: 'text-emerald-700', dot: 'bg-emerald-500' },
-  temporarily_unavailable: { label: 'Temporarily Unavailable', color: 'text-amber-700', dot: 'bg-amber-500' },
-  paused: { label: 'Paused', color: 'text-neutral-600', dot: 'bg-neutral-400' },
+const AVAILABILITY_LABELS: Record<
+  DonorProfile['availability'],
+  { label: string; color: string; dot: string }
+> = {
+  available: { label: 'Available', color: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800', dot: 'bg-emerald-500' },
+  temporarily_unavailable: { label: 'Temporarily Unavailable', color: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800', dot: 'bg-amber-500' },
+  paused: { label: 'Paused', color: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700', dot: 'bg-neutral-400' },
 };
 
 export default function DonorProfilePage() {
@@ -46,84 +50,136 @@ export default function DonorProfilePage() {
     try {
       const d = new Date(dateStr + 'T00:00:00');
       if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     } catch {
       return dateStr;
     }
   };
+
+  const lastDonationDate = profile?.lastDonationDate;
+
+  // Safe evaluation of 120-day interval
+  const intervalStatus = useMemo(() => {
+    if (!lastDonationDate) {
+      return {
+        known: false,
+        satisfied: false,
+        message: 'Donation history unknown — excluded from preliminary matching under current application policy.',
+      };
+    }
+
+    try {
+      const lastDate = new Date(lastDonationDate + 'T00:00:00');
+      const now = new Date();
+      const diffMs = now.getTime() - lastDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays >= 120) {
+        return {
+          known: true,
+          satisfied: true,
+          diffDays,
+          message: `120-day matching interval satisfied (${diffDays} days since last donation).`,
+        };
+      } else {
+        return {
+          known: true,
+          satisfied: false,
+          diffDays,
+          message: `Preliminary matching interval not yet satisfied (${diffDays} of 120 days).`,
+        };
+      }
+    } catch {
+      return {
+        known: false,
+        satisfied: false,
+        message: 'Unable to calculate donation interval.',
+      };
+    }
+  }, [lastDonationDate]);
 
   return (
     <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
       {/* Global App Header with Volunteer Donor Context */}
       <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
         {!profile ? (
           /* Empty State */
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-10 sm:p-14 text-center shadow-xs">
-            <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+          <Card variant="default" className="p-10 sm:p-14 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4 text-neutral-400">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 mb-2">No Donor Profile Found</h2>
-            <p className="text-sm text-neutral-500 max-w-sm mx-auto mb-7">
-              Register as a donor to create your profile and be considered for future district blood requests.
+            <h1 className="text-xl font-bold text-neutral-950 dark:text-white mb-2">No Donor Profile Found</h1>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-6 leading-relaxed">
+              Register as a volunteer donor to create your profile and be considered for future district blood requests.
             </p>
             <Link
               href="/donors/register"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm transition-all shadow-xs"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-xs"
             >
               Register as Donor
             </Link>
-          </div>
+          </Card>
         ) : (
-          <div className="space-y-5">
-            {/* Profile Hero */}
-            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xs relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-400" />
+          <div className="space-y-6">
+            {/* Header / Intro */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                  Volunteer Donor Workspace • Profile Card
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
+                Volunteer Donor Profile
+              </h1>
+              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                Your volunteer identity is used for preliminary district matching. Contact details remain confidential.
+              </p>
+            </div>
 
+            {/* Profile Hero Card */}
+            <Card variant="default" className="p-6 sm:p-8 shadow-xs relative overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                {/* Avatar */}
-                <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200/60 flex items-center justify-center shrink-0">
-                  <span className="text-2xl font-black text-rose-600">
-                    {profile.fullName.charAt(0).toUpperCase()}
+                {/* Blood Group Avatar — Strongest Identifier */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/60 flex flex-col items-center justify-center shrink-0 shadow-2xs">
+                  <span className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-500">
+                    {profile.bloodGroup}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-rose-700 dark:text-rose-400 -mt-1">
+                    Blood
                   </span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h1 className="text-xl font-bold tracking-tight text-neutral-950 truncate">
+                    <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white truncate">
                       {profile.fullName}
-                    </h1>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/70">
-                      {profile.bloodGroup}
-                    </span>
+                    </h2>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500">
-                    <span>{profile.districtName || profile.districtId}</span>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                      {profile.districtName || profile.districtId}
+                    </span>
                     {profile.approximateArea && (
                       <>
-                        <span>·</span>
+                        <span>•</span>
                         <span>{profile.approximateArea}</span>
                       </>
                     )}
                   </div>
                 </div>
 
-                {/* Availability badge */}
+                {/* Availability Badge */}
                 {(() => {
                   const avail = AVAILABILITY_LABELS[profile.availability];
                   return (
-                    <div className="shrink-0">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
-                        profile.availability === 'available'
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                          : profile.availability === 'temporarily_unavailable'
-                          ? 'bg-amber-50 border-amber-200 text-amber-700'
-                          : 'bg-neutral-100 border-neutral-200 text-neutral-600'
-                      }`}>
+                    <div className="shrink-0 self-start sm:self-center">
+                      <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border ${avail.color}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${avail.dot}`} />
                         {avail.label}
                       </span>
@@ -131,110 +187,154 @@ export default function DonorProfilePage() {
                   );
                 })()}
               </div>
-            </div>
+            </Card>
 
-            {/* Contact Privacy Card */}
-            <div className="rounded-2xl bg-blue-50/60 border border-blue-200/80 p-4 sm:p-5 flex items-start gap-3.5">
-              <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                <svg className="w-4 h-4 text-blue-700" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-blue-900 mb-0.5">Contact details protected</p>
-                <p className="text-xs text-blue-800/80 leading-relaxed">
-                  Your full phone number is not revealed to blood requesters during matching. Contact information
-                  is only unlocked if you accept an urgent request and the requester explicitly performs an authorized contact reveal.
-                  Final donor eligibility is determined by qualified blood-centre or clinical personnel.
-                </p>
-              </div>
-            </div>
-
-            {/* Profile Details Card */}
-            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
-              <h2 className="text-sm font-semibold text-neutral-900 mb-5 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-rose-600" />
-                Profile Details
-              </h2>
+            {/* Profile Attributes & 120-Day Policy Card */}
+            <Card variant="default" className="p-6 sm:p-7 shadow-xs">
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-5 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                Coordination &amp; Recovery Attributes
+              </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Blood Group</span>
-                  <span className="text-xl font-black text-rose-600">{profile.bloodGroup}</span>
+                  <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">
+                    Blood Group
+                  </span>
+                  <span className="text-xl font-black text-rose-600 dark:text-rose-500">
+                    {profile.bloodGroup}
+                  </span>
                 </div>
 
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">District</span>
-                  <span className="text-sm font-semibold text-neutral-800">{profile.districtName || profile.districtId}</span>
+                  <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">
+                    District Locality
+                  </span>
+                  <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
+                    {profile.districtName || profile.districtId}
+                  </span>
                 </div>
 
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Approximate Area</span>
-                  <span className="text-sm font-semibold text-neutral-800">{profile.approximateArea}</span>
-                </div>
-
-                <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Last Donation Date</span>
-                  <span className="text-sm font-semibold text-neutral-800">
+                  <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">
+                    Last Recorded Donation
+                  </span>
+                  <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                     {formatDate(profile.lastDonationDate)}
                   </span>
                 </div>
 
-                {/* Masked phone */}
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Phone Number</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-mono font-semibold text-neutral-800 tracking-widest">
-                      {maskPhone(profile.phoneNumber)}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-xs text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded-md">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                      </svg>
-                      Private
-                    </span>
+                  <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">
+                    In-App Notifications
+                  </span>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border inline-block ${
+                    profile.notificationPreference === 'enabled'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+                  }`}>
+                    {profile.notificationPreference === 'enabled' ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+
+                {/* 120-Day Policy Evaluation */}
+                <div className="sm:col-span-2 pt-3 border-t border-neutral-100 dark:border-neutral-800/80">
+                  <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1.5">
+                    120-Day Application Recovery Interval
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    {intervalStatus.known ? (
+                      intervalStatus.satisfied ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          120-day matching interval satisfied
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          Preliminary matching interval not yet satisfied
+                        </span>
+                      )
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+                        Donation history unknown
+                      </span>
+                    )}
                   </div>
-                </div>
-
-                <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Notifications</span>
-                  <span className={`text-sm font-semibold ${profile.notificationPreference === 'enabled' ? 'text-emerald-700' : 'text-neutral-500'}`}>
-                    {profile.notificationPreference === 'enabled' ? '🔔 Enabled' : '🔕 Disabled'}
-                  </span>
-                </div>
-
-                <div className="sm:col-span-2 pt-3 border-t border-neutral-100 mt-1">
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">Registered</span>
-                  <span className="text-xs text-neutral-500">
-                    {new Date(profile.createdAt).toLocaleString('en-IN', {
-                      day: 'numeric', month: 'long', year: 'numeric',
-                      hour: 'numeric', minute: '2-digit', hour12: true,
-                    })}
-                  </span>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    {intervalStatus.message} This is preliminary application matching logic only; final medical qualification is confirmed by clinical personnel at the blood center.
+                  </p>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            {/* Actions */}
+            {/* Privacy Protection Card */}
+            <Card variant="default" className="p-6 sm:p-7 shadow-xs">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 border border-neutral-200/80 dark:border-neutral-700">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.75" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                  </svg>
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Structured Contact Protection
+                    </h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs font-mono font-semibold text-neutral-800 dark:text-neutral-200 tracking-widest">
+                        {maskPhone(profile.phoneNumber)}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
+                        Masked
+                      </span>
+                    </div>
+                  </div>
+
+                  <ul className="text-xs text-neutral-600 dark:text-neutral-400 space-y-1 pt-1">
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-neutral-400" />
+                      Contact details stay hidden during preliminary candidate discovery.
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-neutral-400" />
+                      Contact details stay hidden when match notifications are dispatched.
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-neutral-400" />
+                      Contact remains protected immediately after you accept a request.
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-neutral-400" />
+                      The requester must explicitly authorize contact reveal for final coordination.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </Card>
+
+            {/* Navigation Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
                 href="/donors/notifications"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm shadow-xs text-center transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-xs text-center transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
                 </svg>
-                View Notifications
+                <span>Donor Notifications Inbox</span>
               </Link>
               <Link
                 href="/donors/register"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-sm border border-neutral-200/90 shadow-xs hover:shadow-sm text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-sm text-center transition-all cursor-pointer"
               >
                 Update Profile
               </Link>
               <Link
                 href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm shadow-xs text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all cursor-pointer"
               >
                 Return to Home
               </Link>

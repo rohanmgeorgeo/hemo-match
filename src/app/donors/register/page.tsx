@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
+import { Card } from '@/components/ui/Card';
 import { type DonorProfile, DEMO_DISTRICTS } from '@/types';
 import {
   VALID_BLOOD_GROUPS,
@@ -150,44 +151,47 @@ export default function DonorRegisterPage() {
       {/* Global App Header with Volunteer Donor Context */}
       <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
 
-      {/* Main */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
-        {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white mb-2">
-            Register as a Donor
+      {/* Main Container */}
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Title & Introduction */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              Volunteer Donor Workspace • Onboarding
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
+            Register as Volunteer Donor
           </h1>
-          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            Create your donor profile so that future blood requests in your district can
-            identify potentially matching donors. Your contact details remain private
-            throughout the matching process.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-2xl leading-relaxed">
+            Register your blood group and district to receive targeted in-app alerts when urgent needs arise.
+            Your contact details remain confidential until you choose to accept.
           </p>
         </div>
 
         {/* Privacy Banner */}
-        <EmergencyBanner tone="privacy" title="Your Privacy is Protected" className="mb-8">
-          <ul className="space-y-0.5 list-disc list-inside">
-            <li>Exact home addresses are not collected.</li>
-            <li>Your contact details stay private during matching and are only revealed after donor acceptance and explicit requester authorization.</li>
-            <li>Hemo Match does not determine final medical eligibility.</li>
-          </ul>
+        <EmergencyBanner tone="privacy" title="Your Contact Details are Protected" className="mb-8">
+          Your contact details stay private during matching and notifications. They can only be revealed
+          after you accept a request and the requester explicitly authorizes contact reveal.
+          Hemo Match supports preliminary matching only; final medical qualification is conducted by qualified blood-centre personnel.
         </EmergencyBanner>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          {/* Card 1: Identity */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-7 shadow-xs">
-            <h2 className="text-base font-semibold text-neutral-900 mb-5 pb-2 border-b border-neutral-100 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              Donor Identity
+          {/* Card 1: Donor Identity */}
+          <Card variant="default" className="p-5 sm:p-7">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              1. Donor Identity
             </h2>
 
             {/* Full Name */}
             <div className="mb-5" id="fullName">
               <label
                 htmlFor="fullNameInput"
-                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2"
               >
-                Full Name <span className="text-rose-600">*</span>
+                Full Name <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <input
                 id="fullNameInput"
@@ -196,24 +200,58 @@ export default function DonorRegisterPage() {
                 value={formData.fullName ?? ''}
                 onChange={(e) => updateField('fullName', e.target.value)}
                 placeholder="Your full name"
-                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 border transition-all focus:outline-none focus:ring-2 ${
+                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 ${
                   errors.fullName
-                    ? 'border-rose-500 focus:ring-rose-500/20'
-                    : 'border-neutral-200 focus:ring-rose-500/20 focus:border-rose-600'
+                    ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                    : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
                 }`}
               />
-              <p className="mt-1.5 text-xs text-neutral-500">
-                Your name is part of your private donor record and is not displayed publicly.
+              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                Stored as part of your private record. Only revealed after you accept and requester authorizes.
               </p>
               {errors.fullName && (
-                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{errors.fullName}</p>
+                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.fullName}</p>
+              )}
+            </div>
+
+            {/* Phone Number */}
+            <div className="mb-5" id="phoneNumber">
+              <label
+                htmlFor="phoneNumberInput"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2"
+              >
+                Phone Number <span className="text-rose-600 dark:text-rose-400">*</span>
+              </label>
+              <div className="relative max-w-sm">
+                <input
+                  id="phoneNumberInput"
+                  type="tel"
+                  autoComplete="tel"
+                  value={formData.phoneNumber ?? ''}
+                  onChange={(e) => updateField('phoneNumber', e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 ${
+                    errors.phoneNumber
+                      ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                      : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
+                  }`}
+                />
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 text-xs text-neutral-600 dark:text-neutral-300 border border-neutral-200/70 dark:border-neutral-700">
+                <svg className="w-3 h-3 text-neutral-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                <span>Hidden until authorized contact-reveal stage</span>
+              </div>
+              {errors.phoneNumber && (
+                <p role="alert" className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.phoneNumber}</p>
               )}
             </div>
 
             {/* Blood Group */}
             <div id="bloodGroup">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2">
-                Blood Group <span className="text-rose-600">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2">
+                Blood Group <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <div role="radiogroup" aria-label="Blood Group" className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {VALID_BLOOD_GROUPS.map((bg) => {
@@ -225,10 +263,10 @@ export default function DonorRegisterPage() {
                       role="radio"
                       aria-checked={isSelected}
                       onClick={() => updateField('bloodGroup', bg)}
-                      className={`h-12 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center justify-center cursor-pointer border ${
+                      className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center cursor-pointer border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${
                         isSelected
-                          ? 'bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-600/30'
-                          : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-800 border-neutral-200/90'
+                          ? 'bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-500/30 dark:ring-rose-500/50'
+                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 border-neutral-200/90 dark:border-neutral-700'
                       }`}
                     >
                       {bg}
@@ -237,34 +275,34 @@ export default function DonorRegisterPage() {
                 })}
               </div>
               {errors.bloodGroup && (
-                <p role="alert" className="mt-2 text-xs font-medium text-rose-600">{errors.bloodGroup}</p>
+                <p role="alert" className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.bloodGroup}</p>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Card 2: Location */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-7 shadow-xs">
-            <h2 className="text-base font-semibold text-neutral-900 mb-5 pb-2 border-b border-neutral-100 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              District &amp; Location
+          <Card variant="default" className="p-5 sm:p-7">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              2. District &amp; Location
             </h2>
 
             {/* District */}
             <div className="mb-5" id="districtId">
               <label
                 htmlFor="districtSelect"
-                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2"
               >
-                District <span className="text-rose-600">*</span>
+                District <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <select
                 id="districtSelect"
                 value={formData.districtId ?? ''}
                 onChange={(e) => updateField('districtId', e.target.value)}
-                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
+                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
                   errors.districtId
-                    ? 'border-rose-500 focus:ring-rose-500/20'
-                    : 'border-neutral-200 focus:ring-rose-500/20 focus:border-rose-600'
+                    ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                    : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
                 }`}
               >
                 <option value="">Select your district...</option>
@@ -275,7 +313,7 @@ export default function DonorRegisterPage() {
                 ))}
               </select>
               {errors.districtId && (
-                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{errors.districtId}</p>
+                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.districtId}</p>
               )}
             </div>
 
@@ -283,9 +321,9 @@ export default function DonorRegisterPage() {
             <div id="approximateArea">
               <label
                 htmlFor="approximateAreaInput"
-                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2"
               >
-                Approximate Area / Locality <span className="text-rose-600">*</span>
+                Approximate Area / Locality <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <input
                 id="approximateAreaInput"
@@ -293,135 +331,101 @@ export default function DonorRegisterPage() {
                 value={formData.approximateArea ?? ''}
                 onChange={(e) => updateField('approximateArea', e.target.value)}
                 placeholder="e.g., Kaloor North, MG Road Sector, Town East"
-                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 border transition-all focus:outline-none focus:ring-2 ${
+                className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 ${
                   errors.approximateArea
-                    ? 'border-rose-500 focus:ring-rose-500/20'
-                    : 'border-neutral-200 focus:ring-rose-500/20 focus:border-rose-600'
+                    ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                    : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
                 }`}
               />
-              <p className="mt-1.5 text-xs text-neutral-500">
-                Enter a neighbourhood or area only. Do <strong>not</strong> enter your exact home address.
+              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                Enter a neighbourhood or area only. Do <strong>not</strong> enter your private home address.
               </p>
               {errors.approximateArea && (
-                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{errors.approximateArea}</p>
+                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.approximateArea}</p>
               )}
             </div>
-          </div>
+          </Card>
 
-          {/* Card 3: Private Contact */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-7 shadow-xs">
-            <h2 className="text-base font-semibold text-neutral-900 mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              Contact Information
-            </h2>
-            <p className="text-xs text-neutral-500 mb-5 leading-relaxed">
-              Your phone number is required so that future accepted-request coordination can proceed.
-              It remains <strong className="text-neutral-700">fully private</strong> — it is never shown to blood requesters
-              during the matching stage. It will only become available through the explicit contact-reveal workflow.
-            </p>
-
-            {/* Phone Number */}
-            <div id="phoneNumber">
-              <label
-                htmlFor="phoneNumberInput"
-                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2"
-              >
-                Phone Number <span className="text-rose-600">*</span>
-              </label>
-              <div className="relative max-w-sm">
-                <input
-                  id="phoneNumberInput"
-                  type="tel"
-                  autoComplete="tel"
-                  value={formData.phoneNumber ?? ''}
-                  onChange={(e) => updateField('phoneNumber', e.target.value)}
-                  placeholder="+91 98765 43210"
-                  className={`w-full h-11 px-3.5 rounded-xl text-sm bg-neutral-50 border transition-all focus:outline-none focus:ring-2 ${
-                    errors.phoneNumber
-                      ? 'border-rose-500 focus:ring-rose-500/20'
-                      : 'border-neutral-200 focus:ring-rose-500/20 focus:border-rose-600'
-                  }`}
-                />
-              </div>
-              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 text-xs text-neutral-600">
-                <svg className="w-3 h-3 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                </svg>
-                Hidden until contact-reveal stage
-              </div>
-              {errors.phoneNumber && (
-                <p role="alert" className="mt-2 text-xs font-medium text-rose-600">{errors.phoneNumber}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Card 4: Donation History & Availability */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-7 shadow-xs">
-            <h2 className="text-base font-semibold text-neutral-900 mb-5 pb-2 border-b border-neutral-100 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              Donation History &amp; Availability
+          {/* Card 3: Donation History */}
+          <Card variant="default" className="p-5 sm:p-7">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              3. Donation History &amp; Recovery Interval
             </h2>
 
             {/* Last Donation Date */}
-            <div className="mb-6" id="lastDonationDate">
+            <div id="lastDonationDate">
               <label
                 htmlFor="lastDonationDateInput"
-                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2"
+                className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2"
               >
-                Last Donation Date <span className="text-neutral-400 font-normal">(Optional)</span>
+                Last Donation Date <span className="text-neutral-400 dark:text-neutral-500 font-normal">(Optional)</span>
               </label>
               <input
                 id="lastDonationDateInput"
                 type="date"
                 value={formData.lastDonationDate ?? ''}
                 onChange={(e) => updateField('lastDonationDate', e.target.value)}
-                className={`w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
+                className={`w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
                   errors.lastDonationDate
-                    ? 'border-rose-500 focus:ring-rose-500/20'
-                    : 'border-neutral-200 focus:ring-rose-500/20 focus:border-rose-600'
+                    ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                    : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
                 }`}
               />
-              <p className="mt-1.5 text-xs text-neutral-500">
-                Providing this helps the matching stage evaluate donation eligibility during the matching process.
-              </p>
+              <div className="mt-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200/70 dark:border-neutral-750 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed space-y-1">
+                <p>
+                  <strong>Application Policy Notice:</strong> For this hackathon matching policy, donors with a known last donation date must have at least 120 calendar days of recovery time.
+                </p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  This is preliminary matching logic, not final medical eligibility. Leaving this blank indicates unknown donation history, which is excluded from matching under this policy.
+                </p>
+              </div>
               {errors.lastDonationDate && (
-                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{errors.lastDonationDate}</p>
+                <p role="alert" className="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.lastDonationDate}</p>
               )}
             </div>
+          </Card>
+
+          {/* Card 4: Participation & Consent */}
+          <Card variant="default" className="p-5 sm:p-7">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              4. Participation &amp; Notification Settings
+            </h2>
 
             {/* Availability */}
-            <div id="availability">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2">
-                Current Availability <span className="text-rose-600">*</span>
+            <div className="mb-6" id="availability">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2">
+                Current Availability <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
               <div role="radiogroup" aria-label="Availability" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   {
                     value: 'available' as const,
                     label: 'Available',
-                    desc: 'Ready to respond to matching requests',
+                    desc: 'Ready to receive matching requests',
                     color: 'emerald',
                   },
                   {
                     value: 'temporarily_unavailable' as const,
                     label: 'Temporarily Unavailable',
-                    desc: 'Unavailable at the moment, may become available',
+                    desc: 'Temporarily unable to donate',
                     color: 'amber',
                   },
                   {
                     value: 'paused' as const,
                     label: 'Paused',
-                    desc: 'Profile inactive, will not receive match alerts',
+                    desc: 'Profile paused from alerts',
                     color: 'neutral',
                   },
                 ].map(({ value, label, desc, color }) => {
                   const isSelected = formData.availability === value;
                   const selectedClasses =
                     color === 'emerald'
-                      ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20'
+                      ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-500 dark:border-emerald-600 ring-2 ring-emerald-500/20'
                       : color === 'amber'
-                      ? 'bg-amber-50/80 border-amber-500 ring-2 ring-amber-500/20'
-                      : 'bg-neutral-100 border-neutral-400 ring-2 ring-neutral-400/20';
+                      ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-500 dark:border-amber-600 ring-2 ring-amber-500/20'
+                      : 'bg-neutral-100 dark:bg-neutral-750 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20';
                   const dotColor =
                     color === 'emerald'
                       ? 'bg-emerald-500'
@@ -430,10 +434,10 @@ export default function DonorRegisterPage() {
                       : 'bg-neutral-400';
                   const labelColor =
                     color === 'emerald'
-                      ? 'text-emerald-800'
+                      ? 'text-emerald-800 dark:text-emerald-300'
                       : color === 'amber'
-                      ? 'text-amber-800'
-                      : 'text-neutral-800';
+                      ? 'text-amber-800 dark:text-amber-300'
+                      : 'text-neutral-800 dark:text-neutral-200';
                   return (
                     <button
                       key={value}
@@ -441,45 +445,37 @@ export default function DonorRegisterPage() {
                       role="radio"
                       aria-checked={isSelected}
                       onClick={() => updateField('availability', value)}
-                      className={`p-4 rounded-2xl text-left border transition-all cursor-pointer ${
-                        isSelected ? selectedClasses : 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200/90'
+                      className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
+                        isSelected ? selectedClasses : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 border-neutral-200/90 dark:border-neutral-700'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-                        <span className={`text-sm font-semibold ${labelColor}`}>{label}</span>
+                        <span className={`text-sm font-bold ${labelColor}`}>{label}</span>
                       </div>
-                      <p className="text-xs text-neutral-500 leading-relaxed">{desc}</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">{desc}</p>
                     </button>
                   );
                 })}
               </div>
               {errors.availability && (
-                <p role="alert" className="mt-2 text-xs font-medium text-rose-600">{errors.availability}</p>
+                <p role="alert" className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.availability}</p>
               )}
             </div>
-          </div>
-
-          {/* Card 5: Notifications & Consent */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-7 shadow-xs">
-            <h2 className="text-base font-semibold text-neutral-900 mb-5 pb-2 border-b border-neutral-100 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              Notifications &amp; Consent
-            </h2>
 
             {/* Notification Preference */}
             <div className="mb-6" id="notificationPreference">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-2">
-                Matching Notifications <span className="text-rose-600">*</span>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 mb-2">
+                In-App Match Notifications <span className="text-rose-600 dark:text-rose-400">*</span>
               </label>
-              <p className="text-xs text-neutral-500 mb-3">
-                Controls whether you can receive in-app alerts when a compatible blood request arises nearby.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                When enabled, Hemo Match may send relevant in-app blood requests to your donor inbox.
               </p>
-              <div role="radiogroup" aria-label="Notification Preference" className="flex gap-3">
+              <div role="radiogroup" aria-label="Notification Preference" className="flex gap-3 max-w-xs">
                 {[
-                  { value: 'enabled' as const, label: 'Enabled', icon: '🔔' },
-                  { value: 'disabled' as const, label: 'Disabled', icon: '🔕' },
-                ].map(({ value, label, icon }) => {
+                  { value: 'enabled' as const, label: 'Enabled' },
+                  { value: 'disabled' as const, label: 'Disabled' },
+                ].map(({ value, label }) => {
                   const isSelected = formData.notificationPreference === value;
                   return (
                     <button
@@ -488,25 +484,31 @@ export default function DonorRegisterPage() {
                       role="radio"
                       aria-checked={isSelected}
                       onClick={() => updateField('notificationPreference', value)}
-                      className={`flex-1 sm:flex-none sm:w-40 py-3 px-4 rounded-xl text-sm font-medium border transition-all cursor-pointer flex items-center gap-2 justify-center ${
+                      className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                         isSelected
-                          ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
-                          : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-700 border-neutral-200/90'
+                          ? 'bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 border-neutral-950 dark:border-white shadow-xs'
+                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-700 dark:text-neutral-300 border-neutral-200/90 dark:border-neutral-700'
                       }`}
                     >
-                      <span>{icon}</span>
                       {label}
                     </button>
                   );
                 })}
               </div>
               {errors.notificationPreference && (
-                <p role="alert" className="mt-2 text-xs font-medium text-rose-600">{errors.notificationPreference}</p>
+                <p role="alert" className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.notificationPreference}</p>
               )}
             </div>
 
             {/* Consent */}
-            <div id="consentGiven" className={`p-4 rounded-2xl border ${errors.consentGiven ? 'border-rose-300 bg-rose-50/30' : 'border-neutral-200/80 bg-neutral-50/60'}`}>
+            <div
+              id="consentGiven"
+              className={`p-4 rounded-2xl border transition-colors ${
+                errors.consentGiven
+                  ? 'border-rose-300 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20'
+                  : 'border-neutral-200/80 dark:border-neutral-750 bg-neutral-50/70 dark:bg-neutral-800/60'
+              }`}
+            >
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -515,32 +517,33 @@ export default function DonorRegisterPage() {
                   onChange={(e) => updateField('consentGiven', e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-rose-600 shrink-0 cursor-pointer"
                 />
-                <span className="text-sm text-neutral-700 leading-relaxed">
-                  I agree that Hemo Match may use my donor profile information to identify potentially
-                  relevant blood requests. My contact details remain private until the appropriate
-                  contact-reveal stage. I understand that registering does not guarantee eligibility,
-                  donation, or matching.
+                <span className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
+                  I volunteer to receive district match notifications when compatible blood requests arise.
+                  I understand that my contact information remains strictly protected until I accept a request
+                  and the requester explicitly authorizes reveal, and that final donation qualification is confirmed
+                  at the hospital or blood centre.
                 </span>
               </label>
               {errors.consentGiven && (
-                <p role="alert" className="mt-2 text-xs font-medium text-rose-600">{errors.consentGiven}</p>
+                <p role="alert" className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{errors.consentGiven}</p>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Submit */}
           <div className="pt-2">
             {submitError && (
               <div
                 role="alert"
-                className="mb-4 p-4 rounded-2xl border border-rose-200 bg-rose-50/80 text-rose-800 text-sm flex items-start gap-3"
+                className="mb-4 p-4 rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/90 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-3"
               >
                 <svg
-                  className="w-5 h-5 text-rose-600 shrink-0 mt-0.5"
+                  className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth="2"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -549,8 +552,8 @@ export default function DonorRegisterPage() {
                   />
                 </svg>
                 <div>
-                  <p className="font-semibold text-rose-900">Registration Error</p>
-                  <p className="mt-0.5 text-xs text-rose-700 leading-relaxed">{submitError}</p>
+                  <p className="font-bold">Registration Error</p>
+                  <p className="mt-0.5 text-rose-700 dark:text-rose-400 leading-relaxed">{submitError}</p>
                 </div>
               </div>
             )}
@@ -559,11 +562,11 @@ export default function DonorRegisterPage() {
               type="submit"
               id="submit-donor-registration-btn"
               disabled={isSubmitting}
-              className="w-full py-4 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-semibold text-base transition-all duration-150 shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-3.5 px-4 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-sm transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                  <svg className="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                   </svg>
@@ -571,15 +574,15 @@ export default function DonorRegisterPage() {
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
                   </svg>
-                  <span>Register as Donor</span>
+                  <span>Complete Volunteer Registration</span>
                 </>
               )}
             </button>
-            <p className="text-center text-xs text-neutral-400 mt-3">
-              Your profile will be securely saved to the database and cached locally for this session.
+            <p className="text-center text-xs text-neutral-400 dark:text-neutral-500 mt-3">
+              Your profile will be securely saved to district coordination records.
             </p>
           </div>
         </form>
