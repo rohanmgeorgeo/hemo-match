@@ -117,9 +117,9 @@ export default function NewBloodRequestPage() {
           setErrors(result.errors);
         }
         const userMessage =
-          response.status === 503
+          response.status === 503 || result?.error === 'service_unavailable'
             ? 'Database service is temporarily unavailable. Please try again shortly.'
-            : result?.message && response.status === 400
+            : typeof result?.message === 'string' && response.status >= 400 && response.status < 500
             ? result.message
             : 'Unable to create blood request. Please verify your details and try again.';
         setSubmitError(userMessage);
@@ -215,9 +215,8 @@ export default function NewBloodRequestPage() {
             Request Blood
           </h1>
           <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
-            Create an urgent requirement to match with potentially eligible,
-            verified donors in your district. Your request will prioritize local
-            proximity while protecting donor contact privacy.
+            Create an urgent requirement to match with compatible volunteer
+            donors in your district while protecting donor contact privacy.
           </p>
         </div>
 

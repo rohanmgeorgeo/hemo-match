@@ -81,6 +81,7 @@ export type MatchUiState =
   | {
       status: 'error';
       message: string;
+      errorCode?: string;
     };
 
 /**
@@ -115,7 +116,57 @@ export function parseMatchApiResponse(
     }
   }
 
-  // Controlled safe error copy for all 4xx/5xx responses or malformed payloads
+  // Handle known safe structured API error responses
+  if (data && typeof data === 'object') {
+    const errData = data as { error?: unknown; message?: unknown };
+    const errCode = typeof errData.error === 'string' ? errData.error : undefined;
+
+    if (errCode === 'request_expired') {
+      return {
+        status: 'error',
+        errorCode: 'request_expired',
+        message:
+          'This blood request has expired. Create a new request with a future required-by time.',
+      };
+    }
+
+    if (errCode === 'request_inactive') {
+      return {
+        status: 'error',
+        errorCode: 'request_inactive',
+        message: 'This blood request is not currently active for matching.',
+      };
+    }
+
+    if (errCode === 'unsupported_component') {
+      return {
+        status: 'error',
+        errorCode: 'unsupported_component',
+        message:
+          typeof errData.message === 'string' && errData.message.trim().length > 0
+            ? errData.message
+            : 'This blood component is not supported for preliminary matching in the current version.',
+      };
+    }
+
+    if (statusCode === 404 || errCode === 'not_found' || errCode === 'request_not_found') {
+      return {
+        status: 'error',
+        errorCode: 'not_found',
+        message: 'Blood request not found.',
+      };
+    }
+
+    if (statusCode === 503 || errCode === 'service_unavailable' || errCode === 'unconfigured') {
+      return {
+        status: 'error',
+        errorCode: 'service_unavailable',
+        message: 'Database service is temporarily unavailable. Please try again shortly.',
+      };
+    }
+  }
+
+  // Controlled safe error copy for unhandled 4xx/5xx responses or malformed payloads
   return {
     status: 'error',
     message:

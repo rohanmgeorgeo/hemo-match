@@ -694,7 +694,7 @@ export default function DonorNotificationsPage() {
                   <ul className="list-disc pl-4 space-y-1 text-rose-900/90 text-[11px]">
                     <li>Accepting indicates you are willing to proceed with coordination.</li>
                     <li>This is NOT a determination of medical eligibility. Final donor qualification is performed by qualified clinical personnel.</li>
-                    <li>Your contact details remain strictly private at this stage. Authorized contact reveal occurs in the next step.</li>
+                    <li>Your contact details remain strictly private. Contact is only unlocked if the requester explicitly performs an authorized reveal.</li>
                   </ul>
                 </div>
 

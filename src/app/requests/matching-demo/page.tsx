@@ -525,21 +525,34 @@ export default function MatchingDemoPage() {
                 </div>
 
                 <h2 className="text-lg font-bold text-neutral-950 mb-2">
-                  Unable to find matches
+                  {matchState.errorCode === 'request_expired'
+                    ? 'Blood Request Expired'
+                    : 'Unable to find matches'}
                 </h2>
 
                 <p className="text-sm text-neutral-600 max-w-sm mx-auto leading-relaxed mb-6">
                   {matchState.message}
                 </p>
 
-                <button
-                  type="button"
-                  onClick={handleRetry}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs"
-                >
-                  Try Again
-                </button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {matchState.errorCode === 'request_expired' ? (
+                    <Link
+                      href="/requests/new"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs transition-all shadow-xs"
+                    >
+                      Create New Request
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleRetry}
+                      disabled={isLoading}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs cursor-pointer"
+                    >
+                      Try Again
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -650,7 +663,7 @@ export default function MatchingDemoPage() {
                         {candidate.factualMatchReasons && candidate.factualMatchReasons.length > 0 && (
                           <div className="pt-3">
                             <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-                              Verified Preliminary Criteria
+                              Preliminary Match Criteria
                             </div>
                             <ul className="space-y-1.5">
                               {candidate.factualMatchReasons.map((reason, rIdx) => (

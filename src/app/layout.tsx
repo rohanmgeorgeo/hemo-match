@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Hemo Match | District Blood Donor Matching',
   description:
-    'Rapid, privacy-preserving blood donor matching connecting patients, hospitals, and verified donors at the district level.',
+    'Rapid, privacy-preserving blood donor matching connecting patients, hospitals, and volunteer donors at the district level.',
   keywords: [
     'blood donation',
     'district donor matching',
