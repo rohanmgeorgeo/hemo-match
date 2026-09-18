@@ -1,21 +1,108 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #fafafa;
-  --foreground: #0f172a;
+  /* Hemo Match Light Theme Tokens */
+  --canvas: #F7F7F5;
+  --surface: #FFFFFF;
+  --surface-subtle: #F2F2F0;
+  --surface-elevated: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
+
+  --text-primary: #111111;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+
+  --accent: #D92D20;
+  --accent-subtle: #FEE4E2;
+  --accent-text: #991B1B;
+
+  --success: #16A34A;
+  --success-subtle: #DCFCE7;
+  --success-text: #166534;
+
+  --warning: #F59E0B;
+  --warning-subtle: #FEF3C7;
+  --warning-text: #92400E;
+
+  --info: #2563EB;
+  --info-subtle: #EFF6FF;
+  --info-text: #1E40AF;
+
+  --ring-focus: rgba(217, 45, 32, 0.35);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.dark {
+  /* Hemo Match Dark Theme Tokens */
+  --canvas: #0B0B0C;
+  --surface: #171717;
+  --surface-subtle: #202022;
+  --surface-elevated: #262626;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.20);
+
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+
+  --accent: #FF453A;
+  --accent-subtle: rgba(255, 69, 58, 0.14);
+  --accent-text: #FF8077;
+
+  --success: #30D158;
+  --success-subtle: rgba(48, 209, 88, 0.14);
+  --success-text: #68E084;
+
+  --warning: #FFD60A;
+  --warning-subtle: rgba(255, 214, 10, 0.14);
+  --warning-text: #FFE043;
+
+  --info: #64D2FF;
+  --info-subtle: rgba(100, 210, 255, 0.14);
+  --info-text: #82DCFF;
+
+  --ring-focus: rgba(255, 69, 58, 0.45);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border-token: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-accent-token: var(--accent);
   --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--canvas);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numerals utility for clinical figures, timers, and phone masking */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Respect user reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

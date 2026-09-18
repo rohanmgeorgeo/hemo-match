@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
 import { type BloodRequest, DEMO_DISTRICTS } from '@/types';
 import {
   VALID_BLOOD_GROUPS,
@@ -174,79 +175,30 @@ export default function NewBloodRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 selection:bg-rose-100 selection:text-rose-900 pb-20">
-      {/* Header */}
-      <header className="w-full border-b border-neutral-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-950 transition-colors py-2 pr-3 -ml-2 rounded-lg"
-          >
-            <svg
-              className="w-4 h-4 text-neutral-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
-            Back to Home
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              New Blood Request
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
+      {/* Global App Header with Requester Context */}
+      <AppHeader roleContext="requester" backHref="/" backLabel="Home" />
 
       {/* Main Container */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
         {/* Title & Introductory Context */}
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white mb-2">
             Request Blood
           </h1>
-          <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
             Create an urgent requirement to match with compatible volunteer
             donors in your district while protecting donor contact privacy.
           </p>
         </div>
 
         {/* Safety & Clinical Trust Banner */}
-        <div className="rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4 sm:p-5 mb-8 flex items-start gap-3.5 shadow-xs">
-          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 mt-0.5">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.002A11.959 11.959 0 0 1 12 2.964ZM12 15.75h.007v.008H12v-.008Z"
-              />
-            </svg>
-          </div>
-          <div className="text-xs sm:text-sm text-amber-900/90 leading-relaxed">
-            <strong className="font-semibold text-amber-950 block mb-1">
-              Safety &amp; Clinical Notice
-            </strong>
-            Hemo Match helps connect blood requests with potentially eligible
-            nearby donors. Final donor eligibility, blood compatibility, and
-            transfusion decisions must be confirmed by qualified blood-centre or
-            clinical personnel.
-          </div>
-        </div>
+        <EmergencyBanner tone="notice" title="Safety & Clinical Notice" className="mb-8">
+          Hemo Match helps connect blood requests with potentially eligible
+          nearby donors. Final donor eligibility, blood compatibility, and
+          transfusion decisions must be confirmed by qualified blood-centre or
+          clinical personnel.
+        </EmergencyBanner>
 
         {/* Request Form */}
         <form onSubmit={handleSubmit} noValidate className="space-y-6">

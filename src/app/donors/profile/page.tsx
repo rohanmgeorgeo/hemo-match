@@ -2,6 +2,7 @@
 
 import React, { useSyncExternalStore, useMemo } from 'react';
 import Link from 'next/link';
+import { AppHeader } from '@/components/ui/AppHeader';
 import type { DonorProfile } from '@/types';
 
 function subscribe(cb: () => void) {
@@ -52,38 +53,9 @@ export default function DonorProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 selection:bg-rose-100 selection:text-rose-900 pb-20">
-      {/* Header */}
-      <header className="w-full border-b border-neutral-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-950 transition-colors py-2 pr-3 -ml-2 rounded-lg"
-          >
-            <svg className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-            </svg>
-            Home
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/donors/notifications"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-              </svg>
-              Notifications
-            </Link>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-600" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Donor Profile
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
+      {/* Global App Header with Volunteer Donor Context */}
+      <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
         {!profile ? (
