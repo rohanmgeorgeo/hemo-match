@@ -35,9 +35,71 @@
 
 import { NextResponse } from 'next/server';
 import { findAndCreateMatches } from '@/lib/db/matches';
-import { validateMatchRequest, type MatchRequestInput } from '@/lib/validation/matches';
+import { validateMatchRequest, isValidUuid, type MatchRequestInput } from '@/lib/validation/matches';
+import { getRequestMatches } from '@/lib/db/reveal';
 
 export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const rawRequestId = searchParams.get('requestId');
+
+  if (!rawRequestId || !isValidUuid(rawRequestId.trim())) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'validation_error',
+        message: 'A valid requestId UUID query parameter is required.',
+      },
+      { status: 400 }
+    );
+  }
+
+  const requestId = rawRequestId.trim().toLowerCase();
+  const result = await getRequestMatches(requestId);
+
+  if (!result.success) {
+    if (result.error === 'unconfigured') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'service_unavailable',
+          message: 'Database service is temporarily unavailable.',
+        },
+        { status: 503 }
+      );
+    }
+    if (result.error === 'request_not_found') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'not_found',
+          message: 'Blood request not found.',
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'database_error',
+        message: 'An error occurred while fetching match records.',
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      success: true,
+      requestId: result.requestId,
+      requestStatus: result.requestStatus,
+      totalMatches: result.totalMatches,
+      matches: result.matches,
+    },
+    { status: 200 }
+  );
+}
 
 export async function POST(request: Request) {
   // ---------------------------------------------------------------------------

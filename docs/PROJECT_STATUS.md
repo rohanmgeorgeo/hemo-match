@@ -2,24 +2,24 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Branch:** `feature/donor-response`
-**Current Milestone:** Step 8: Donor Response (Accept / Decline) (COMPLETE)
+**Branch:** `feature/contact-reveal`
+**Current Milestone:** Step 9: Authorized Minimum Contact Reveal (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
 
 ## 1. Current Project State
 
-Eight milestones are complete. The application features a fully verified, privacy-safe, end-to-end Request → Match → Notify → Accept / Decline pipeline. Blood requests are persisted to PostgreSQL, matched via an authoritative server-only matching engine, and notified through an atomic database RPC with server-controlled revalidation and deterministic dispatch limits. Candidate donors receive in-app notifications in a private inbox without exposing phone numbers, names, or patient details, and can authoritatively record their Accept or Decline response with full database atomicity and strict revalidation.
+Nine milestones are complete. The application features a fully verified, privacy-safe, end-to-end Request → Match → Notify → Accept → Authorized Contact Reveal pipeline. Blood requests are persisted to PostgreSQL, matched via an authoritative server-only matching engine, and notified through an atomic database RPC with server-controlled revalidation and deterministic dispatch limits. Candidate donors receive in-app notifications in a private inbox without exposing phone numbers, names, or patient details, and can authoritatively record their Accept or Decline response with full database atomicity and strict revalidation. Once a donor accepts, the requester can explicitly initiate an authorized contact reveal, unlocking the minimum coordination contact details (name and phone) backed by database-enforced uniqueness, an atomic PostgreSQL authorization function, and zero PII audit logging.
 
 Active user-facing flows:
-1. **Request Blood & Match & Notify** — `/ → /requests/new → POST /api/requests → /requests/matching-demo → POST /api/requests/matches → POST /api/requests/notifications/dispatch`
+1. **Request Blood & Match & Notify & Reveal** — `/ → /requests/new → POST /api/requests → /requests/matching-demo → POST/GET /api/requests/matches → POST /api/requests/notifications/dispatch → POST /api/requests/contact-reveal`
 2. **Donor Registration & Inbox & Response** — `/ → /donors/register → POST /api/donors → /donors/profile → /donors/notifications → GET/PATCH /api/donors/notifications → POST /api/donors/responses`
 
 > [!NOTE]
-> All intake, matching, dispatch, inbox, and response operations persist to PostgreSQL via server-only Route Handlers.
+> All intake, matching, dispatch, inbox, response, and reveal operations persist to PostgreSQL via server-only Route Handlers.
 > `localStorage` is used solely as a temporary demo view cache to bridge demo identities (`hemo_match_active_request`, `hemo_match_demo_donor`).
-> Donor contact reveal (Step 9) belongs strictly to the subsequent milestone upon authorized mutual coordination.
+> Contact reveal is strictly gated behind verified donor acceptance and non-terminal request lifecycle states.
 
 ---
 
@@ -207,20 +207,64 @@ Landing Page (/)
 
 ---
 
+### Step 9: Authorized Minimum Contact Reveal Protocol (complete)
+
+#### What Was Implemented:
+1. **Atomic Contact Reveal Authorization RPC & Migration**:
+   - Migration `supabase/migrations/0005_contact_reveal_authorization.sql`.
+   - Unique constraint `contact_reveals_request_id_donor_id_key` on `public.contact_reveals(request_id, donor_id)`.
+   - PostgreSQL function `record_contact_reveal(p_request_id, p_match_id)`.
+   - Configured with `#variable_conflict use_column` to prevent plpgsql column-variable ambiguity.
+   - Strict authorization check: validates match status is `'accepted'`, request status is not `'cancelled'`, `'expired'`, or `'fulfilled'`, and donor response is `'accepted'`.
+   - Idempotent insertion using `ON CONFLICT ON CONSTRAINT contact_reveals_request_id_donor_id_key DO NOTHING`.
+   - `SECURITY INVOKER` with fixed `search_path = public, pg_temp`.
+   - Privilege lockdown: execution revoked from `PUBLIC`/`anon`/`authenticated`; granted exclusively to `service_role`.
+2. **Pure Pre-Reveal Authorization Logic (`src/lib/reveal/revalidation.ts`)**:
+   - Enforces the 4-point authorization policy: match accepted, donor response accepted, notification linkage valid, and request non-terminal.
+   - Rejects non-accepted, declined, candidate, cross-request, cancelled, expired, or fulfilled requests.
+   - Implements strict minimum projection filter: extracts only `name` (`donors.full_name`) and `phone` (`donors.phone_number`).
+3. **Server-Side Reveal Orchestrator & Route Handler**:
+   - Route handler `POST /api/requests/contact-reveal` (`src/app/api/requests/contact-reveal/route.ts`).
+   - Server-only DB orchestrator `requestContactReveal()` (`src/lib/db/reveal.ts`).
+   - Input validator `validateRevealRequest` (`src/lib/validation/reveal.ts`).
+   - Safe requester matches projection helper `getRequestMatches()` and route `GET /api/requests/matches`.
+   - Writes non-PII audit record (`contact_reveal.authorized`) with zero phone, name, or PII in metadata.
+   - Zero contact leaks through any other endpoint or pre-reveal projections.
+4. **Requester Matching UI Privacy Boundary (`src/app/requests/matching-demo/page.tsx`)**:
+   - Displays clear privacy boundary cards on candidate cards before reveal ("Phone hidden until donor accepts request").
+   - Added "Refresh Status" CTA allowing requesters to observe donor acceptance without re-running matching.
+   - Displays prominent "Reveal Contact" action button strictly for accepted donors.
+   - Revealed contact card displays unmasked full name and phone number with emergency coordination banner.
+   - Declined and notified non-accepted donors remain strictly contact-masked.
+5. **Controlled Live Verification**:
+   - Verified Flow 1: Pre-acceptance projection contains 0 phone numbers/names.
+   - Verified Flow 2: Requester observes match lifecycle (`accepted`, `declined`, `notified`) without PII leaks.
+   - Verified Flow 3: First reveal succeeds, returns minimum contact, persists 1 `contact_reveals` row, writes non-PII audit record.
+   - Verified Flow 4: Repeated reveal succeeds idempotently without duplicate row or audit spam.
+   - Verified Flow 5: Notified non-accepted donor rejected (`unauthorized_or_not_accepted`).
+   - Verified Flow 6: Declined donor rejected (`unauthorized_or_not_accepted`).
+   - Verified Flow 7: Cross-request attempt safely rejected (`unauthorized_or_not_accepted`).
+   - Verified Flow 8: Request status remains `notified` (not prematurely marked fulfilled).
+   - Confirmed 100% cleanup of test rows and exact baseline restoration.
+6. **Automated Test Suite**:
+   - 179 automated tests passing across 44 suites (26 new tests in `tests/reveal.test.ts`).
+
+---
+
 ## 4. Verification Results
 
 | Check | Result |
 | :--- | :--- |
-| `npm test` | ✅ 153 tests passing (0 failing, 38 suites) |
+| `npm test` | ✅ 179 tests passing (0 failing, 44 suites) |
 | `npm run typecheck` | ✅ 0 errors |
 | `npm run lint` | ✅ 0 errors, 0 warnings |
-| `npm run build` | ✅ All routes compiled (`/api/donors/responses` dynamic) |
+| `npm run build` | ✅ All routes compiled (`/api/requests/contact-reveal` dynamic) |
 | `git diff --check` | ✅ 0 formatting/whitespace issues |
-| Live Supabase Verification | ✅ Proved real Accept, Decline, stale rejection, idempotency, inbox derivation, zero contact reveals, and 100% cleanup |
+| Live Supabase Verification | ✅ Proved real Contact Reveal, idempotency, rejection of non-accepted/declined, non-PII audit logging, and 100% cleanup |
 | Service-Role Secret Isolation | ✅ Server-only; 0 client leaks |
 | Direct Supabase Queries in UI | ✅ 0 occurrences |
-| Sensitive Fields in Public UI/API | ✅ 0 occurrences (`phone_number`, `full_name`, `donor_id`, `match_id`, patient info) |
-| Contact Reveal Isolation | ✅ `contact_reveals` untouched; deferred strictly to Step 9 |
+| Sensitive Fields in Public UI/API | ✅ 0 occurrences (`phone_number`, `full_name`, `email`, coordinates, patient info) |
+| Minimum Contact Projection | ✅ Only `name` and `phone` released upon authorized reveal |
 | Unsafe TypeScript Bypasses | ✅ 0 occurrences (`as any`, `as never`, `@ts-ignore`, `@ts-expect-error`) |
 
 ---
@@ -232,22 +276,21 @@ Landing Page (/)
 
 1. **Demo Identity vs Production Authorization**:
    - User authentication is not yet integrated (Mock Auth stage).
-   - `donorId` in queries and bodies represents demo identification, NOT cryptographically verified authorization.
-   - Production will require Supabase Auth JWT / session verification to assert donor ownership.
-2. **Strict Contact Privacy Boundary**:
-   - Donor Accept records intent to donate only.
-   - Accept does NOT reveal donor phone numbers or requester contact details.
-   - Contact reveal is strictly isolated to Step 9 upon authorized mutual coordination.
-3. **Atomic Database Transitions**:
-   - Responses are committed via PostgreSQL RPC `record_donor_response()`, preventing partial state transitions or concurrent race conditions.
+   - `requestId` and `donorId` represent demo identification, NOT cryptographically verified authorization.
+   - Production will require Supabase Auth JWT / session verification to assert requester/donor ownership.
+2. **Strict Minimum Contact Reveal Boundary**:
+   - Contact reveal is strictly gated behind verified donor acceptance and non-terminal request lifecycle.
+   - Only `name` and `phone` are unmasked. No physical address, coordinates, email, or medical data are released.
+3. **Database-Enforced Atomicity & Idempotency**:
+   - Contact reveals are recorded via PostgreSQL RPC `record_contact_reveal()`, protected by `UNIQUE(request_id, donor_id)`.
+   - Re-revealing the same donor is completely idempotent and produces zero duplicate database rows or audit events.
 4. **Authoritative Server Revalidation**:
-   - Donor availability, consent, district, blood compatibility, and 120-day interval are revalidated on the server immediately before recording an acceptance.
+   - Revalidation and authorization checks execute on the server and in the database, never trusting client parameters.
 
 ---
 
-## 6. Next Milestone: Step 9 — Authorized Two-Way Contact Reveal Protocol
+## 6. Next Milestone: Post-Step-9 / Demo Polish & Delivery
 
-The next planned milestone is **Step 9: Authorized Two-Way Contact Reveal Protocol**:
-- Authorized release of minimum required contact coordinates (donor phone number and blood bank/requester contact).
-- Strict append-only audit trail in `public.contact_reveals`.
-- Two-way authorization protocol triggered by verified donor acceptance.
+With Step 9 complete, all nine core privacy milestones of Hemo Match are finished:
+- Request Intake → Match Engine → Requester Notify Action → Donor Inbox → Donor Response (Accept / Decline) → Authorized Contact Reveal.
+- Next steps: End-to-end user walkthrough, demo video/script polish, and preparation for final hackathon evaluation.

@@ -2,9 +2,9 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Branch:** `feature/donor-response`
-**Current Milestone:** Step 8 — Donor Response & Acceptance (COMPLETE)
-**Next Milestone:** Step 9 — Two-Way Contact Reveal Protocol (ACTIVE NEXT)
+**Current Branch:** `feature/contact-reveal`
+**Current Milestone:** Step 9 — Authorized Minimum Contact Reveal (COMPLETE)
+**Next Milestone:** Post-Step-9 / Demo Polish & Delivery
 
 ---
 
@@ -73,14 +73,18 @@
   - [x] **Step 8F**: Controlled live Supabase verification proving Accept, Decline, stale rejection, idempotency, and zero contact reveals
   - [x] **Step 8G**: 153 automated tests passing across 38 suites
 
+- [x] **Step 9: Authorized Minimum Contact Reveal Protocol (COMPLETE)**
+  - [x] **Step 9A**: Migration `0005_contact_reveal_authorization.sql` with unique constraint and atomic RPC `record_contact_reveal()`
+  - [x] **Step 9B**: Pure pre-reveal authorization logic (`src/lib/reveal/revalidation.ts`) and minimum projection policy
+  - [x] **Step 9C**: Server-only reveal orchestrator (`src/lib/db/reveal.ts`), safe status projection, and POST `/api/requests/contact-reveal`
+  - [x] **Step 9D**: Matching demo UI privacy boundary cards, status refresh CTA, and authorized "Reveal Contact" action
+  - [x] **Step 9E**: Controlled live Supabase verification proving authorized reveal, idempotency, rejections, non-PII audit logging, and 100% cleanup
+  - [x] **Step 9F**: 179 automated tests passing across 44 suites (26 new tests in `tests/reveal.test.ts`)
+
 ---
 
 ## Upcoming Milestones
 
-- [ ] **Step 9: Two-Way Contact Reveal Protocol**
-  - [ ] Requester reveal request after donor acceptance
-  - [ ] Unmask contact details only when both parties have consented
-  - [ ] Strict append-only audit trail in `contact_reveals` table
 - [ ] **Step 10: Real Authentication & Production Hardening**
   - [ ] Supabase Auth (SMS OTP / phone authentication)
   - [ ] Column-level encryption for `donors.phone_number` at rest
