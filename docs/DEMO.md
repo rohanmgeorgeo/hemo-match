@@ -2,12 +2,88 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Milestone:** Step 8 — Donor Response & Acceptance (COMPLETE)
+**Milestone:** Step 12 — Production Closure & Live Verification Guide (COMPLETE)
+**Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-18
 
 ---
 
-## 1. Verified Live Demonstration Flow (Request → Match → Notify → Accept)
+## 1. Production Smoke Test & Live Verification (https://hemomatch.vercel.app)
+
+The complete end-to-end flow is verified live on Vercel at **https://hemomatch.vercel.app**.
+
+### Demonstration Setup
+Use **two normal tabs side-by-side** in the same browser window:
+- **Tab 1**: Requester Device
+- **Tab 2**: Donor Device
+
+> [!IMPORTANT]
+> **Clinical Interval Demo Rule**:
+> When registering a donor, the **Last Donation Date** MUST be a **KNOWN date at least 120 calendar days before today** (e.g. `2024-01-15`).
+> Do **NOT** leave it blank or NULL. In Hemo Match, unrecorded/unknown donation history is conservatively excluded from matching (`EXCLUDE_DONATION_HISTORY_UNKNOWN`) to prioritize clinical donor safety.
+
+### Step-by-Step Live Execution:
+
+1. **Tab 2 (Donor Setup)**:
+   - Navigate to [`/donors/register`](https://hemomatch.vercel.app/donors/register).
+   - Enter Full Name: `Rahul Sharma`
+   - Blood Group: `A+`
+   - District: `Ernakulam`
+   - Approximate Area: `Edappally`
+   - Phone: `+91 98765 43210`
+   - **Last Donation Date**: `2024-01-15` (or any known date > 120 days ago).
+   - Check the **Consent** checkbox and submit.
+   - Profile renders at `/donors/profile` with masked phone (`••••••4321`).
+   - Click **Notifications** in the header to open `/donors/notifications`.
+
+2. **Tab 1 (Requester Intake & Match)**:
+   - Navigate to [`/requests/new`](https://hemomatch.vercel.app/requests/new).
+   - Blood Group: `A+`
+   - Component: `Whole Blood`
+   - Quantity: `1` Unit
+   - District: `Ernakulam`
+   - Hospital: `Lisie Hospital`
+   - Required By: Choose today or tomorrow with a future time (e.g. `18:00`).
+   - Urgency: `Urgent`.
+   - Click **Find Matching Donors**.
+   - Redirects to `/requests/matching-demo`.
+   - Server matching automatically evaluates candidates: `Rahul Sharma` renders as **Exact blood-group match (Homologous)** with phone masked (`••••••••••`).
+
+3. **Tab 1 (Notification Dispatch)**:
+   - Click **Notify Eligible Donors**.
+   - Dispatch executes atomically. A green confirmation banner provides step guidance:
+     *"Step 2: Switch to the Donor tab or open the Donor Inbox to view and accept this request."*
+
+4. **Tab 2 (Donor Inbox & Accept)**:
+   - In `/donors/notifications`, click **Refresh**.
+   - The urgent transfusion match card appears at the top.
+   - Click **Accept Request**. The confirmation modal explains coordination and confirms contact details remain private.
+   - Click **Confirm Acceptance**. The card updates in place to a green **Accepted** badge.
+
+5. **Tab 1 (Status Refresh & Privacy Boundary)**:
+   - Return to `/requests/matching-demo`.
+   - Click the elevated **Refresh Status** button.
+   - The candidate card transitions to **Donor Accepted Request** with a pulsing green indicator.
+   - **Privacy Check**: Phone remains completely hidden: `•••••••••• (Hidden) Contact Protected Until Reveal`.
+   - The high-contrast **Reveal Contact** button appears.
+
+6. **Tab 1 (Authorized Contact Reveal)**:
+   - Click **Reveal Contact**.
+   - Authorized reveal card unlocks in place displaying:
+     - Badge: `Authorized Reveal`
+     - Donor Name: `Rahul Sharma`
+     - Phone: `+91 98765 43210` (active clickable `tel:` link)
+     - Clinical disclaimer: *"Minimum coordination contact revealed. Final clinical qualification occurs at the blood center."*
+
+7. **Expired Request Verification**:
+   - To test expired-request handling: if a request has a required-by date/time in the past, `/requests/matching-demo` displays:
+     - Title: `Blood Request Expired`
+     - Message: `This blood request has expired. Create a new request with a future required-by time.`
+     - Action: `Create New Request` button linking directly to `/requests/new`.
+
+---
+
+## 2. Verified Demonstration Flow Architecture (Request → Match → Notify → Accept)
 
 The following sequence demonstrates the completed, privacy-safe **Request → Match → Notify → Accept / Decline** workflow:
 
@@ -160,7 +236,7 @@ HTTP 200 Response ({ success: true, contact: { name, phone } })
 
 ---
 
-## 2. Privacy & Security Guarantees Proven in Live Demo
+## 3. Privacy & Security Guarantees Proven in Live Demo
 
 - **Zero Donor PII Exposed Before Acceptance**: Donor names, raw UUIDs, phone numbers, email addresses, and coordinates are never sent across the network or displayed in matching results, notifications, or pre-reveal response projections.
 - **Anonymized Reference Format**: Requesters see only `Donor •••• [SUFFIX]` (derived from the last 4 characters of the donor UUID).
@@ -172,7 +248,7 @@ HTTP 200 Response ({ success: true, contact: { name, phone } })
 
 ---
 
-## 3. Controlled Live Verification Summary (Step 9 Live Audit)
+## 4. Controlled Live Verification Summary (Step 9 Live Audit)
 
 During Step 9 live verification against the configured Supabase database:
 1. Recorded exact database baseline (`donors: 1, blood_requests: 1, matches: 0, notifications: 0, donor_responses: 0, contact_reveals: 0, audit_logs: 0`).
@@ -191,7 +267,6 @@ During Step 9 live verification against the configured Supabase database:
 
 ---
 
-## 4. Next Milestone: Post-Step-9 / Demo Polish & Delivery
+## 5. Hackathon Demo Readiness Status
 
-With Step 9 complete, all nine core milestones of Hemo Match are finished.
-Next steps focus on presentation materials, end-to-end demo video capture, and hackathon submission assets.
+With Step 12 complete, Hemo Match is fully deployed to production on Vercel at **https://hemomatch.vercel.app**, live verified, and hardened for hackathon demonstration.

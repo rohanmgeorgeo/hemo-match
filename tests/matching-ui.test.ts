@@ -172,6 +172,61 @@ describe('Matching UI Helpers', () => {
       }
     });
 
+    it('maps request_expired error into actionable expiration message', () => {
+      const raw = {
+        success: false,
+        error: 'request_expired',
+        message: 'Blood request required-by time has passed.',
+      };
+
+      const parsed = parseMatchApiResponse(400, raw);
+      assert.strictEqual(parsed.status, 'error');
+      if (parsed.status === 'error') {
+        assert.strictEqual(parsed.errorCode, 'request_expired');
+        assert.strictEqual(
+          parsed.message,
+          'This blood request has expired. Create a new request with a future required-by time.'
+        );
+      }
+    });
+
+    it('maps request_inactive error code cleanly', () => {
+      const raw = {
+        success: false,
+        error: 'request_inactive',
+        message: 'Blood request is not currently active for matching.',
+      };
+
+      const parsed = parseMatchApiResponse(400, raw);
+      assert.strictEqual(parsed.status, 'error');
+      if (parsed.status === 'error') {
+        assert.strictEqual(parsed.errorCode, 'request_inactive');
+        assert.strictEqual(
+          parsed.message,
+          'This blood request is not currently active for matching.'
+        );
+      }
+    });
+
+    it('maps unsupported_component error code cleanly', () => {
+      const raw = {
+        success: false,
+        error: 'unsupported_component',
+        message:
+          'This blood component is not supported for preliminary matching in the current version.',
+      };
+
+      const parsed = parseMatchApiResponse(400, raw);
+      assert.strictEqual(parsed.status, 'error');
+      if (parsed.status === 'error') {
+        assert.strictEqual(parsed.errorCode, 'unsupported_component');
+        assert.strictEqual(
+          parsed.message,
+          'This blood component is not supported for preliminary matching in the current version.'
+        );
+      }
+    });
+
     it('maps 404 not found into safe user error state', () => {
       const raw = {
         success: false,
@@ -181,6 +236,28 @@ describe('Matching UI Helpers', () => {
 
       const parsed = parseMatchApiResponse(404, raw);
       assert.strictEqual(parsed.status, 'error');
+      if (parsed.status === 'error') {
+        assert.strictEqual(parsed.errorCode, 'not_found');
+        assert.strictEqual(parsed.message, 'Blood request not found.');
+      }
+    });
+
+    it('maps 503 service unavailable cleanly', () => {
+      const raw = {
+        success: false,
+        error: 'service_unavailable',
+        message: 'Database service is temporarily unavailable.',
+      };
+
+      const parsed = parseMatchApiResponse(503, raw);
+      assert.strictEqual(parsed.status, 'error');
+      if (parsed.status === 'error') {
+        assert.strictEqual(parsed.errorCode, 'service_unavailable');
+        assert.strictEqual(
+          parsed.message,
+          'Database service is temporarily unavailable. Please try again shortly.'
+        );
+      }
     });
 
     it('maps 500 database error into safe user error state without exposing internal details', () => {
@@ -194,6 +271,7 @@ describe('Matching UI Helpers', () => {
       assert.strictEqual(parsed.status, 'error');
       if (parsed.status === 'error') {
         assert.strictEqual(parsed.message.includes('Internal DB details'), false);
+        assert.strictEqual(parsed.errorCode, undefined);
       }
     });
 

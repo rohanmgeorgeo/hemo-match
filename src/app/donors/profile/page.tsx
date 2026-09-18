@@ -172,7 +172,7 @@ export default function DonorProfilePage() {
                 <p className="text-xs font-semibold text-blue-900 mb-0.5">Contact details protected</p>
                 <p className="text-xs text-blue-800/80 leading-relaxed">
                   Your full phone number is not revealed to blood requesters during matching. Contact information
-                  is only made available through the future acceptance and contact-reveal workflow.
+                  is only unlocked if you accept an urgent request and the requester explicitly performs an authorized contact reveal.
                   Final donor eligibility is determined by qualified blood-centre or clinical personnel.
                 </p>
               </div>

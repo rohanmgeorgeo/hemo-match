@@ -2,8 +2,9 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Branch:** `feature/demo-polish`
-**Current Milestone:** Step 10: Integrated Demo + UX Hardening — Pass 1 (P0) (COMPLETE)
+**Branch:** `feature/production-closure`
+**Current Milestone:** Step 12: Production Closure + Small Correctness/Copy Fixes (COMPLETE)
+**Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-18
 
 ---
@@ -255,11 +256,12 @@ Landing Page (/)
 
 | Check | Result |
 | :--- | :--- |
-| `npm test` | ✅ 179 tests passing (0 failing, 44 suites) |
+| `npm test` | ✅ 183 tests passing (0 failing, 44 suites) |
 | `npm run typecheck` | ✅ 0 errors |
 | `npm run lint` | ✅ 0 errors, 0 warnings |
 | `npm run build` | ✅ All routes compiled (`/api/requests/contact-reveal` dynamic) |
 | `git diff --check` | ✅ 0 formatting/whitespace issues |
+| Production Smoke Test | ✅ Full live pipeline verified at https://hemomatch.vercel.app |
 | Live Supabase Verification | ✅ Proved real Contact Reveal, idempotency, rejection of non-accepted/declined, non-PII audit logging, and 100% cleanup |
 | Service-Role Secret Isolation | ✅ Server-only; 0 client leaks |
 | Direct Supabase Queries in UI | ✅ 0 occurrences |
@@ -289,9 +291,9 @@ Landing Page (/)
 
 ---
 
-## 6. Current Milestone: Step 10 — Integrated Demo + UX Hardening (Pass 1 P0 Complete)
+## 6. Milestones 10–12 Summary
 
-Step 10 Pass 1 (P0) is complete on `feature/demo-polish`:
+### Step 10: Integrated Demo + UX Hardening (complete, merged)
 - Requester / Donor two-role workflow clarity on landing page (`/`) with explicit pathway cards and navigation.
 - Elevated "Refresh Status" CTA on matching dashboard.
 - Raw enum values (`candidate`, `notified`) replaced with user-friendly, polished status badges.
@@ -299,4 +301,20 @@ Step 10 Pass 1 (P0) is complete on `feature/demo-polish`:
 - High-contrast accessible "Reveal Contact" button and unmistakable privacy hero transition.
 - Stale/developer copy removed across the entire primary demo path.
 - 90-day whole blood cycle contradiction fixed to state the conservative 120-day application matching interval.
-- Backend matching, compatibility, 120-day rule, RPC atomicity, and privacy guarantees completely preserved.
+- Merged cleanly into `main` (`7497fd5`).
+
+### Step 11: Production Deployment on Vercel (complete, live verified)
+- Production URL: `https://hemomatch.vercel.app`
+- Successfully deployed Next.js App Router full-stack build to Vercel connected to Supabase production PostgreSQL.
+- Manual production smoke test passed completely:
+  `Request → Match → Notify → Accept → Reveal Contact`
+- Verified privacy boundary: donor phone number remained strictly hidden before explicit Reveal Contact.
+- Production configuration incident: `SUPABASE_SERVICE_ROLE_KEY` initially had an incorrect value in Vercel settings. Setting the correct service-role secret resolved request creation immediately.
+
+### Step 12: Production Closure + Small Correctness/Copy Fixes (complete)
+- **Expired-Request Handling**: Backend enforcement (`400 Bad Request`, `request_expired`) preserved; frontend UI updated with calm, actionable copy: `"This blood request has expired. Create a new request with a future required-by time."` and an immediate `"Create New Request"` CTA link.
+- **Copy Audit**: Audited public and demo copy to align strictly with MVP realities:
+  - Removed claims of medically "verified" or "certified" donors; clarified self-registered volunteer donors.
+  - Corrected "hospital cluster" and "search radius" wording to accurate same-district matching.
+  - Eliminated "mutual acceptance" and "automatic reveal" wording; clarified that contact reveal requires explicit requester action following donor acceptance.
+- **Automated Tests**: 183 tests passing across 44 suites (added test coverage for structured error mappings).

@@ -64,9 +64,9 @@ export default function HomePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-neutral-600 leading-relaxed mb-8 font-normal max-w-2xl mx-auto">
-            Hemo Match connects urgent blood requests directly with verified,
-            eligible donors across your district—safeguarding donor privacy
-            through structured two-way contact reveal.
+            Hemo Match connects urgent blood requests directly with compatible,
+            volunteer donors across your district—safeguarding donor privacy
+            through structured authorized contact reveal.
           </p>
 
           {/* Two-Role Interactive Pathways */}
@@ -96,7 +96,7 @@ export default function HomePage() {
                     Request Blood → Find Matches → Notify
                   </div>
                   <p className="text-xs text-neutral-500 leading-relaxed mb-5">
-                    Submit an urgent district blood requirement, find verified compatible donors, and dispatch in-app notifications.
+                    Submit an urgent district blood requirement, find compatible candidate donors, and dispatch in-app notifications.
                   </p>
                 </div>
                 <div className="space-y-2 pt-3 border-t border-neutral-100">
@@ -215,14 +215,14 @@ export default function HomePage() {
               </svg>
             </div>
             <div className="text-xs font-medium tracking-wide uppercase text-neutral-400 mb-1">
-              District Proximity
+              District Coordination
             </div>
             <h2 className="text-lg font-semibold text-neutral-900 mb-2">
-              Locality-First Matching
+              District-Level Matching
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed font-normal">
-              Prioritizes compatible blood donors in the immediate administrative
-              block and hospital cluster before widening the search radius.
+              Focuses on compatible volunteer blood donors within the same administrative
+              district, providing locality context without requiring live GPS tracking.
             </p>
           </div>
 
@@ -248,7 +248,7 @@ export default function HomePage() {
               Donor Wellbeing
             </div>
             <h2 className="text-lg font-semibold text-neutral-900 mb-2">
-              Automated Eligibility
+              Preliminary Recovery Interval
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed font-normal">
               Uses a conservative 120-day application matching interval for
@@ -282,8 +282,8 @@ export default function HomePage() {
               Masked Contact Reveal
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed font-normal">
-              Donor phone numbers remain private and masked by default until mutual
-              match acceptance and explicit contact reveal approval.
+              Donor phone numbers remain private and masked by default until a donor
+              accepts and the requester explicitly reveals contact for coordination.
             </p>
           </div>
         </section>
