@@ -1,7 +1,7 @@
 # Architecture & Technology Decisions (ADR)
 
-**Project:** Hemo Match  
-**Challenge:** SC-12 — District Blood Donor Matching  
+**Project:** Hemo Match
+**Challenge:** SC-12 — District Blood Donor Matching
 **Phase:** Supabase Persistence Wiring (Step 5)
 
 This document records the core architectural and technology choices locked for **Hemo Match**, along with the technical rationale for each decision.
@@ -236,3 +236,108 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Exposing GET endpoints by ID without real authentication would create an enumeration/data leakage vector for private donor information.
   * Protected record retrieval should wait for real authentication (Supabase Auth / SMS OTP) with proper `auth.uid()` security boundaries.
+
+---
+
+## 24. Biological RBC ABO/Rh Compatibility Matrix
+
+* **Decision:** Enforce Red Blood Cell (RBC) ABO/Rh compatibility using an immutable, typed 64-combination matrix in `src/lib/matching/compatibility.ts`. Classify matches into `homologous` (exact ABO/Rh match) and `compatible` (safe alternative donor, e.g., O- for A+).
+* **Rationale:**
+  * Transfusion compatibility follows strict immunological rules; hardcoding a locked matrix eliminates runtime lookup ambiguity.
+  * Explicitly distinguishing homologous from compatible alternatives enables optimal medical prioritization during ranking.
+
+---
+
+## 25. Supported Matching Components Limited to Whole Blood and Red Blood Cells
+
+* **Decision:** Restrict Step 6 preliminary matching to requests for `'Whole Blood'` and `'Red Blood Cells'`. Requests for `'Platelets'` or `'Plasma'` are explicitly rejected with `UNSUPPORTED_COMPONENT_FOR_MATCHING`.
+* **Rationale:**
+  * Platelets and plasma follow different biological compatibility dynamics (including reverse ABO/isohemagglutinin considerations) and separate recovery interval standards.
+  * Rejecting unsupported components at the domain boundary prevents dangerous misapplication of RBC rules to other blood fractions.
+
+---
+
+## 26. Conservative 120-Day Donation Interval Policy as Application Safeguard
+
+* **Decision:** Apply a uniform preliminary recovery threshold of 120 calendar days (`RULE_IN_CONSERVATIVE_INTERVAL_120D`) across all Whole Blood and RBC donors.
+* **Rationale:**
+  * Official Indian transfusion guidelines (Drugs & Cosmetics Rules / NBTC) specify a 90-day interval for male donors and a 120-day interval for female donors.
+  * The current Hemo Match donor schema does not collect donor biological sex.
+  * Adopting the longer 120-day threshold is an application-level safeguard to avoid discovering donors who may still be deferred, while clearly documenting that this is an MVP matching policy and not a universal clinical rule.
+
+---
+
+## 27. Missing Donation History (NULL) Excluded Conservatively
+
+* **Decision:** A `NULL`, empty, or unparseable `donor.last_donation_date` is conservatively excluded with `EXCLUDE_DONATION_HISTORY_UNKNOWN`. It is never inferred to mean "first-time donor".
+* **Rationale:**
+  * The intake schema cannot distinguish between a donor who has never donated and a donor whose history was unrecorded.
+  * Making clinical assumptions about missing medical history introduces safety risks; requiring known donation history ensures only verifiable candidates are matched.
+
+---
+
+## 28. Same-District Matching Scope (No Fake Proximity or GPS)
+
+* **Decision:** Restrict matching strictly to donors registered in the same administrative district as the blood request (`donor.district_id === request.district_id`).
+* **Rationale:**
+  * Emergency blood donation in administrative districts is coordinated regionally around district hospitals and blood banks.
+  * Avoids heavyweight map SDKs, battery drain, and inaccurate straight-line GPS distance estimations.
+  * Keeps the matching algorithm fully explainable, deterministic, and fast.
+
+---
+
+## 29. Deterministic Multi-Factor Ranking Without Arbitrary Clinical Scoring
+
+* **Decision:** Order eligible candidate matches using a strict three-tier deterministic comparator:
+  1. Homologous exact ABO/Rh matches rank before compatible alternative matches.
+  2. Within the same compatibility tier, donors with greater elapsed days since last donation rank ahead.
+  3. Ties are broken deterministically using lexicographic comparison of donor UUIDs.
+  * Do **not** compute arbitrary 0–100 clinical suitability scores.
+* **Rationale:**
+  * Clinical suitability cannot be represented by a synthetic numerical score.
+  * Factual medical hierarchy (exact before compatible, well-rested before recently-eligible) is transparent, deterministic, and medically sound.
+
+---
+
+## 30. Notification Preference Filter Deferred to Dispatch Milestone (Step 7)
+
+* **Decision:** A donor whose `notification_preference` is `'disabled'` is **not** excluded at the Match stage. Such donors are identified and persisted as candidates in `matches`.
+* **Rationale:**
+  * Matching evaluates biological and geographic alignment between a patient requirement and donor pool.
+  * Communication preferences govern whether an outbound dispatch (SMS/in-app) should be sent in Step 7, not whether the donor is biologically compatible.
+
+---
+
+## 31. Anonymized Identifiers & Strict Privacy Before Acceptance
+
+* **Decision:** The matching API and matching-demo UI surface candidates solely through anonymized references (`Donor •••• [SUFFIX]`), omitting donor UUIDs, full names, phone numbers, and coordinates.
+* **Rationale:**
+  * Requesters have no legitimate need for donor contact information during initial discovery.
+  * Prevents requester harassment or uncoordinated private outreach before a donor explicitly accepts.
+
+---
+
+## 32. Non-PII Match Metadata (Tie-Break Excluded from Persistence)
+
+* **Decision:** Persist only non-identifying matching facts in `matches.match_metadata` (`compatibility_type`, blood groups, elapsed days, minimum interval, rule ID, evaluated timestamp, and rank factors). Do not persist the donor UUID tie-break.
+* **Rationale:**
+  * The donor UUID is already stored in `matches.donor_id`; duplicating it inside JSON metadata creates redundant data and violates metadata sanitization rules.
+  * Prevents internal algorithm artifacts from polluting audit records.
+
+---
+
+## 33. Database-Level Idempotency via PostgREST INSERT-OR-IGNORE
+
+* **Decision:** Enforce match persistence idempotency through Supabase `.upsert(payloads, { onConflict: 'request_id,donor_id', ignoreDuplicates: true })` backed by PostgreSQL `UNIQUE(request_id, donor_id)`.
+* **Rationale:**
+  * Avoids fragile client-side string inspection of database error messages (e.g. `error.message.includes('duplicate')`).
+  * Concurrently safe: multiple matching calls for the same request will never insert duplicate rows or overwrite existing candidate statuses.
+
+---
+
+## 34. Existing Matches Treated as Historical Records in Step 6
+
+* **Decision:** Existing candidate rows in `matches` are preserved unconditionally as historical discovery records; Step 6 does not automatically withdraw or revalidate existing matches if a donor's profile later changes.
+* **Rationale:**
+  * Discovery reflects the system state at match evaluation time.
+  * Revalidation before dispatch belongs to Step 7 (Notification Dispatch), and final revalidation belongs to Step 8/9 (Acceptance and Contact Reveal).

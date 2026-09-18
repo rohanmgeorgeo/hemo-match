@@ -1,21 +1,21 @@
 # Hemo Match System Architecture
 
-**Project:** Hemo Match  
-**Challenge:** SC-12 — District Blood Donor Matching  
-**Status:** Database Foundation & Persistence Wiring Complete (Milestone 5)  
+**Project:** Hemo Match
+**Challenge:** SC-12 — District Blood Donor Matching
+**Status:** Request → Match Milestone Complete (Step 6)
 
 ---
 
 ## 1. High-Level System Overview
 
-**Hemo Match** connects verified blood donors with urgent patient requirements at the district level. The architecture prioritizes rapid matching, strict donor clinical eligibility, and privacy-first contact reveal protocols.
+**Hemo Match** connects verified blood donors with urgent patient requirements at the district level. The architecture prioritizes rapid matching, strict preliminary eligibility safety, and privacy-first contact reveal protocols.
 
 ```mermaid
 flowchart TD
     subgraph Client ["Client Layer (Web / Mobile-First)"]
         Landing["Landing Page (/)"]
         RequestNew["Request Blood (/requests/new)"]
-        MatchingDemo["Matching Demo (/requests/matching-demo)"]
+        MatchingDemo["Matching Page (/requests/matching-demo)"]
         DonorRegister["Register as Donor (/donors/register)"]
         DonorProfile["Donor Profile (/donors/profile)"]
     end
@@ -23,38 +23,54 @@ flowchart TD
     subgraph ServerBoundary ["Next.js App Server Layer (Route Handlers)"]
         ApiDonors["POST /api/donors"]
         ApiRequests["POST /api/requests"]
+        ApiMatches["POST /api/requests/matches"]
     end
 
-    subgraph ServerOnlyModules ["Server-Only Database Layer (src/lib/db/)"]
+    subgraph ServerOnlyDb ["Server-Only Database Layer (src/lib/db/)"]
         DbDistricts["districts.ts (resolveDistrictId)"]
         DbDonors["donors.ts (createDonor)"]
         DbRequests["requests.ts (createBloodRequest)"]
+        DbMatches["matches.ts (findAndCreateMatches)"]
         DbClient["database/index.ts (getServerClient)"]
     end
 
-    subgraph FutureSubsystems ["Future Subsystems (Stubbed)"]
-        MatchingEngine["Matching Subsystem (lib/matching)"]
-        EligibilityEngine["Eligibility Rules (lib/eligibility)"]
-        PrivacyEngine["Privacy & Contact Reveal (lib/privacy)"]
-        NotificationEngine["Notifications Dispatch (lib/notifications)"]
+    subgraph DomainLogic ["Pure Domain Engine (Server & Test)"]
+        Compat["compatibility.ts (RBC ABO/Rh Matrix)"]
+        Intervals["intervals.ts (120-Day Policy Math)"]
+        Engine["engine.ts (Multi-Factor Ranking)"]
     end
 
-    subgraph Persistence ["Persistence Layer (Supabase / Postgres)"]
+    subgraph Persistence ["Persistence Layer (Supabase / PostgreSQL)"]
         DB[(PostgreSQL Database)]
-        RLS["Row-Level Security (RLS)"]
-        DataApi["Explicit Data API Grants"]
+        TblDonors[("public.donors")]
+        TblRequests[("public.blood_requests")]
+        TblMatches[("public.matches")]
+        RLS["Row-Level Security (Deny-All Data API)"]
     end
 
     RequestNew -->|"POST JSON"| ApiRequests
     DonorRegister -->|"POST JSON"| ApiDonors
+    MatchingDemo -->|"POST JSON { requestId }"| ApiMatches
+
     ApiDonors --> DbDonors
     ApiDonors --> DbDistricts
     ApiRequests --> DbRequests
     ApiRequests --> DbDistricts
+
+    ApiMatches --> DbMatches
+    DbMatches --> Engine
+    Engine --> Compat
+    Engine --> Intervals
+
     DbDonors --> DbClient
     DbRequests --> DbClient
     DbDistricts --> DbClient
-    DbClient -->|"service_role"| DB
+    DbMatches --> DbClient
+
+    DbClient -->|"service_role (bypasses RLS)"| DB
+    DB --> TblDonors
+    DB --> TblRequests
+    DB --> TblMatches
 ```
 
 ---
@@ -64,150 +80,127 @@ flowchart TD
 ```
 Hemo Match/
 ├── docs/                      # Architectural & progress documentation
-│   ├── PROJECT_STATUS.md      # Current build state, handoff, and tasks
-│   ├── ARCHITECTURE.md        # System design & module contracts (this file)
-│   └── DECISIONS.md           # Architectural Decision Records (ADRs)
+│   ├── PROJECT_STATUS.md      # Current milestone status, handoff, and tasks
+│   ├── ARCHITECTURE.md        # System architecture & module contracts (this file)
+│   ├── DECISIONS.md           # Architectural Decision Records (ADRs)
+│   ├── TODO.md                # Task tracking across milestones
+│   ├── BUGS.md                # Known issues, limitations, and mitigations
+│   └── DEMO.md                # End-to-end demo script and verification flow
 ├── supabase/
 │   └── migrations/
 │       └── 0001_initial_schema.sql   # PostgreSQL schema + RLS + Data API privileges
 ├── src/
-│   ├── app/                   # Next.js App Router (pages, layouts, styles, APIs)
+│   ├── app/                   # Next.js App Router
 │   │   ├── api/               # Dynamic Route Handlers (Server Boundary)
-│   │   │   ├── donors/route.ts       # POST /api/donors (donor intake)
-│   │   │   └── requests/route.ts     # POST /api/requests (blood request intake)
+│   │   │   ├── donors/route.ts          # POST /api/donors (donor intake)
+│   │   │   ├── requests/route.ts        # POST /api/requests (blood request intake)
+│   │   │   └── requests/matches/route.ts# POST /api/requests/matches (match engine)
 │   │   ├── requests/
-│   │   │   ├── new/page.tsx          # Blood request intake form
-│   │   │   └── matching-demo/page.tsx# Matching demo view (drives from local cache)
+│   │   │   ├── new/page.tsx             # Blood request intake form
+│   │   │   └── matching-demo/page.tsx   # Request matching UI (connected to API)
 │   │   └── donors/
-│   │       ├── register/page.tsx     # Donor registration form
-│   │       └── profile/page.tsx      # Donor profile confirmation view (masked phone)
+│   │       ├── register/page.tsx        # Donor registration form
+│   │       └── profile/page.tsx         # Donor profile confirmation view (masked phone)
 │   ├── lib/                   # Isolated subsystem contracts & utilities
-│   │   ├── db/                # Server-only database helper modules
+│   │   ├── db/                # Server-only database helper modules ('server-only')
 │   │   │   ├── districts.ts   # Slug-to-UUID resolver
 │   │   │   ├── donors.ts      # createDonor() database helper
-│   │   │   └── requests.ts    # createBloodRequest() database helper
+│   │   │   ├── requests.ts    # createBloodRequest() database helper
+│   │   │   └── matches.ts     # findAndCreateMatches() server-only coordinator
 │   │   ├── database/index.ts  # Supabase client factory (server-only)
-│   │   ├── validation/        # Schema validators, IST date parser, and input guards
-│   │   ├── matching/          # District matching algorithms & filters (stubbed)
-│   │   ├── eligibility/       # Donor interval & medical health checks (stubbed)
-│   │   ├── privacy/           # Phone masking & 2-way contact reveal (stubbed)
-│   │   └── notifications/     # In-app notification queue & alerts (stubbed)
+│   │   ├── validation/        # Schema validators, IST date parser, and UUID guards
+│   │   │   ├── index.ts       # Donor & request form validators
+│   │   │   └── matches.ts     # Match body RFC 4122 UUID validator
+│   │   ├── matching/          # Core matching engine & pure algorithms
+│   │   │   ├── compatibility.ts # RBC ABO/Rh 64-pair biological matrix
+│   │   │   ├── engine.ts        # Pure multi-factor ranking & exclusion engine
+│   │   │   └── ui-helpers.ts    # Frontend storage validation & API response parsing
+│   │   ├── eligibility/       # Preliminary donation interval subsystem
+│   │   │   ├── intervals.ts   # Timezone-independent calendar math (120-day policy)
+│   │   │   └── rules.ts       # Configurable interval rule definitions
+│   │   ├── privacy/           # Phone masking & 2-way contact reveal (Step 9)
+│   │   └── notifications/     # In-app notification queue & alerts (Step 7)
 │   └── types/
-│       ├── index.ts           # Frontend domain types (form state, localStorage)
+│       ├── index.ts           # Shared frontend domain types
+│       ├── matches.ts         # Privacy-safe match candidates & API response types
 │       └── database.ts        # Database row & insert types (server-side, snake_case)
+└── tests/                     # 90 automated tests across domain and UI logic
+    ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
+    ├── intervals.test.ts      # Preliminary donation interval evaluation tests
+    ├── engine.test.ts         # Pure matching engine, filters, ranking, and privacy tests
+    ├── matches.route.test.ts  # Route validation & HTTP status mapping tests
+    └── matching-ui.test.ts    # Frontend UI helpers & privacy assertions
 ```
 
 ---
 
-## 3. End-to-End Persistence Flow
+## 3. End-to-End Request → Match Flow
 
-The intake persistence architecture enforces a strict unidirectional pipeline:
+The implemented Request → Match flow executes across five discrete layers:
 
 ```
-[1. User Input in Client Form]
-          │
-          ▼
-[2. Client-Side Validation (validateDonorProfile / validateBloodRequest)]
-          │ (If invalid, scrolls to error and halts)
-          ▼
-[3. HTTP POST to Route Handler (/api/donors or /api/requests)]
-          │ (Payload contains form fields only; NO client ID, status, or timestamps)
-          ▼
-[4. Server-Side Validation Re-Check]
-          │ (Guarantees input integrity before database operations)
-          ▼
-[5. District Slug Resolution (resolveDistrictId)]
-          │ (Maps frontend slug e.g. 'dist-ekm' -> PostgreSQL foreign key UUID)
-          ▼
-[6. Typed Server-Only Database Helper (createDonor / createBloodRequest)]
-          │ (Enforces server-only boundary, initial lifecycle status 'active', etc.)
-          ▼
-[7. Supabase / PostgreSQL Insertion via Service Role]
-          │ (PostgreSQL generates authoritative UUID via gen_random_uuid())
-          ▼
-[8. Sanitized Public Projection Response (HTTP 201)]
-          │ (donor response strictly omits phone_number; request response contains no PII)
-          ▼
-[9. Post-Success LocalStorage View Caching]
-          │ (Stores object with real database UUID to hemo_match_demo_donor or hemo_match_active_request)
-          ▼
-[10. Client Navigation to Demo Display Page (/donors/profile or /requests/matching-demo)]
+1. Request Intake:
+   User submits form at /requests/new
+   → Validated server-side via POST /api/requests
+   → Inserted into public.blood_requests
+   → Authoritative PostgreSQL UUID returned in HTTP 201 response
+   → Cached in browser localStorage (hemo_match_active_request) for view handoff
+
+2. Match Discovery Request:
+   /requests/matching-demo reads cached request
+   → Validates RFC 4122 UUID via validateStoredRequest()
+   → Calls POST /api/requests/matches with { "requestId": "<uuid>" }
+
+3. Server Boundary & Database Coordinator:
+   POST /api/requests/matches validates UUID format
+   → Delegates to server-only findAndCreateMatches() in src/lib/db/matches.ts
+   → Queries blood_requests by ID using getServerClient() (service_role)
+   → Pre-checks request state (active, supported component, unexpired)
+   → Queries registered donors in the same district (excluding phone and name)
+   → Queries existing matches to prevent duplicate evaluations
+
+4. Pure Domain Matching & Ranking:
+   findAndCreateMatches() converts DB rows to engine inputs
+   → Invokes pure matchDonorsForRequest() in src/lib/matching/engine.ts
+   → Evaluates biological RBC ABO/Rh compatibility (Whole Blood & RBC only)
+   → Evaluates 120-day preliminary recovery interval using UTC midnight normalization
+   → Enforces hard exclusions: unavailability, consent false, different district, unknown history
+   → Sorts candidates deterministically:
+     Tier 1: Homologous exact ABO/Rh matches
+     Tier 2: Compatible alternative ABO/Rh matches
+     Within tier: Greater elapsed recovery days
+     Tie-break: Lexicographic donor UUID (internal only)
+
+5. Idempotent Persistence & Privacy-Safe Response:
+   New candidate records inserted into public.matches via upsert with onConflict + ignoreDuplicates
+   → Guarded by database UNIQUE(request_id, donor_id) constraint
+   → Non-PII match_metadata recorded (biological factors and evaluated date only)
+   → Sanitized PublicMatchCandidate[] returned to browser with anonymized references
+   → Rendered in matching-demo UI as clean candidate cards
 ```
 
 ---
 
-## 4. Server-Only Database Boundary & Security Rules
+## 4. Security & Privacy Architecture
 
-### 4.1 Server-Only Protection
-All database access modules:
-- `src/lib/database/index.ts`
-- `src/lib/db/districts.ts`
-- `src/lib/db/donors.ts`
-- `src/lib/db/requests.ts`
+### A. Secret & Database Isolation
+- **Service-Role Client**: Authenticated via `SUPABASE_SERVICE_ROLE_KEY` solely inside server-only modules guarded by `import 'server-only'`.
+- **Zero Client Credential Leakage**: The browser never receives, requests, or uses `SUPABASE_SERVICE_ROLE_KEY`.
+- **Zero Direct Browser Queries**: The client never queries Supabase tables directly; all operations pass through Next.js Route Handlers.
+- **Data API Least Privilege**: `anon` and `authenticated` PostgREST roles are granted `SELECT` on `public.districts` only. Data API access to `donors`, `blood_requests`, and `matches` is completely denied by table-level RLS and privilege revocations.
 
-contain `import 'server-only'` at the very top. Any accidental import into a client component will trigger a build-time error.
-
-### 4.2 Service-Role Privilege Isolation
-- Protected database operations (writing to `donors` and `blood_requests`) execute exclusively on the server using `getServerClient()` and `SUPABASE_SERVICE_ROLE_KEY`.
-- The service-role key is **never bundled** into client-side JavaScript.
-- All 7 protected tables (`donors`, `blood_requests`, `matches`, `donor_responses`, `notifications`, `contact_reveals`, `audit_logs`) have **zero privileges** granted to `anon` or `authenticated` roles.
-- Only `public.districts` has `SELECT` granted to `anon` and `authenticated` for public reference reads.
-
-### 4.3 Donor Phone Privacy & Projections
-- Donor phone numbers are stored **PLAINTEXT** in PostgreSQL `public.donors.phone_number`. There is currently **no application-level phone encryption or hashing**.
-- `POST /api/donors` strictly projects public columns:
-  `id, full_name, blood_group, district_id, approximate_area, last_donation_date, availability, notification_preference, consent_given, created_at, updated_at`
-- `phone_number` is never included in API responses.
-- In the client, the phone number is retained in `localStorage` under `hemo_match_demo_donor` solely to display the masked phone format (`••••••4321`) on `/donors/profile`.
-
-### 4.4 Deterministic Timezone Handling
-- For the India-focused MVP, all blood request intake dates (`requiredByDate`) and times (`requiredByTime`) represent **India Standard Time (Asia/Kolkata, UTC+05:30)**.
-- `parseIstDateTime()` in `src/lib/validation/index.ts` appends `+05:30` and validates calendar bounds.
-- `POST /api/requests` converts the validated datetime into an absolute UTC ISO timestamp (`.toISOString()`), which is persisted to the `required_by` `TIMESTAMPTZ` column in PostgreSQL.
-- This conversion is **100% independent** of the server or client local timezone.
+### B. Donor Privacy in Public Matching
+- **No Donor Identification Before Acceptance**: Donor full names, phone numbers, email addresses, and raw donor UUIDs are strictly stripped from all matching projections.
+- **Anonymized References**: Candidate cards display non-identifying identifiers derived from the UUID suffix (e.g. `Donor •••• 9B4F`).
+- **Internal Tie-Break Only**: The internal tie-break donor UUID is used strictly in-memory during sorting and is never persisted in `match_metadata` or returned to API consumers.
+- **Internal Exclusions Protected**: Disqualification codes (e.g., `EXCLUDE_INTERVAL_TOO_SHORT`, `EXCLUDE_NO_CONSENT`) are internal to the engine and never returned over public endpoints.
 
 ---
 
-## 5. Database Schema & Tables
+## 5. Clinical Safety Boundary
 
-### 5.1 Table Summary
-
-| Table | Purpose | Security & Privacy Controls |
-| :--- | :--- | :--- |
-| `districts` | Reference lookup for administrative districts | Public read (`anon` SELECT). Seeded with 8 Kerala districts. |
-| `donors` | Donor profiles | Service-role only. No anon access. Projections omit `phone_number`. |
-| `blood_requests` | Blood requirement intake records | Service-role only. No anon access. No patient name, phone, or email. |
-| `matches` | Request ↔ donor pairings | Service-role only. Reserved for future matching engine. |
-| `donor_responses` | Donor accept/decline records | Service-role only. Reserved for future notification response flow. |
-| `notifications` | In-app notification feed records | Service-role only. Reserved for future alert delivery. |
-| `contact_reveals` | Audit log of contact reveal events | Service-role only. **Immutable / append-only** (`Update: never`). |
-| `audit_logs` | Security action audit log | Service-role only. **Append-only** (`Update: never`). |
-
-### 5.2 Custom Enum Types
-
-`blood_group`, `blood_component`, `urgency_level`, `request_status`, `donor_availability`, `notification_preference`, `match_status`, `response_status`, `notification_status`, `notification_type`.
-
----
-
-## 6. Subsystem Boundaries & Responsibilities
-
-### 6.1 Donor Management (`src/lib/db/donors.ts`, `src/app/api/donors/`)
-- **Implemented:** Onboarding form, server-side validation, district resolution, Supabase insertion, masked phone profile view.
-- **Future:** Profile editing, availability toggling, authenticated donor dashboard.
-
-### 6.2 Blood Requests (`src/lib/db/requests.ts`, `src/app/api/requests/`)
-- **Implemented:** Request form, server-side validation, IST-to-TIMESTAMPTZ conversion, initial status assignment (`'active'`), Supabase insertion.
-- **Future:** Request fulfillment tracking, cancellation.
-
-### 6.3 Matching Subsystem (`src/lib/matching/`)
-- **Current State:** Stubs defined. Schema tables (`matches`) ready. Matching algorithms **not yet implemented**.
-
-### 6.4 Clinical Eligibility Rules (`src/lib/eligibility/`)
-- **Current State:** Stubs defined. Donation interval evaluation **not yet implemented**.
-
-### 6.5 Privacy & Contact Reveal (`src/lib/privacy/`)
-- **Implemented:** Phone masking in profile view (`maskPhone`).
-- **Future:** Two-way contact reveal workflow after donor acceptance.
-
-### 6.6 Notifications (`src/lib/notifications/`)
-- **Current State:** Stubs defined. Dispatcher **not yet implemented**.
+> [!WARNING]
+> **Preliminary Donor Discovery Only**:
+> Hemo Match performs preliminary algorithmic donor discovery and coordination only.
+> It does **NOT** determine final clinical eligibility, transfusion compatibility, or medical clearance.
+> All blood collection, donor screening, deferral determination, and crossmatching must be conducted by qualified medical officers and licensed blood-bank personnel in accordance with national transfusion guidelines.
