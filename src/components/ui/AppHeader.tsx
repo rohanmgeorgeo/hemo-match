@@ -125,8 +125,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Theme Toggle Button */}
           <button
             type="button"
+            suppressHydrationWarning
             onClick={toggleTheme}
-            aria-label={mounted ? (isDark ? 'Switch to light theme' : 'Switch to dark theme') : 'Toggle theme'}
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
             className="w-9 h-9 rounded-xl border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50 dark:bg-[#171717] hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
           >
             {mounted && isDark ? (
