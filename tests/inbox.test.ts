@@ -143,6 +143,7 @@ describe('Donor Inbox & Dispatch UI Tests', () => {
         urgency: 'critical',
         requiredBy: '2026-09-18T18:00:00.000Z',
         compatibilityType: 'homologous',
+        response: null,
       };
 
       // Prohibited private keys must NOT exist in public projection

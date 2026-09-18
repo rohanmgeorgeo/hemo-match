@@ -233,6 +233,15 @@ export type Database = {
         };
         Returns: string | null;
       };
+      record_donor_response: {
+        Args: {
+          p_donor_id: string;
+          p_request_id: string;
+          p_match_id: string;
+          p_response: DbResponseStatus;
+        };
+        Returns: string | null;
+      };
     };
   };
 }

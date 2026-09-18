@@ -2,7 +2,7 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Milestone:** Step 7 — Notify (COMPLETE)
+**Current Milestone:** Step 8 — Donor Response & Acceptance (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
@@ -10,11 +10,11 @@
 ## 1. Active Blocking Bugs
 
 **None.**
-The Step 7 final audit confirmed zero blocking bugs across notification revalidation, atomic RPC dispatch, database persistence, donor inbox APIs, and user interface components. All 128 automated unit tests pass cleanly.
+The Step 8 audit and controlled live verification confirmed zero blocking bugs across pre-response revalidation, atomic RPC response recording, match state transitions, database persistence, donor inbox APIs, and user interface components. All 153 automated unit tests pass cleanly.
 
 ---
 
-## 2. Resolved Issues (Steps 6 & 7)
+## 2. Resolved Issues (Steps 6, 7 & 8)
 
 | Issue | Resolution | Status |
 |:------|:-----------|:-------|
@@ -23,6 +23,8 @@ The Step 7 final audit confirmed zero blocking bugs across notification revalida
 | Duplicate notification vulnerability under concurrent dispatch | Authored migration `0002_notification_idempotency.sql` with partial unique index `idx_notifications_match_found_unique` on `(match_id, type) WHERE match_id IS NOT NULL AND type = 'match_found'`. | **Resolved** (Step 7B) |
 | Non-atomic match status update and notification creation race condition | Authored migration `0003_atomic_notification_dispatch.sql` with PostgreSQL RPC `claim_match_and_create_notification` executing status transition (`candidate -> notified`) and notification insert within a single atomic transaction. | **Resolved** (Step 7C) |
 | React 19 `set-state-in-effect` warning in donor notifications screen | Converted to derived loading state pattern with `fetchState` async updater, eliminating synchronous state setters in effect body. | **Resolved** (Step 7D) |
+| Non-atomic match status transition and response insertion race condition | Authored migration `0004_atomic_donor_response.sql` with PostgreSQL RPC `record_donor_response` executing status transition (`notified -> accepted | declined`) and response insert within a single atomic transaction. | **Resolved** (Step 8A) |
+| Cross-donor response tampering vulnerability | Enforced donor ownership check on notification linkage server-side before executing revalidation or RPC. | **Resolved** (Step 8C) |
 
 ---
 
@@ -50,8 +52,8 @@ The following items are intentional architectural tradeoffs for the hackathon MV
    - `hemo_match_active_request` and `hemo_match_demo_donor` are temporarily cached in browser `localStorage` to bridge view state between forms and confirmation/matching views without pseudo-auth.
    - Production requirement: Replace with real user sessions (Supabase Auth / SMS OTP).
 
-5. **In-App Notifications Only**:
-   - Outbound notifications are stored in `public.notifications` and viewed in-app. No SMS, WhatsApp, or email messaging gateways are configured.
+5. **In-App Notifications & Responses Only**:
+   - Outbound notifications and responses are stored in `public.notifications` and `public.donor_responses` and viewed in-app. No SMS, WhatsApp, or email messaging gateways are configured.
 
 ---
 

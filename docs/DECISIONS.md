@@ -438,3 +438,68 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Prevents cross-donor state tampering where one demo identity could mark another donor's notifications as read.
   * Enforces ownership validation at the SQL query boundary via `getServerClient()`.
+
+---
+
+## 45. Atomic Donor Response RPC & Match Transition
+
+* **Decision:** Implement atomic response recording and match status transition via the PostgreSQL function `record_donor_response(p_donor_id, p_request_id, p_match_id, p_response)` in `supabase/migrations/0004_atomic_donor_response.sql`. Explicitly revoke default execution privileges from `PUBLIC`, `anon`, and `authenticated`, granting execution exclusively to `service_role`.
+* **Rationale:**
+  * Executing within a single atomic PostgreSQL transaction guarantees that transitioning `matches.status` from `'notified'` to `'accepted'` or `'declined'` and inserting into `public.donor_responses` cannot leave partial state.
+  * `SECURITY INVOKER` with fixed `search_path = public, pg_temp` prevents privilege elevation and search_path hijacking.
+
+---
+
+## 46. Authoritative Server-Side Pre-Accept Revalidation
+
+* **Decision:** Immediately before recording an Accept response, the server revalidates that:
+  1. The request remains active, unexpired, and supported (Whole Blood / RBC).
+  2. The donor consent remains `true`.
+  3. The donor availability remains `'available'`.
+  4. The donor district matches the request district.
+  5. The donor ABO/Rh blood group remains compatible with the request.
+  6. The donor's preliminary 120-day donation interval rest is satisfied with known donation history.
+* **Rationale:**
+  * Circumstances may change between notification dispatch and donor response (e.g. donor paused availability, donated elsewhere, or request expired).
+  * The server must act as the authoritative clinical/logistical gatekeeper, never trusting client state.
+
+---
+
+## 47. Decline Semantics & Non-Clinical Scope
+
+* **Decision:** Declining a match notification does NOT require or assert medical or interval eligibility. Decline validates only:
+  1. Real donor/request/match/notification linkage.
+  2. Match is currently in `'notified'` status.
+  3. Request has not reached a terminal state (`'expired'`, `'cancelled'`, `'fulfilled'`).
+  4. Donor has not already responded.
+* **Rationale:**
+  * A donor may choose to decline for personal, scheduling, or logistical reasons without having their medical suitability evaluated or questioned.
+  * Decline is non-judgmental and voluntary.
+
+---
+
+## 48. Immutable Single Response per Match Pair
+
+* **Decision:** Enforce that at most one response can be recorded for any `(request_id, donor_id)` pair via the database uniqueness constraint `UNIQUE (request_id, donor_id)` on `public.donor_responses` and conditional match updates (`status = 'notified'`).
+* **Rationale:**
+  * Prevents double-response races, Accept after Decline overwrites, and Decline after Accept overwrites.
+  * Ensures a deterministic, immutable audit trail for clinical coordination.
+
+---
+
+## 49. Request Lifecycle Preservation upon Donor Acceptance
+
+* **Decision:** Recording a donor's acceptance does NOT automatically mark the blood request as `'fulfilled'`. The request remains in status `'notified'`.
+* **Rationale:**
+  * A single acceptance does not mean blood has been collected, tested, or transfused.
+  * Requests often require multiple units from multiple donors.
+  * Premature fulfillment would prematurely close discovery for remaining needed units.
+
+---
+
+## 50. Strict Contact Privacy Isolation at Response Stage
+
+* **Decision:** Donor acceptance expresses willingness to donate under clinical coordination, but strictly does NOT reveal donor phone numbers, emails, or requester contact information.
+* **Rationale:**
+  * Two-way contact reveal is an authorized, audited workflow deferred strictly to Step 9.
+  * Premature contact exposure exposes donors to uncoordinated direct calls before clinical routing is confirmed.
