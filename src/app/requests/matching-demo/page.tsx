@@ -383,7 +383,7 @@ export default function MatchingDemoPage() {
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Status: {request.status.toUpperCase()}
+                    Status: {request.status === 'open' ? 'Active Requirement' : request.status.toUpperCase()}
                   </span>
                   {getUrgencyBadge(request.urgency)}
                 </div>
