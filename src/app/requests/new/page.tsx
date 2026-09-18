@@ -692,7 +692,7 @@ export default function NewBloodRequestPage() {
               )}
             </button>
             <p className="text-center text-xs text-neutral-400 mt-3">
-              Your request will be securely saved to the database and initialized in matching demo mode.
+              Your request will be securely saved to the database and ready for donor matching.
             </p>
           </div>
         </form>

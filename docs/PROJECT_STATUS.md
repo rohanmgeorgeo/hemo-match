@@ -2,8 +2,8 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Branch:** `feature/contact-reveal`
-**Current Milestone:** Step 9: Authorized Minimum Contact Reveal (COMPLETE)
+**Branch:** `feature/demo-polish`
+**Current Milestone:** Step 10: Integrated Demo + UX Hardening — Pass 1 (P0) (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
@@ -289,8 +289,14 @@ Landing Page (/)
 
 ---
 
-## 6. Next Milestone: Post-Step-9 / Demo Polish & Delivery
+## 6. Current Milestone: Step 10 — Integrated Demo + UX Hardening (Pass 1 P0 Complete)
 
-With Step 9 complete, all nine core privacy milestones of Hemo Match are finished:
-- Request Intake → Match Engine → Requester Notify Action → Donor Inbox → Donor Response (Accept / Decline) → Authorized Contact Reveal.
-- Next steps: End-to-end user walkthrough, demo video/script polish, and preparation for final hackathon evaluation.
+Step 10 Pass 1 (P0) is complete on `feature/demo-polish`:
+- Requester / Donor two-role workflow clarity on landing page (`/`) with explicit pathway cards and navigation.
+- Elevated "Refresh Status" CTA on matching dashboard.
+- Raw enum values (`candidate`, `notified`) replaced with user-friendly, polished status badges.
+- Post-dispatch next-step guidance bridging the Requester dispatch action directly to the Donor Notifications inbox.
+- High-contrast accessible "Reveal Contact" button and unmistakable privacy hero transition.
+- Stale/developer copy removed across the entire primary demo path.
+- 90-day whole blood cycle contradiction fixed to state the conservative 120-day application matching interval.
+- Backend matching, compatibility, 120-day rule, RPC atomicity, and privacy guarantees completely preserved.

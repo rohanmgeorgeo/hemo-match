@@ -315,7 +315,7 @@ export default function DonorNotificationsPage() {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 mb-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                    Demo Donor Identity
+                    Volunteer Donor Profile
                   </div>
                   <h1 className="text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
                     Donor Notifications
@@ -565,13 +565,18 @@ export default function DonorNotificationsPage() {
                           {/* Actionable Controls or Persisted Response State */}
                           <div className="w-full sm:w-auto flex items-center justify-end gap-2">
                             {item.response === 'accepted' ? (
-                              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                </svg>
-                                <span>Accepted</span>
-                                <span className="text-[11px] font-normal text-emerald-700 hidden sm:inline">
-                                  (Contact details remain private until Step 9)
+                              <div className="flex flex-col sm:items-end gap-1">
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                  </svg>
+                                  <span>Accepted</span>
+                                  <span className="text-[11px] font-normal text-emerald-700 hidden sm:inline">
+                                    (Contact protected until authorized reveal)
+                                  </span>
+                                </div>
+                                <span className="text-[11px] text-neutral-500">
+                                  Requester may now unlock contact details to coordinate donation.
                                 </span>
                               </div>
                             ) : item.response === 'declined' ? (
