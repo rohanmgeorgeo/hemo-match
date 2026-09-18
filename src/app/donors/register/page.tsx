@@ -200,7 +200,7 @@ export default function DonorRegisterPage() {
             <ul className="space-y-0.5 text-blue-900/80 list-disc list-inside">
               <li>Exact home addresses are not collected.</li>
               <li>Your phone number is stored privately and is never shown to blood requesters during matching.</li>
-              <li>Contact information is only shared through the future acceptance and contact-reveal workflow.</li>
+              <li>Contact information is only shared through structured donor acceptance and authorized contact reveal.</li>
               <li>Hemo Match does not determine final medical eligibility.</li>
             </ul>
           </div>
