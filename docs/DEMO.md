@@ -122,51 +122,76 @@ POST /api/donors/responses { donorId, notificationId, response: "accepted" }
 
 ────────────────────────────────────────────────────────────────────────
 
-Step 9: Visibly Show "Accepted" State & Protected Contact
+Step 9: Visibly Show "Accepted" State in Donor Inbox
   │ Modal closes and notification card updates immediately to persistent "Accepted" state:
   │ • Green badge: "Accepted"
-  │ • Privacy assurance: "Your contact details are still private until Step 9 coordination."
-  │ Action buttons are disabled / replaced with persistent status badge
+  │ • Privacy assurance: "Your contact details are protected until authorized coordination."
+  │ Action buttons are replaced with persistent status badge
   │ Reopening inbox reliably loads response state derived from the database
 
 ────────────────────────────────────────────────────────────────────────
 
-Step 10: Explain Step 9 Two-Way Contact Reveal
-  │ Accepting does NOT automatically reveal contact information.
-  │ Step 9 (Authorized Two-Way Contact Reveal Protocol) introduces the explicit
-  │ clinical contact exchange and audit trail.
+Step 10: Requester Observes Acceptance & Reveals Contact (/requests/matching-demo)
+  │ Requester clicks "Refresh Status" on /requests/matching-demo
+  ▼
+GET /api/requests/matches?requestId=<uuid>
+  │ Retrieves live match statuses without re-running matching
+  │ Accepted candidate card displays:
+  │ • Green badge: "Donor Accepted"
+  │ • Action CTA: "Reveal Contact" button
+  │ Non-accepted and declined candidate cards retain protected privacy boundaries:
+  │ • "Phone hidden until donor accepts request"
+  │ • "Unavailable / Declined"
+  ▼
+Requester Clicks "Reveal Contact"
+  ▼
+POST /api/requests/contact-reveal { "requestId": "<uuid>", "matchId": "<uuid>" }
+  │ Server validates match is 'accepted', donor response is 'accepted', request is non-terminal
+  │ Executes atomic PostgreSQL RPC record_contact_reveal()
+  │ Inserts unique row into public.contact_reveals with ON CONFLICT DO NOTHING
+  │ Writes non-PII audit record (action: 'contact_reveal.authorized') with 0 contact PII
+  │ Projects strictly minimum contact details: { name, phone }
+  ▼
+HTTP 200 Response ({ success: true, contact: { name, phone } })
+  │ Candidate card unmasks donor's full name and phone number
+  │ Shows emergency coordination banner: "Direct verbal coordination permitted for this emergency."
+  │ Repeated clicks are idempotent (0 duplicate rows, 0 duplicate audit events)
 ```
 
 ---
 
 ## 2. Privacy & Security Guarantees Proven in Live Demo
 
-- **Zero Donor PII Exposed**: Donor names, raw UUIDs, phone numbers, email addresses, and coordinates are never sent across the network or displayed in matching results, notifications, or response projections.
+- **Zero Donor PII Exposed Before Acceptance**: Donor names, raw UUIDs, phone numbers, email addresses, and coordinates are never sent across the network or displayed in matching results, notifications, or pre-reveal response projections.
 - **Anonymized Reference Format**: Requesters see only `Donor •••• [SUFFIX]` (derived from the last 4 characters of the donor UUID).
-- **Non-PII Metadata**: Match, response, and audit records store aggregate matching facts only.
+- **Minimum Contact Projection Policy**: Authorized reveal releases strictly `name` and `phone`. No email, exact address, coordinates, or medical history are ever unmasked.
+- **Non-PII Metadata**: Match, response, contact reveal, and audit records store aggregate matching facts only; zero phone numbers or names are written to audit logs.
 - **Service-Role Isolation**: The browser makes standard JSON HTTP requests to Next.js Route Handlers; `SUPABASE_SERVICE_ROLE_KEY` is completely isolated in server-only modules.
-- **Idempotent Response Transitions**: Repeated response calls or race conditions will never create duplicate responses or corrupted match states (enforced by `UNIQUE(request_id, donor_id)` and atomic RPC `record_donor_response`).
-- **Inbox Isolation**: Donors only ever receive notifications and can only respond to requests matching their own verified donor identity; cross-donor updates are rejected with `404 Not Found`.
+- **Idempotent Reveal Execution**: Repeated reveal calls or race conditions will never create duplicate reveals or duplicate audit events (enforced by `UNIQUE(request_id, donor_id)` and atomic RPC `record_contact_reveal`).
+- **Gated Authorization**: Reveal attempts on candidates, notified unresponded donors, declined donors, cross-requests, or terminal requests (cancelled/expired/fulfilled) are rejected with `403 Forbidden` (`unauthorized_or_not_accepted`).
 
 ---
 
-## 3. Controlled Live Verification Summary (Step 8 Live Audit)
+## 3. Controlled Live Verification Summary (Step 9 Live Audit)
 
-During Step 8 live verification against the configured Supabase database:
-1. Created controlled test request and 3 test donors (Donor 1: Accept, Donor 2: Decline, Donor 3: Stale/Unavailable).
-2. Generated matches and dispatched notifications via real engine paths.
-3. Executed Flow A: Donor 1 Accepted → response row created in `donor_responses`, match status transitioned to `'accepted'`, notification marked read, request status preserved as `'notified'` (not fulfilled), inbox derived `response: 'accepted'`, zero `contact_reveals` created.
-4. Executed Flow B: Donor 2 Declined → response row created in `donor_responses`, match status transitioned to `'declined'`, inbox derived `response: 'declined'`.
-5. Executed Flow C: Stale Donor 3 updated to `temporarily_unavailable` → Accept was rejected by authoritative revalidation (`revalidation_failed`), match remained in `'notified'` status.
-6. Executed Flow D: Repeated Accept rejected (`already_responded`), Decline after Accept rejected (`already_responded`), cross-donor response rejected (`not_found`).
-7. Verified non-PII audit logging.
-8. Confirmed 100% cleanup of test rows and exact baseline restoration across all database tables.
+During Step 9 live verification against the configured Supabase database:
+1. Recorded exact database baseline (`donors: 1, blood_requests: 1, matches: 0, notifications: 0, donor_responses: 0, contact_reveals: 0, audit_logs: 0`).
+2. Created controlled test request and 3 test donors (Donor 1: Accept, Donor 2: Decline, Donor 3: Notified/Unresponded).
+3. Generated matches and dispatched notifications via real engine paths.
+4. Recorded Donor 1 Accept and Donor 2 Decline via atomic response RPCs.
+5. Flow 1 (Pre-Acceptance Privacy): Proved 0 phone numbers or names present in requester projection.
+6. Flow 2 (Lifecycle Observation): Requester observed match lifecycle (`accepted`, `declined`, `notified`) without PII leaks.
+7. Flow 3 (First Authorized Reveal): Succeeded for Donor 1, returned authorized minimum contact (`name`, `phone`), persisted 1 `contact_reveals` row, and created non-PII audit record (`contact_reveal.authorized`).
+8. Flow 4 (Idempotency): Repeated reveal for Donor 1 succeeded idempotently with 0 duplicate rows and 0 duplicate audit records.
+9. Flow 5 (Notified Non-Accepted Guard): Contact reveal for Donor 3 rejected (`unauthorized_or_not_accepted`).
+10. Flow 6 (Declined Guard): Contact reveal for Donor 2 rejected (`unauthorized_or_not_accepted`).
+11. Flow 7 (Cross-Request Guard): Cross-request reveal attempt rejected (`unauthorized_or_not_accepted`).
+12. Flow 8 (Request Lifecycle Integrity): Blood request status remained `notified` (not prematurely fulfilled).
+13. Confirmed 100% cleanup of test rows and exact baseline restoration across all database tables.
 
 ---
 
-## 4. Next Milestone: Step 9 — Authorized Two-Way Contact Reveal Protocol
+## 4. Next Milestone: Post-Step-9 / Demo Polish & Delivery
 
-The next milestone will implement:
-1. Two-way authorization mechanism for releasing minimum contact coordinates.
-2. Immutable, append-only audit trail in `public.contact_reveals`.
-3. Clinical contact unmasking triggered exclusively after verified donor acceptance.
+With Step 9 complete, all nine core milestones of Hemo Match are finished.
+Next steps focus on presentation materials, end-to-end demo video capture, and hackathon submission assets.

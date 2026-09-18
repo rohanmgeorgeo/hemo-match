@@ -503,3 +503,57 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Two-way contact reveal is an authorized, audited workflow deferred strictly to Step 9.
   * Premature contact exposure exposes donors to uncoordinated direct calls before clinical routing is confirmed.
+
+---
+
+## 51. Gated Authorized Contact Reveal on Verified Donor Acceptance
+
+* **Decision:** Release of donor contact details is strictly gated behind verified donor acceptance (`matches.status = 'accepted'` and `donor_responses.response = 'accepted'`).
+* **Rationale:**
+  * Candidates, notified donors who have not yet responded, and donors who have declined must never have their contact information disclosed.
+  * Explicit donor opt-in is a foundational privacy principle of Hemo Match.
+
+---
+
+## 52. Minimum Contact Projection Policy
+
+* **Decision:** The contact reveal endpoint projects strictly two fields: `name` (`donors.full_name`) and `phone` (`donors.phone_number`). All other fields (email, physical address, coordinates, raw donor UUID, medical eligibility history) are stripped from the response.
+* **Rationale:**
+  * Adheres to the principle of data minimization. Emergency coordination between requester/hospital and donor requires only direct verbal communication capability.
+  * Revealing location coordinates or emails increases attack surface and privacy intrusion without clinical benefit.
+
+---
+
+## 53. Explicit Requester Reveal Action (No Automatic Unmasking)
+
+* **Decision:** When a donor accepts, contact details are NOT automatically unmasked in the requester's UI or pushed in notifications. The requester must perform an explicit "Reveal Contact" action.
+* **Rationale:**
+  * Avoids passive data leakage (e.g. if the requester screen is visible to bystanders or multiple coordinators).
+  * Forces intentional retrieval, enabling precise audit logging of the moment contact details were accessed.
+
+---
+
+## 54. Request Lifecycle Protection on Reveal
+
+* **Decision:** Contact reveal authorization requires that the blood request is in an actionable, non-terminal state. Reveal is explicitly rejected if `blood_requests.status` is `'cancelled'`, `'expired'`, or `'fulfilled'`.
+* **Rationale:**
+  * If a request is fulfilled, expired, or cancelled, emergency coordination is no longer valid.
+  * Preventing reveal on fulfilled or closed requests protects donors from unnecessary outreach after clinical need has ceased.
+
+---
+
+## 55. Database Atomicity & Idempotency via `record_contact_reveal` RPC
+
+* **Decision:** Contact reveals are recorded via an atomic PostgreSQL function `record_contact_reveal(p_request_id, p_match_id)` backed by table constraint `UNIQUE (request_id, donor_id)` on `public.contact_reveals` with `ON CONFLICT DO NOTHING`.
+* **Rationale:**
+  * Guarantees at most one contact reveal record per donor-request pair, preventing duplicate audit records or race conditions under concurrent requests.
+  * The RPC validates match status and request lifecycle within the database transaction before writing to `contact_reveals`.
+
+---
+
+## 56. Zero PII in Audit Log Metadata for Contact Reveals
+
+* **Decision:** Audit records for `contact_reveal.authorized` store structural IDs only (`request_id`, `donor_id`, `match_id`, and `actor_type: 'requester'`). Zero phone numbers, names, or contact data are written to `audit_logs.metadata`.
+* **Rationale:**
+  * Audit logs must demonstrate compliance and traceability without becoming secondary repositories of PII.
+  * Observers or log analytics tools must not gain access to private contact details via audit inspection.

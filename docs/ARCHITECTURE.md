@@ -6,14 +6,14 @@ Hemo Match is a privacy-first emergency blood donor matching and coordination pl
 
 The system enforces a strict seven-stage pipeline:
 ```
-Request Intake → Match Engine → Requester Notify Action → Donor Inbox → Donor Response (Accept / Decline) → Contact Reveal (Step 9) → Fulfillment
+Request Intake → Match Engine → Requester Notify Action → Donor Inbox → Donor Response (Accept / Decline) → Authorized Contact Reveal → Fulfillment
 ```
 
 Key Architectural Tenets:
 1. **Server-Authoritative**: All matching, eligibility filtering, notification dispatch, response processing, and contact reveal boundaries execute server-side only.
 2. **Zero-PII Public Projections**: Donor phone numbers, names, exact locations, and patient identifiers are never exposed through matching, notification, or response APIs.
 3. **Clinical Non-Interference**: Algorithmic suitability coordinates discovery only; final donor qualification is determined by qualified clinical/blood-centre personnel.
-4. **Database-Enforced Atomicity & Idempotency**: Concurrency protection, dispatch limits, and response transitions are enforced through database constraints and atomic PostgreSQL RPC functions.
+4. **Database-Enforced Atomicity & Idempotency**: Concurrency protection, dispatch limits, response transitions, and contact reveals are enforced through database constraints and atomic PostgreSQL RPC functions.
 
 ---
 
@@ -29,12 +29,13 @@ hemo-match/
 │   │   │   │   ├── notifications/route.ts         # GET/PATCH /api/donors/notifications (inbox)
 │   │   │   │   └── responses/route.ts             # POST /api/donors/responses (Accept/Decline)
 │   │   │   ├── requests/
-│   │   │   │   └── route.ts                       # POST /api/requests (request intake)
-│   │   │   ├── requests/matches/route.ts          # POST /api/requests/matches (match engine)
-│   │   │   └── requests/notifications/dispatch/route.ts # POST /api/requests/notifications/dispatch
+│   │   │   │   ├── route.ts                       # POST /api/requests (request intake)
+│   │   │   │   ├── matches/route.ts               # POST/GET /api/requests/matches (match engine & status)
+│   │   │   │   ├── contact-reveal/route.ts        # POST /api/requests/contact-reveal (Step 9)
+│   │   │   │   └── notifications/dispatch/route.ts # POST /api/requests/notifications/dispatch
 │   │   ├── requests/
 │   │   │   ├── new/page.tsx             # Blood request intake form
-│   │   │   └── matching-demo/page.tsx   # Request matching UI & "Notify Eligible Donors" CTA
+│   │   │   └── matching-demo/page.tsx   # Request matching UI, status sync, & Contact Reveal CTA
 │   │   └── donors/
 │   │       ├── register/page.tsx        # Donor registration form
 │   │       ├── profile/page.tsx         # Donor profile confirmation view (masked phone)
@@ -46,13 +47,15 @@ hemo-match/
 │   │   │   ├── requests.ts    # createBloodRequest() database helper
 │   │   │   ├── matches.ts     # findAndCreateMatches() server-only coordinator
 │   │   │   ├── notifications.ts # dispatchNotificationsForRequest(), getDonorNotifications()
-│   │   │   └── responses.ts   # submitDonorResponse() server-only coordinator
+│   │   │   ├── responses.ts   # submitDonorResponse() server-only coordinator
+│   │   │   └── reveal.ts      # requestContactReveal(), getRequestMatches() coordinator
 │   │   ├── database/index.ts  # Supabase client factory (server-only)
 │   │   ├── validation/        # Schema validators, IST date parser, and UUID guards
 │   │   │   ├── index.ts       # Donor & request form validators
 │   │   │   ├── matches.ts     # Match body RFC 4122 UUID validator
 │   │   │   ├── notifications.ts # Dispatch & inbox request/query validators
-│   │   │   └── responses.ts   # Donor response body validator
+│   │   │   ├── responses.ts   # Donor response body validator
+│   │   │   └── reveal.ts      # Contact reveal body validator
 │   │   ├── matching/          # Core matching engine & pure algorithms
 │   │   │   ├── compatibility.ts # RBC ABO/Rh 64-pair biological matrix
 │   │   │   ├── engine.ts        # Pure multi-factor ranking & exclusion engine
@@ -62,15 +65,23 @@ hemo-match/
 │   │   │   └── revalidation.ts# Pre-dispatch eligibility and preference revalidator
 │   │   ├── responses/         # Donor response revalidation
 │   │   │   └── revalidation.ts# Authoritative pre-response suitability revalidator
+│   │   ├── reveal/            # Contact reveal authorization & projection
+│   │   │   └── revalidation.ts# Pre-reveal authorization checks & minimum projection
 │   │   ├── eligibility/       # Preliminary donation interval subsystem
 │   │   │   ├── intervals.ts   # Timezone-independent calendar math (120-day policy)
 │   │   │   └── rules.ts       # Configurable interval rule definitions
-│   │   └── privacy/           # Phone masking & 2-way contact reveal (Step 9)
+│   │   └── privacy/           # Phone masking utilities
 │   └── types/
 │       ├── index.ts           # Shared frontend domain types
 │       ├── matches.ts         # Privacy-safe match candidates & API response types
 │       └── database.ts        # Database row & insert types (server-side, snake_case)
-└── tests/                     # 153 automated tests across domain, dispatch, and UI logic
+├── supabase/migrations/
+│   ├── 0001_initial_schema.sql
+│   ├── 0002_notification_idempotency.sql
+│   ├── 0003_atomic_notification_dispatch.sql
+│   ├── 0004_atomic_donor_response.sql
+│   └── 0005_contact_reveal_authorization.sql
+└── tests/                     # 179 automated tests across domain, dispatch, response, and reveal logic
     ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
     ├── intervals.test.ts      # Preliminary donation interval evaluation tests
     ├── engine.test.ts         # Pure matching engine, filters, ranking, and privacy tests
@@ -78,7 +89,8 @@ hemo-match/
     ├── matching-ui.test.ts    # Frontend UI helpers & privacy assertions
     ├── dispatch.test.ts       # Revalidation, ranking, and limit clamping tests
     ├── inbox.test.ts          # Donor inbox query, read update, and projection privacy tests
-    └── responses.test.ts      # Donor Accept/Decline revalidation and payload validation tests
+    ├── responses.test.ts      # Donor Accept/Decline revalidation and payload validation tests
+    └── reveal.test.ts         # Step 9 contact reveal authorization & projection tests
 ```
 
 ---
@@ -153,6 +165,24 @@ The implemented pipeline executes across seven discrete architectural stages:
    → Writes non-PII audit record (action: 'donor_response.accepted' | 'donor_response.declined')
    → Returns HTTP 200 response ({ success: true, response })
    → Zero contact reveals executed (contact_reveals table untouched; deferred strictly to Step 9)
+
+8. Authorized Minimum Contact Reveal (Step 9):
+   Requester refreshes / observes updated candidate status on /requests/matching-demo
+   → GET /api/requests/matches?requestId=<uuid> retrieves live match states without re-running matching
+   → Cards update to show "Donor Accepted" badge and "Reveal Contact" action button
+   → Requester clicks "Reveal Contact"
+   → Calls POST /api/requests/contact-reveal with { "requestId": "<uuid>", "matchId": "<uuid>" }
+   → Server-only requestContactReveal() coordinates:
+     - Pure revalidation validates match is 'accepted', donor response is 'accepted', and request is not cancelled/expired/fulfilled
+     - Executes PostgreSQL RPC record_contact_reveal(p_request_id, p_match_id)
+     - RPC verifies prerequisites within PostgreSQL and performs INSERT INTO contact_reveals ... ON CONFLICT DO NOTHING
+     - Protected by UNIQUE(request_id, donor_id) database constraint
+     - Inserts non-PII audit record (action: 'contact_reveal.authorized') with 0 phone/name/PII in metadata
+     - Strips all non-permitted donor fields, projecting ONLY { name, phone }
+   → Returns HTTP 200 response ({ success: true, contact: { name, phone } })
+   → UI unmasks name and phone number on the accepted candidate card with emergency coordination banner
+   → Re-clicking reveal is completely idempotent (0 duplicate rows, 0 duplicate audit entries)
+   → Non-accepted and declined donors remain strictly contact-masked
 ```
 
 ---
@@ -163,13 +193,14 @@ The implemented pipeline executes across seven discrete architectural stages:
 - **Service-Role Client**: Authenticated via `SUPABASE_SERVICE_ROLE_KEY` solely inside server-only modules guarded by `import 'server-only'`.
 - **Zero Client Credential Leakage**: The browser never receives, requests, or uses `SUPABASE_SERVICE_ROLE_KEY`.
 - **Zero Direct Browser Queries**: The client never queries Supabase tables directly; all operations pass through Next.js Route Handlers.
-- **Data API Least Privilege**: `anon` and `authenticated` PostgREST roles are granted `SELECT` on `public.districts` only. Data API access to `donors`, `blood_requests`, `matches`, `notifications`, and `donor_responses` is completely denied by table-level RLS and privilege revocations.
+- **Data API Least Privilege**: `anon` and `authenticated` PostgREST roles are granted `SELECT` on `public.districts` only. Data API access to `donors`, `blood_requests`, `matches`, `notifications`, `donor_responses`, and `contact_reveals` is completely denied by table-level RLS and privilege revocations.
 
 ### B. Donor Privacy in Public Matching & Response
 - **No Donor Identification Before Authorized Reveal**: Donor full names, phone numbers, email addresses, and raw donor UUIDs are strictly stripped from all matching and notification projections.
 - **Anonymized References**: Candidate cards display non-identifying identifiers derived from the UUID suffix (e.g. `Donor •••• 9B4F`).
 - **Response Privacy**: Accepting a request expresses willingness to donate under clinical coordination; it does NOT broadcast contact details.
-- **Contact Reveal Boundary**: Two-way contact exchange is strictly isolated to Step 9 upon mutual verified coordination and append-only audit logging.
+- **Minimum Contact Reveal Boundary**: Contact reveal is strictly gated behind verified donor acceptance. Only minimum coordination details (`name` and `phone`) are unmasked. No physical address, coordinates, email, or medical data are released.
+- **Audit Non-PII Invariant**: Audit log events for contact reveals record structural IDs only (`request_id`, `donor_id`, `match_id`); no phone numbers or names are stored in audit metadata.
 
 ---
 

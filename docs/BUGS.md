@@ -2,7 +2,7 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Milestone:** Step 8 — Donor Response & Acceptance (COMPLETE)
+**Current Milestone:** Step 9 — Authorized Minimum Contact Reveal (COMPLETE)
 **Last Updated:** 2026-09-18
 
 ---
@@ -10,11 +10,11 @@
 ## 1. Active Blocking Bugs
 
 **None.**
-The Step 8 audit and controlled live verification confirmed zero blocking bugs across pre-response revalidation, atomic RPC response recording, match state transitions, database persistence, donor inbox APIs, and user interface components. All 153 automated unit tests pass cleanly.
+The Step 9 audit and controlled live verification confirmed zero blocking bugs across contact reveal authorization, atomic RPC reveal recording, minimum contact projection, database persistence, and user interface components. All 179 automated unit tests pass cleanly.
 
 ---
 
-## 2. Resolved Issues (Steps 6, 7 & 8)
+## 2. Resolved Issues (Steps 6, 7, 8 & 9)
 
 | Issue | Resolution | Status |
 |:------|:-----------|:-------|
@@ -25,6 +25,10 @@ The Step 8 audit and controlled live verification confirmed zero blocking bugs a
 | React 19 `set-state-in-effect` warning in donor notifications screen | Converted to derived loading state pattern with `fetchState` async updater, eliminating synchronous state setters in effect body. | **Resolved** (Step 7D) |
 | Non-atomic match status transition and response insertion race condition | Authored migration `0004_atomic_donor_response.sql` with PostgreSQL RPC `record_donor_response` executing status transition (`notified -> accepted | declined`) and response insert within a single atomic transaction. | **Resolved** (Step 8A) |
 | Cross-donor response tampering vulnerability | Enforced donor ownership check on notification linkage server-side before executing revalidation or RPC. | **Resolved** (Step 8C) |
+| PL/pgSQL variable conflict in `record_contact_reveal` | Added `#variable_conflict use_column` and explicit constraint clause `ON CONFLICT ON CONSTRAINT contact_reveals_request_id_donor_id_key DO NOTHING` to prevent ambiguous column reference in `RETURNS TABLE` output variables. | **Resolved** (Step 9A) |
+| Terminal request lifecycle exclusion on reveal | Updated authorization check in `record_contact_reveal` and pure revalidation to explicitly reject `fulfilled` requests alongside `cancelled` and `expired`. | **Resolved** (Step 9A/9B) |
+| Requester match lifecycle status sync | Added `GET /api/requests/matches` via `getRequestMatches()` to safely expose updated match statuses (`accepted`, `declined`, `notified`) without re-running matching or overwriting existing states. | **Resolved** (Step 9C) |
+
 
 ---
 

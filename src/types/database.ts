@@ -242,6 +242,22 @@ export type Database = {
         };
         Returns: string | null;
       };
+      record_contact_reveal: {
+        Args: {
+          p_request_id: string;
+          p_match_id: string;
+          p_trigger?: string;
+          p_reason?: string | null;
+        };
+        Returns: {
+          reveal_id: string;
+          donor_id: string;
+          donor_name: string;
+          donor_phone: string;
+          is_new: boolean;
+          revealed_at: string;
+        }[];
+      };
     };
   };
 }
