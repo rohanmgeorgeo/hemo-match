@@ -1,8 +1,14 @@
 'use client';
 
-import React, { useSyncExternalStore, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import type { BloodRequest } from '@/types';
+import type { PublicMatchCandidate } from '@/types/matches';
+import {
+  validateStoredRequest,
+  parseMatchApiResponse,
+  getCompatibilityBadgeDetails,
+  type MatchUiState,
+} from '@/lib/matching/ui-helpers';
 
 function subscribe(callback: () => void) {
   window.addEventListener('storage', callback);
@@ -24,14 +30,85 @@ export default function MatchingDemoPage() {
     getServerSnapshot
   );
 
-  const request = useMemo<BloodRequest | null>(() => {
-    if (!storedJson) return null;
-    try {
-      return JSON.parse(storedJson) as BloodRequest;
-    } catch {
-      return null;
+  const { isValid, requestId, request } = useMemo(
+    () => validateStoredRequest(storedJson),
+    [storedJson]
+  );
+
+  const [dataState, setDataState] = useState<{
+    id: string;
+    count: number;
+    result: MatchUiState;
+  } | null>(null);
+
+  const [retryCounter, setRetryCounter] = useState(0);
+
+  const isLoading = Boolean(
+    isValid &&
+      requestId &&
+      (dataState?.id !== requestId || dataState?.count !== retryCounter)
+  );
+
+  const matchState: MatchUiState | null =
+    dataState?.id === requestId && dataState?.count === retryCounter
+      ? dataState.result
+      : null;
+
+  // Asynchronously query matches when valid requestId or retryCounter changes
+  useEffect(() => {
+    if (!isValid || !requestId) {
+      return;
     }
-  }, [storedJson]);
+
+    const currentRequestId = requestId;
+    let isSubscribed = true;
+
+    async function runSearch() {
+      try {
+        const response = await fetch('/api/requests/matches', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ requestId: currentRequestId }),
+        });
+
+        const data: unknown = await response.json().catch(() => null);
+        if (isSubscribed) {
+          const result = parseMatchApiResponse(response.status, data);
+          setDataState({
+            id: currentRequestId,
+            count: retryCounter,
+            result,
+          });
+        }
+      } catch {
+        if (isSubscribed) {
+          setDataState({
+            id: currentRequestId,
+            count: retryCounter,
+            result: {
+              status: 'error',
+              message:
+                'Unable to connect to matching service. Please check your connection and try again.',
+            },
+          });
+        }
+      }
+    }
+
+    void runSearch();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [isValid, requestId, retryCounter]);
+
+  const handleRetry = () => {
+    if (requestId && !isLoading) {
+      setRetryCounter((c) => c + 1);
+    }
+  };
 
   const formatDateTime = (dateStr?: string, timeStr?: string) => {
     if (!dateStr) return 'Not specified';
@@ -104,22 +181,22 @@ export default function MatchingDemoPage() {
           </Link>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 border border-blue-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
-              Matching Stage Demo
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 border border-rose-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+              Automated Match Discovery
             </span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
-        {!request ? (
-          /* Empty / Fallback State */
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10">
+        {!isValid || !request ? (
+          /* Empty / Missing Request State */
           <div className="bg-white rounded-3xl border border-neutral-200/80 p-8 sm:p-12 text-center shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-100 text-neutral-500 flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
               <svg
-                className="w-6 h-6 text-neutral-400"
+                className="w-7 h-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
@@ -132,11 +209,11 @@ export default function MatchingDemoPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-lg font-bold text-neutral-900 mb-2">
-              No Active Request Found
-            </h2>
-            <p className="text-sm text-neutral-500 max-w-sm mx-auto mb-6">
-              You can create a new blood request to experience the district donor matching flow.
+            <h1 className="text-xl font-bold text-neutral-950 mb-2">
+              No active blood request found
+            </h1>
+            <p className="text-sm text-neutral-600 max-w-sm mx-auto mb-6 leading-relaxed">
+              Create a new blood request to experience preliminary district donor matching backed by the authoritative verification engine.
             </p>
             <Link
               href="/requests/new"
@@ -147,62 +224,12 @@ export default function MatchingDemoPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Matching Engine Simulator Status Card */}
-            <div className="rounded-3xl bg-white border border-neutral-200/80 p-6 sm:p-8 shadow-xs text-center relative overflow-hidden">
-              {/* Subtle top accent gradient */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-400" />
-
-              {/* Radar/Pulse Graphic */}
-              <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200/80 flex items-center justify-center mx-auto mb-5 relative">
-                <span className="absolute inset-0 rounded-full bg-rose-400/20 animate-ping" />
-                <svg
-                  className="w-7 h-7 text-rose-600 relative z-10"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
-                </svg>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 mb-3">
-                Finding eligible nearby donors...
-              </h1>
-
-              <p className="text-sm sm:text-base text-neutral-600 max-w-xl mx-auto leading-relaxed mb-6 font-normal">
-                We&apos;ll check blood-group compatibility, donation eligibility,
-                location, availability, and notification preferences in the
-                matching stage.
-              </p>
-
-              {/* Temporary Indicator Badge */}
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-neutral-100/90 border border-neutral-200/80 px-4 py-2.5 text-xs text-neutral-600 max-w-lg mx-auto">
-                <svg
-                  className="w-4 h-4 text-neutral-500 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-                  />
-                </svg>
-                <span>
-                  <strong>Prototype Demonstration:</strong> Actual donor matching,
-                  database records, and SMS/in-app dispatches will be activated in
-                  subsequent development steps.
-                </span>
-              </div>
-            </div>
-
-            {/* Submitted Request Summary Card */}
+            {/* Request Context Summary */}
             <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-100">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                    Submitted Request Summary
+                    Active Blood Request
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-2xl font-black text-rose-600">
@@ -220,8 +247,7 @@ export default function MatchingDemoPage() {
                 <div>{getUrgencyBadge(request.urgency)}</div>
               </div>
 
-              {/* Key Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-5 text-left">
                 <div>
                   <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
                     District
@@ -233,7 +259,7 @@ export default function MatchingDemoPage() {
 
                 <div>
                   <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
-                    Approximate Locality
+                    Approximate Area
                   </span>
                   <span className="text-sm font-semibold text-neutral-800">
                     {request.approximateArea}
@@ -242,7 +268,7 @@ export default function MatchingDemoPage() {
 
                 <div>
                   <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
-                    Hospital / Blood Centre
+                    Hospital / Facility
                   </span>
                   <span className="text-sm font-semibold text-neutral-800">
                     {request.hospitalName}
@@ -257,79 +283,313 @@ export default function MatchingDemoPage() {
                     {formatDateTime(request.requiredByDate, request.requiredByTime)}
                   </span>
                 </div>
-
-                {request.notes && (
-                  <div className="sm:col-span-2 pt-2 border-t border-neutral-100">
-                    <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
-                      Coordination Note
-                    </span>
-                    <p className="text-sm text-neutral-700 bg-neutral-50 p-3 rounded-xl border border-neutral-200/80">
-                      {request.notes}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Matching Criteria Breakdown Card */}
+            {/* Matching Engine States */}
+            {isLoading && (
+              <div className="rounded-3xl bg-white border border-neutral-200/80 p-8 sm:p-12 shadow-xs text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-400" />
+                <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200/80 flex items-center justify-center mx-auto mb-5 relative">
+                  <span className="absolute inset-0 rounded-full bg-rose-400/20 animate-ping" />
+                  <svg
+                    className="w-7 h-7 text-rose-600 relative z-10"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
+                  </svg>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-950 mb-2">
+                  Finding eligible donors
+                </h2>
+
+                <p className="text-sm text-neutral-600 max-w-md mx-auto leading-relaxed">
+                  Checking blood-group compatibility, district availability, and configured donation-interval rules.
+                </p>
+
+                <div className="mt-8 space-y-3 max-w-md mx-auto">
+                  <div className="h-16 rounded-2xl bg-neutral-100/70 animate-pulse" />
+                  <div className="h-16 rounded-2xl bg-neutral-100/40 animate-pulse" />
+                </div>
+              </div>
+            )}
+
+            {!isLoading && matchState?.status === 'zero_matches' && (
+              <div className="rounded-3xl bg-white border border-neutral-200/80 p-8 sm:p-10 shadow-xs text-center">
+                <div className="w-14 h-14 rounded-2xl bg-neutral-100 text-neutral-500 flex items-center justify-center mx-auto mb-4 border border-neutral-200/80">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    />
+                  </svg>
+                </div>
+
+                <h2 className="text-lg font-bold text-neutral-950 mb-2">
+                  No eligible candidate donors currently found in this district.
+                </h2>
+
+                <p className="text-sm text-neutral-600 max-w-md mx-auto leading-relaxed mb-6">
+                  Matching applies preliminary blood-group compatibility, availability, district, consent, and configured donation-interval rules.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  disabled={isLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs"
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                    />
+                  </svg>
+                  Re-evaluate Matches
+                </button>
+              </div>
+            )}
+
+            {!isLoading && matchState?.status === 'error' && (
+              <div className="rounded-3xl bg-white border border-rose-200/80 p-8 sm:p-10 shadow-xs text-center">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                    />
+                  </svg>
+                </div>
+
+                <h2 className="text-lg font-bold text-neutral-950 mb-2">
+                  Unable to find matches
+                </h2>
+
+                <p className="text-sm text-neutral-600 max-w-sm mx-auto leading-relaxed mb-6">
+                  {matchState.message}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  disabled={isLoading}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+            {!isLoading && matchState?.status === 'success' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <div>
+                    <h2 className="text-lg font-bold text-neutral-950">
+                      Eligible donor matches
+                    </h2>
+                    <p className="text-xs text-neutral-500">
+                      Evaluated against compatibility, recovery intervals, and district locality.
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {matchState.totalMatches} {matchState.totalMatches === 1 ? 'candidate' : 'candidates'}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {matchState.matches.map((candidate: PublicMatchCandidate) => {
+                    const badge = getCompatibilityBadgeDetails(candidate.compatibilityType);
+
+                    return (
+                      <div
+                        key={candidate.matchId}
+                        className="bg-white rounded-2xl border border-neutral-200/80 p-5 sm:p-6 shadow-xs transition-all hover:border-neutral-300"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center font-black text-rose-600 text-sm">
+                              {candidate.bloodGroup}
+                            </div>
+                            <div>
+                              <div className="text-sm font-bold text-neutral-900 tracking-tight">
+                                {candidate.anonymizedDonorRef}
+                              </div>
+                              <div className="text-xs text-neutral-500 flex items-center gap-1.5 mt-0.5">
+                                <svg
+                                  className="w-3.5 h-3.5 text-neutral-400 shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="1.5"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                  />
+                                </svg>
+                                <span>
+                                  {candidate.districtName}
+                                  {candidate.approximateArea ? ` • ${candidate.approximateArea}` : ''}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                                badge.isHomologous
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                  : 'bg-blue-50 text-blue-800 border-blue-200'
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  badge.isHomologous ? 'bg-emerald-600' : 'bg-blue-600'
+                                }`}
+                              />
+                              {badge.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Factual Match Reasons */}
+                        {candidate.factualMatchReasons && candidate.factualMatchReasons.length > 0 && (
+                          <div className="pt-3">
+                            <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                              Verified Preliminary Criteria
+                            </div>
+                            <ul className="space-y-1.5">
+                              {candidate.factualMatchReasons.map((reason, rIdx) => (
+                                <li
+                                  key={rIdx}
+                                  className="text-xs text-neutral-600 flex items-center gap-2"
+                                >
+                                  <svg
+                                    className="w-3.5 h-3.5 text-emerald-600 shrink-0"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="2.5"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m4.5 12.75 6 6 9-13.5"
+                                    />
+                                  </svg>
+                                  <span>{reason}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Candidate Status Footer */}
+                        <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-xs text-neutral-400">
+                          <span className="capitalize font-medium text-neutral-500">
+                            Status: {candidate.status}
+                          </span>
+                          <span>Contact details protected</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Privacy Shield Card */}
             <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
-              <h2 className="text-sm font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-rose-600" />
-                Upcoming Matching Sequence
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/70">
-                  <div className="w-8 h-8 rounded-xl bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-bold text-neutral-800 mb-3 shadow-xs">
-                    1
-                  </div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">
-                    Compatibility
-                  </h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">
-                    Evaluates ABO/Rh blood group compatibility rules against registered donors.
-                  </p>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-neutral-100 text-neutral-700 flex items-center justify-center shrink-0 border border-neutral-200/80">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"
+                    />
+                  </svg>
                 </div>
-
-                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/70">
-                  <div className="w-8 h-8 rounded-xl bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-bold text-neutral-800 mb-3 shadow-xs">
-                    2
-                  </div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">
-                    Eligibility Checks
+                <div>
+                  <h3 className="text-sm font-bold text-neutral-900 mb-1">
+                    Contact details stay private
                   </h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">
-                    Donation eligibility will be evaluated during the matching stage using configured rules and qualified clinical guidance.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/70">
-                  <div className="w-8 h-8 rounded-xl bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-bold text-neutral-800 mb-3 shadow-xs">
-                    3
-                  </div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">
-                    Privacy Shield
-                  </h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed">
-                    Maintains masked contact details until explicit donor and recipient consent.
+                  <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+                    Donor names and phone numbers remain hidden during matching. Contact details are revealed only after the donor accepts.
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Safety & Clinical Disclaimer */}
+            <div className="p-4 rounded-2xl bg-neutral-100/80 border border-neutral-200/80 text-xs text-neutral-500 leading-relaxed text-center sm:text-left flex items-start gap-3">
+              <svg
+                className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                />
+              </svg>
+              <span>
+                Hemo Match supports donor discovery and coordination only. Final donor eligibility and transfusion compatibility are determined by qualified blood-bank or clinical personnel.
+              </span>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
                 href="/requests/new"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-sm border border-neutral-200/90 shadow-xs hover:shadow-sm text-center transition-all"
               >
-                Edit Request Information
+                Create Another Request
               </Link>
               <Link
                 href="/"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm shadow-xs text-center transition-all"
               >
-                Return to Dashboard
+                Return to Home
               </Link>
             </div>
           </div>
