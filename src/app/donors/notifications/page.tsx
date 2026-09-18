@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { AppHeader } from '@/components/ui/AppHeader';
 import type { DonorProfile } from '@/types';
 import type { PublicDonorNotification } from '@/lib/db/notifications';
 
@@ -233,41 +234,9 @@ export default function DonorNotificationsPage() {
   }, [notifications]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 selection:bg-rose-100 selection:text-rose-900 pb-20">
-      {/* Header */}
-      <header className="w-full border-b border-neutral-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/donors/profile"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-950 transition-colors py-2 pr-3 -ml-2 rounded-lg"
-            >
-              <svg
-                className="w-4 h-4 text-neutral-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-              </svg>
-              Profile
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Notifications Inbox
-            </span>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-600 text-white">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
+      {/* Global App Header with Volunteer Donor Context */}
+      <AppHeader roleContext="donor" backHref="/donors/profile" backLabel="Profile" />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10">
         {/* Missing Profile State */}

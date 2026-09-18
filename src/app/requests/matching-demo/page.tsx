@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { AppHeader } from '@/components/ui/AppHeader';
 import type { PublicMatchCandidate } from '@/types/matches';
 import {
   validateStoredRequest,
@@ -268,50 +269,9 @@ export default function MatchingDemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 selection:bg-rose-100 selection:text-rose-900 pb-20">
-      {/* Header */}
-      <header className="w-full border-b border-neutral-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-950 transition-colors py-2 pr-3 -ml-2 rounded-lg"
-          >
-            <svg
-              className="w-4 h-4 text-neutral-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5 8.25 12l7.5-7.5"
-              />
-            </svg>
-            Home
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/donors/notifications"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200/80 border border-neutral-200/80 transition-colors"
-              title="Open Donor Inbox in a separate tab for the demo"
-            >
-              <span>Donor Inbox (Demo)</span>
-              <svg className="w-3 h-3 text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-            </Link>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 border border-rose-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-              Automated Match Discovery
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
+      {/* Global App Header with Requester Context */}
+      <AppHeader roleContext="requester" backHref="/requests/new" backLabel="New Request" />
 
       {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10">

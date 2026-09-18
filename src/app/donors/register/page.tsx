@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
 import { type DonorProfile, DEMO_DISTRICTS } from '@/types';
 import {
   VALID_BLOOD_GROUPS,
@@ -145,66 +146,32 @@ export default function DonorRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 selection:bg-rose-100 selection:text-rose-900 pb-20">
-      {/* Header */}
-      <header className="w-full border-b border-neutral-200/70 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-950 transition-colors py-2 pr-3 -ml-2 rounded-lg"
-          >
-            <svg
-              className="w-4 h-4 text-neutral-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-            </svg>
-            Back to Home
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Donor Registration
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
+      {/* Global App Header with Volunteer Donor Context */}
+      <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
 
       {/* Main */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white mb-2">
             Register as a Donor
           </h1>
-          <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
             Create your donor profile so that future blood requests in your district can
             identify potentially matching donors. Your contact details remain private
             throughout the matching process.
           </p>
         </div>
 
-        {/* Privacy Card */}
-        <div className="rounded-2xl bg-blue-50/60 border border-blue-200/80 p-4 sm:p-5 mb-8 flex items-start gap-3.5 shadow-xs">
-          <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-            <svg className="w-4 h-4 text-blue-700" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
-          </div>
-          <div className="text-xs sm:text-sm text-blue-900/90 leading-relaxed">
-            <strong className="font-semibold text-blue-950 block mb-1">Your Privacy is Protected</strong>
-            <ul className="space-y-0.5 text-blue-900/80 list-disc list-inside">
-              <li>Exact home addresses are not collected.</li>
-              <li>Your phone number is stored privately and is never shown to blood requesters during matching.</li>
-              <li>Contact information is only shared through structured donor acceptance and authorized contact reveal.</li>
-              <li>Hemo Match does not determine final medical eligibility.</li>
-            </ul>
-          </div>
-        </div>
+        {/* Privacy Banner */}
+        <EmergencyBanner tone="privacy" title="Your Privacy is Protected" className="mb-8">
+          <ul className="space-y-0.5 list-disc list-inside">
+            <li>Exact home addresses are not collected.</li>
+            <li>Your contact details stay private during matching and are only revealed after donor acceptance and explicit requester authorization.</li>
+            <li>Hemo Match does not determine final medical eligibility.</li>
+          </ul>
+        </EmergencyBanner>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Card 1: Identity */}
