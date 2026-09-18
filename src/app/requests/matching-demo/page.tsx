@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { Card } from '@/components/ui/Card';
+import { RequestLifecycle, CandidateCard } from '@/components/matching';
 import type { PublicMatchCandidate } from '@/types/matches';
 import {
   validateStoredRequest,
   parseMatchApiResponse,
-  getCompatibilityBadgeDetails,
   type MatchUiState,
 } from '@/lib/matching/ui-helpers';
 import {
@@ -246,27 +247,58 @@ export default function MatchingDemoPage() {
     switch (urgency) {
       case 'critical':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
             Critical Urgency
           </span>
         );
       case 'urgent':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
             Urgent (12–24h)
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-700 border border-neutral-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
             Routine Scheduled
           </span>
         );
     }
   };
+
+  // Lifecycle state calculations
+  const lifecycleStates = useMemo(() => {
+    const hasReq = Boolean(isValid && request);
+    const hasMatches = Boolean(
+      matchState?.status === 'success' && matchState.matches.length > 0
+    );
+    const isNotified = Boolean(
+      dispatchState.status === 'success' ||
+        dispatchState.status === 'already_notified' ||
+        (matchState?.status === 'success' &&
+          matchState.matches.some(
+            (m) => m.status === 'notified' || m.status === 'accepted'
+          ))
+    );
+    const hasResp = Boolean(
+      matchState?.status === 'success' &&
+        matchState.matches.some(
+          (m) => m.status === 'accepted' || m.status === 'declined'
+        )
+    );
+    const hasRev = Boolean(Object.keys(revealedContacts).length > 0);
+
+    return {
+      hasRequest: hasReq,
+      hasMatches,
+      isNotified,
+      hasResponse: hasResp,
+      hasRevealed: hasRev,
+    };
+  }, [isValid, request, matchState, dispatchState, revealedContacts]);
 
   return (
     <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
@@ -274,17 +306,18 @@ export default function MatchingDemoPage() {
       <AppHeader roleContext="requester" backHref="/requests/new" backLabel="New Request" />
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
         {!isValid || !request ? (
           /* Empty / Missing Request State */
-          <div className="bg-white rounded-3xl border border-neutral-200/80 p-8 sm:p-12 text-center shadow-xs">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+          <Card variant="default" className="p-8 sm:p-12 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-100 dark:border-rose-900">
               <svg
                 className="w-7 h-7"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -293,138 +326,148 @@ export default function MatchingDemoPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-neutral-950 mb-2">
+            <h1 className="text-xl font-bold text-neutral-950 dark:text-white mb-2">
               No active blood request found
             </h1>
-            <p className="text-sm text-neutral-600 max-w-sm mx-auto mb-6 leading-relaxed">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-sm mx-auto mb-6 leading-relaxed">
               Create a new blood request to experience preliminary district donor matching backed by the authoritative verification engine.
             </p>
             <Link
               href="/requests/new"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-sm transition-all shadow-xs"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-xs"
             >
               Create Blood Request
             </Link>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-6">
-            {/* Page Header with Role Clarity & H1 */}
-            <div className="mb-2">
+            {/* Page Header */}
+            <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200/80">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                  Requester Flow: Request Blood → Find Matches → Notify
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
+                  Requester Workspace • Step 2: Match &amp; Coordinate
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
                 District Match Discovery
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-600 mt-1">
-                Algorithmically discover compatible district donors, send in-app notifications, and unlock authorized contacts after donor acceptance.
+              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                Discover compatible district donors, send in-app notifications, and unlock authorized contacts after donor acceptance.
               </p>
             </div>
 
-            {/* Request Context Summary */}
-            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-100">
+            {/* Request Lifecycle Stepper */}
+            <RequestLifecycle {...lifecycleStates} />
+
+            {/* Request Command Header */}
+            <Card variant="default" className="p-5 sm:p-7 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                    Active Blood Request
+                  <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
+                    Active Blood Requirement
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-black text-rose-600">
+                    <span className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-500">
                       {request.bloodGroup}
                     </span>
-                    <span className="text-base font-semibold text-neutral-900">
+                    <span className="text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-100">
                       {request.component}
                     </span>
-                    <span className="text-sm text-neutral-500 font-medium">
+                    <span className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 font-medium">
                       ({request.unitsNeeded} {request.unitsNeeded === 1 ? 'Unit' : 'Units'})
                     </span>
                   </div>
                 </div>
 
-                <div>{getUrgencyBadge(request.urgency)}</div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Status: {request.status.toUpperCase()}
+                  </span>
+                  {getUrgencyBadge(request.urgency)}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-5 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 text-left">
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
+                  <span className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
                     District
                   </span>
-                  <span className="text-sm font-semibold text-neutral-800">
+                  <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
                     {request.districtName || request.districtId}
                   </span>
                 </div>
 
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
+                  <span className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
                     Approximate Area
                   </span>
-                  <span className="text-sm font-semibold text-neutral-800">
+                  <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                     {request.approximateArea}
                   </span>
                 </div>
 
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
+                  <span className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
                     Hospital / Facility
                   </span>
-                  <span className="text-sm font-semibold text-neutral-800">
+                  <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                     {request.hospitalName}
                   </span>
                 </div>
 
                 <div>
-                  <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1">
+                  <span className="block text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
                     Required By
                   </span>
-                  <span className="text-sm font-semibold text-neutral-800">
+                  <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                     {formatDateTime(request.requiredByDate, request.requiredByTime)}
                   </span>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Matching Engine States */}
             {isLoading && (
-              <div className="rounded-3xl bg-white border border-neutral-200/80 p-8 sm:p-12 shadow-xs text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-400" />
-                <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200/80 flex items-center justify-center mx-auto mb-5 relative">
-                  <span className="absolute inset-0 rounded-full bg-rose-400/20 animate-ping" />
+              <Card variant="default" className="p-8 sm:p-12 text-center relative overflow-hidden">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-7 h-7 text-rose-600 relative z-10"
+                    className="w-7 h-7 text-rose-600 dark:text-rose-500 animate-spin"
                     viewBox="0 0 24 24"
-                    fill="currentColor"
+                    fill="none"
+                    aria-hidden="true"
                   >
-                    <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-950 mb-2">
-                  Finding eligible donors
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white mb-2">
+                  Evaluating district matches...
                 </h2>
 
-                <p className="text-sm text-neutral-600 max-w-md mx-auto leading-relaxed">
-                  Checking blood-group compatibility, district availability, and configured donation-interval rules.
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
+                  Evaluating blood-group compatibility, district locality, and the 120-day donation interval rule.
                 </p>
 
-                <div className="mt-8 space-y-3 max-w-md mx-auto">
-                  <div className="h-16 rounded-2xl bg-neutral-100/70 animate-pulse" />
-                  <div className="h-16 rounded-2xl bg-neutral-100/40 animate-pulse" />
+                <div className="mt-6 space-y-3 max-w-md mx-auto">
+                  <div className="h-16 rounded-2xl bg-neutral-100/70 dark:bg-neutral-800/70 animate-pulse" />
+                  <div className="h-16 rounded-2xl bg-neutral-100/40 dark:bg-neutral-800/40 animate-pulse" />
                 </div>
-              </div>
+              </Card>
             )}
 
             {!isLoading && matchState?.status === 'zero_matches' && (
-              <div className="rounded-3xl bg-white border border-neutral-200/80 p-8 sm:p-10 shadow-xs text-center">
-                <div className="w-14 h-14 rounded-2xl bg-neutral-100 text-neutral-500 flex items-center justify-center mx-auto mb-4 border border-neutral-200/80">
+              <Card variant="default" className="p-8 sm:p-10 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 flex items-center justify-center mx-auto mb-4 border border-neutral-200/80 dark:border-neutral-700">
                   <svg
                     className="w-6 h-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -434,19 +477,19 @@ export default function MatchingDemoPage() {
                   </svg>
                 </div>
 
-                <h2 className="text-lg font-bold text-neutral-950 mb-2">
+                <h2 className="text-lg font-bold text-neutral-950 dark:text-white mb-2">
                   No eligible candidate donors currently found in this district.
                 </h2>
 
-                <p className="text-sm text-neutral-600 max-w-md mx-auto leading-relaxed mb-6">
-                  Matching applies preliminary blood-group compatibility, availability, district, consent, and configured donation-interval rules.
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto leading-relaxed mb-6">
+                  Matching enforces preliminary blood-group compatibility, availability, district locality, consent, and the 120-day donation interval policy.
                 </p>
 
                 <button
                   type="button"
                   onClick={handleRetry}
                   disabled={isLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -454,6 +497,7 @@ export default function MatchingDemoPage() {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -461,20 +505,21 @@ export default function MatchingDemoPage() {
                       d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                     />
                   </svg>
-                  Re-evaluate Matches
+                  <span>Re-evaluate Matches</span>
                 </button>
-              </div>
+              </Card>
             )}
 
             {!isLoading && matchState?.status === 'error' && (
-              <div className="rounded-3xl bg-white border border-rose-200/80 p-8 sm:p-10 shadow-xs text-center">
-                <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+              <Card variant="default" className="p-8 sm:p-10 text-center border-rose-200 dark:border-rose-900">
+                <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-100 dark:border-rose-900">
                   <svg
                     className="w-6 h-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -484,13 +529,13 @@ export default function MatchingDemoPage() {
                   </svg>
                 </div>
 
-                <h2 className="text-lg font-bold text-neutral-950 mb-2">
+                <h2 className="text-lg font-bold text-neutral-950 dark:text-white mb-2">
                   {matchState.errorCode === 'request_expired'
                     ? 'Blood Request Expired'
                     : 'Unable to find matches'}
                 </h2>
 
-                <p className="text-sm text-neutral-600 max-w-sm mx-auto leading-relaxed mb-6">
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-sm mx-auto leading-relaxed mb-6">
                   {matchState.message}
                 </p>
 
@@ -498,7 +543,7 @@ export default function MatchingDemoPage() {
                   {matchState.errorCode === 'request_expired' ? (
                     <Link
                       href="/requests/new"
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs transition-all shadow-xs"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-xs transition-all shadow-xs"
                     >
                       Create New Request
                     </Link>
@@ -507,40 +552,43 @@ export default function MatchingDemoPage() {
                       type="button"
                       onClick={handleRetry}
                       disabled={isLoading}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-medium text-xs transition-all shadow-xs cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
                     >
                       Try Again
                     </button>
                   )}
                 </div>
-              </div>
+              </Card>
             )}
 
             {!isLoading && matchState?.status === 'success' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between px-1">
+              <div className="space-y-5">
+                {/* Candidates List Header & Refresh Button */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
                   <div>
-                    <h2 className="text-lg font-bold text-neutral-950">
-                      Eligible donor matches
+                    <h2 className="text-lg font-bold text-neutral-950 dark:text-white">
+                      Eligible Donor Matches
                     </h2>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       Evaluated against compatibility, recovery intervals, and district locality.
                     </p>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleRetry}
                       disabled={isLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 hover:text-neutral-950 bg-white hover:bg-neutral-50 active:bg-neutral-100 transition-all border border-neutral-300 shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-800 active:bg-neutral-100 transition-all border border-neutral-300 dark:border-neutral-700 shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
                       title="Check for updated donor responses and reveal status"
                     >
                       <svg
-                        className={`w-4 h-4 text-neutral-600 ${isLoading ? 'animate-spin' : ''}`}
+                        className={`w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400 ${isLoading ? 'animate-spin' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth="2"
                         stroke="currentColor"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -550,269 +598,44 @@ export default function MatchingDemoPage() {
                       </svg>
                       <span>Refresh Status</span>
                     </button>
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60">
                       {matchState.totalMatches} {matchState.totalMatches === 1 ? 'candidate' : 'candidates'}
                     </span>
                   </div>
                 </div>
 
+                {/* Candidate Cards */}
                 <div className="space-y-3">
-                  {matchState.matches.map((candidate: PublicMatchCandidate) => {
-                    const badge = getCompatibilityBadgeDetails(candidate.compatibilityType);
-
-                    return (
-                      <div
-                        key={candidate.matchId}
-                        className="bg-white rounded-2xl border border-neutral-200/80 p-5 sm:p-6 shadow-xs transition-all hover:border-neutral-300"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center font-black text-rose-600 text-sm">
-                              {candidate.bloodGroup}
-                            </div>
-                            <div>
-                              <div className="text-sm font-bold text-neutral-900 tracking-tight">
-                                {candidate.anonymizedDonorRef}
-                              </div>
-                              <div className="text-xs text-neutral-500 flex items-center gap-1.5 mt-0.5">
-                                <svg
-                                  className="w-3.5 h-3.5 text-neutral-400 shrink-0"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="1.5"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                                  />
-                                </svg>
-                                <span>
-                                  {candidate.districtName}
-                                  {candidate.approximateArea ? ` • ${candidate.approximateArea}` : ''}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
-                                badge.isHomologous
-                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                  : 'bg-blue-50 text-blue-800 border-blue-200'
-                              }`}
-                            >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  badge.isHomologous ? 'bg-emerald-600' : 'bg-blue-600'
-                                }`}
-                              />
-                              {badge.label}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Factual Match Reasons */}
-                        {candidate.factualMatchReasons && candidate.factualMatchReasons.length > 0 && (
-                          <div className="pt-3">
-                            <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-                              Preliminary Match Criteria
-                            </div>
-                            <ul className="space-y-1.5">
-                              {candidate.factualMatchReasons.map((reason, rIdx) => (
-                                <li
-                                  key={rIdx}
-                                  className="text-xs text-neutral-600 flex items-center gap-2"
-                                >
-                                  <svg
-                                    className="w-3.5 h-3.5 text-emerald-600 shrink-0"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="2.5"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="m4.5 12.75 6 6 9-13.5"
-                                    />
-                                  </svg>
-                                  <span>{reason}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {/* Authorized Contact Reveal & Privacy Boundary */}
-                        {candidate.status === 'accepted' ? (
-                          revealedContacts[candidate.matchId] ? (
-                            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-emerald-50/90 border-2 border-emerald-300 shadow-xs">
-                              <div className="flex items-center justify-between pb-2.5 border-b border-emerald-200 mb-3">
-                                <div className="flex items-center gap-2 text-xs font-bold text-emerald-950">
-                                  <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                    </svg>
-                                  </div>
-                                  <span>Contact Unlocked after Donor Acceptance</span>
-                                </div>
-                                <span className="text-xs font-bold tracking-wide text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-full shadow-2xs">
-                                  Authorized Reveal
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                                <div>
-                                  <span className="text-neutral-500 text-[11px] block font-medium mb-0.5">Donor Name</span>
-                                  <span className="font-bold text-neutral-950 text-base">
-                                    {revealedContacts[candidate.matchId].name}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500 text-[11px] block font-medium mb-0.5">Phone Number</span>
-                                  <a
-                                    href={`tel:${revealedContacts[candidate.matchId].phone}`}
-                                    className="font-bold text-emerald-700 hover:text-emerald-800 text-base inline-flex items-center gap-1.5 group"
-                                  >
-                                    <svg className="w-4 h-4 text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-                                    </svg>
-                                    <span>{revealedContacts[candidate.matchId].phone}</span>
-                                  </a>
-                                </div>
-                              </div>
-
-                              <div className="mt-3 pt-2.5 border-t border-emerald-200/70 text-[11px] text-emerald-900/90 leading-relaxed">
-                                Minimum coordination contact revealed. Final clinical qualification occurs at the blood center.
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-4 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/90">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                  <div className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                                    <span>Donor Accepted Request</span>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 font-mono flex items-center gap-2 flex-wrap">
-                                    <span>Phone:</span>
-                                    <span className="bg-neutral-200 text-neutral-700 px-2 py-0.5 rounded text-[11px] font-semibold tracking-widest">
-                                      ••••••••••
-                                    </span>
-                                    <span className="text-[10px] text-neutral-400 uppercase font-sans font-medium">
-                                      (Hidden)
-                                    </span>
-                                    <span className="text-[10px] text-emerald-800 font-sans font-semibold bg-emerald-100/90 border border-emerald-200 px-2 py-0.5 rounded-full">
-                                      Contact Protected Until Reveal
-                                    </span>
-                                  </div>
-                                  <p className="text-xs text-neutral-600 mt-2">
-                                    Donor has accepted this match. Ready to reveal — click the button to unlock coordination details.
-                                  </p>
-                                </div>
-
-                                <div className="shrink-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRevealContact(candidate.matchId)}
-                                    disabled={revealingMatchId === candidate.matchId}
-                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 text-white font-semibold text-xs shadow-sm hover:shadow ring-2 ring-emerald-600/30 transition-all cursor-pointer"
-                                  >
-                                    {revealingMatchId === candidate.matchId ? (
-                                      <>
-                                        <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24">
-                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        Authorizing Reveal...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                                        </svg>
-                                        <span>Reveal Contact</span>
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-
-                              {revealError && revealError.matchId === candidate.matchId && (
-                                <div className="mt-2.5 p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px]">
-                                  {revealError.message}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        ) : candidate.status === 'declined' ? (
-                          <div className="mt-4 p-3.5 rounded-2xl bg-neutral-100/70 border border-neutral-200/80">
-                            <div className="flex items-center justify-between text-xs text-neutral-500">
-                              <div className="flex items-center gap-1.5 font-medium">
-                                <span className="w-2 h-2 rounded-full bg-neutral-400" />
-                                Donor Unavailable / Declined
-                              </div>
-                              <span className="text-[10px] text-neutral-400 uppercase font-medium">Contact Protected</span>
-                            </div>
-                            <p className="text-[11px] text-neutral-500 mt-1">
-                              This donor was unable to proceed with this request. Contact details remain confidential.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="mt-4 p-3.5 rounded-2xl bg-neutral-50/90 border border-neutral-200/70">
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2 text-neutral-500 font-mono">
-                                <span>Phone:</span>
-                                <span className="bg-neutral-200 text-neutral-700 px-2 py-0.5 rounded text-[11px] font-semibold tracking-widest">
-                                  ••••••••••
-                                </span>
-                                <span className="text-[10px] text-neutral-400 uppercase font-sans font-semibold tracking-wide">
-                                  (Hidden)
-                                </span>
-                              </div>
-                              {candidate.status === 'notified' ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                  Notified — Awaiting Response
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
-                                  Awaiting Notification
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-neutral-500 mt-1.5">
-                              Contact details remain private until the donor accepts.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {matchState.matches.map((candidate: PublicMatchCandidate) => (
+                    <CandidateCard
+                      key={candidate.matchId}
+                      candidate={candidate}
+                      revealedContact={revealedContacts[candidate.matchId]}
+                      isRevealing={revealingMatchId === candidate.matchId}
+                      revealError={
+                        revealError?.matchId === candidate.matchId
+                          ? revealError.message
+                          : null
+                      }
+                      onReveal={handleRevealContact}
+                    />
+                  ))}
                 </div>
 
-                {/* Step 7: Explicit Requester Action — Notify Eligible Donors */}
+                {/* Step 3: Highly Visible Coordination Action Panel — Notify Eligible Donors */}
                 {matchState.matches.length > 0 && (
-                  <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100">
+                  <Card variant="default" className="p-5 sm:p-7 shadow-xs mt-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                       <div>
-                        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">
+                        <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
                           In-App Notification Dispatch
                         </div>
-                        <h3 className="text-base font-bold text-neutral-950">
+                        <h3 className="text-base font-bold text-neutral-950 dark:text-white">
                           Notify Eligible Donors
                         </h3>
-                        <p className="text-xs text-neutral-500 mt-0.5">
-                          Dispatches authoritative in-app notifications to candidate donors in this district.
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                          Dispatches in-app notifications only to candidates permitted by notification delivery rules.
                         </p>
                       </div>
 
@@ -822,7 +645,7 @@ export default function MatchingDemoPage() {
                             type="button"
                             onClick={handleDispatch}
                             id="notify-eligible-donors-btn"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm transition-all shadow-xs active:scale-[0.99] cursor-pointer"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
                           >
                             <svg
                               className="w-4 h-4 text-white/90"
@@ -830,6 +653,7 @@ export default function MatchingDemoPage() {
                               viewBox="0 0 24 24"
                               strokeWidth="2"
                               stroke="currentColor"
+                              aria-hidden="true"
                             >
                               <path
                                 strokeLinecap="round"
@@ -837,7 +661,7 @@ export default function MatchingDemoPage() {
                                 d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
                               />
                             </svg>
-                            Notify Eligible Donors
+                            <span>Notify Eligible Donors</span>
                           </button>
                         )}
 
@@ -845,72 +669,39 @@ export default function MatchingDemoPage() {
                           <button
                             type="button"
                             disabled
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-400 text-white font-medium text-xs sm:text-sm cursor-not-allowed opacity-80"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-rose-400 text-white font-semibold text-xs sm:text-sm cursor-not-allowed opacity-80"
                           >
                             <svg
                               className="w-4 h-4 animate-spin text-white"
                               fill="none"
                               viewBox="0 0 24 24"
+                              aria-hidden="true"
                             >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
-                            Sending Notifications...
+                            <span>Sending Notifications...</span>
                           </button>
                         )}
 
                         {dispatchState.status === 'success' && (
-                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
-                            <svg
-                              className="w-4 h-4 text-emerald-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="2.5"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m4.5 12.75 6 6 9-13.5"
-                              />
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold">
+                            <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
-                            In-App Notifications Sent
+                            <span>In-App Notifications Sent</span>
                           </div>
                         )}
 
                         {dispatchState.status === 'already_notified' && (
-                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200 text-xs font-semibold">
-                            <svg
-                              className="w-4 h-4 text-neutral-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="2"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m4.5 12.75 6 6 9-13.5"
-                              />
-                            </svg>
-                            Already Notified
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold">
+                            <span>Already Notified</span>
                           </div>
                         )}
 
                         {dispatchState.status === 'zero_notifications' && (
-                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">
-                            0 Notifications Dispatched
+                          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-semibold">
+                            <span>0 Notifications Dispatched</span>
                           </div>
                         )}
 
@@ -918,7 +709,7 @@ export default function MatchingDemoPage() {
                           <button
                             type="button"
                             onClick={handleDispatch}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs transition-all shadow-xs cursor-pointer"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
                           >
                             Retry Dispatch
                           </button>
@@ -928,12 +719,12 @@ export default function MatchingDemoPage() {
 
                     {/* Aggregate Outcome Display */}
                     {dispatchState.status === 'success' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-900 leading-relaxed">
+                      <div className="mt-4 p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/60 text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
                         <div className="font-bold mb-1 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                          <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                           {dispatchState.count} eligible donor{dispatchState.count === 1 ? '' : 's'} notified
                         </div>
-                        <p className="text-emerald-800/90">
+                        <p className="text-emerald-800/90 dark:text-emerald-300/80">
                           In-app notifications sent. Candidate donors have been alerted within their private inboxes. Contact details remain confidential until a donor explicitly accepts the request and contact is revealed.
                         </p>
                       </div>
@@ -941,20 +732,20 @@ export default function MatchingDemoPage() {
 
                     {/* Next-Step Guidance for Live Demo Flow */}
                     {(dispatchState.status === 'success' || dispatchState.status === 'already_notified') && (
-                      <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-blue-50/80 border border-blue-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/90 dark:border-blue-900/60 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold">
                               →
                             </span>
-                            <span className="text-xs font-bold uppercase tracking-wider text-blue-950">
+                            <span className="text-xs font-bold uppercase tracking-wider text-blue-950 dark:text-blue-200">
                               Next Demo Step: Donor Response
                             </span>
                           </div>
-                          <p className="text-xs text-neutral-700 leading-relaxed max-w-lg">
+                          <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed max-w-lg">
                             Eligible donors have received in-app match alerts. Open the <strong>Donor Notifications</strong> inbox in another tab or window to accept or decline as the donor.
                           </p>
-                          <p className="text-[11px] text-blue-900/80 font-medium">
+                          <p className="text-[11px] text-blue-900/80 dark:text-blue-300/80 font-medium">
                             After the donor accepts, return here and click <strong>Refresh Status</strong> to unlock authorized contact reveal.
                           </p>
                         </div>
@@ -963,10 +754,10 @@ export default function MatchingDemoPage() {
                             href="/donors/notifications"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
                           >
                             <span>Open Donor Inbox</span>
-                            <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                            <svg className="w-3.5 h-3.5 text-white/70 dark:text-neutral-950/70" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                             </svg>
                           </Link>
@@ -975,34 +766,35 @@ export default function MatchingDemoPage() {
                     )}
 
                     {dispatchState.status === 'zero_notifications' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 leading-relaxed">
+                      <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
                         <div className="font-bold mb-1">Notice: Zero notifications dispatched</div>
-                        <p className="text-amber-800/90">{dispatchState.message}</p>
+                        <p className="text-amber-800/90 dark:text-amber-300/80">{dispatchState.message}</p>
                       </div>
                     )}
 
                     {dispatchState.status === 'already_notified' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-neutral-100 border border-neutral-200 text-xs text-neutral-700 leading-relaxed">
+                      <div className="mt-4 p-4 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
                         <div className="font-bold mb-1">Request Already Notified</div>
-                        <p className="text-neutral-600">{dispatchState.message}</p>
+                        <p className="text-neutral-600 dark:text-neutral-400">{dispatchState.message}</p>
                       </div>
                     )}
 
                     {dispatchState.status === 'error' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 leading-relaxed">
+                      <div className="mt-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-xs text-rose-900 dark:text-rose-200 leading-relaxed">
                         <div className="font-bold mb-1">Dispatch Error</div>
-                        <p className="text-rose-700">{dispatchState.message}</p>
+                        <p className="text-rose-700 dark:text-rose-300">{dispatchState.message}</p>
                       </div>
                     )}
 
                     {dispatchState.status === 'idle' && (
-                      <div className="mt-3 text-xs text-neutral-400 flex items-center gap-1.5">
+                      <div className="mt-3 text-xs text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5">
                         <svg
-                          className="w-3.5 h-3.5 text-neutral-400 shrink-0"
+                          className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0"
                           fill="none"
                           viewBox="0 0 24 24"
                           strokeWidth="2"
                           stroke="currentColor"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -1011,25 +803,26 @@ export default function MatchingDemoPage() {
                           />
                         </svg>
                         <span>
-                          In-app notification only. No SMS or WhatsApp messages are sent. Donor identities remain masked.
+                          In-app notification only. No external broadcasts. Donor phone numbers remain masked.
                         </span>
                       </div>
                     )}
-                  </div>
+                  </Card>
                 )}
               </div>
             )}
 
             {/* Privacy Shield Card */}
-            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-xs">
+            <Card variant="default" className="p-5 sm:p-6 shadow-xs">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-neutral-100 text-neutral-700 flex items-center justify-center shrink-0 border border-neutral-200/80">
+                <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 border border-neutral-200/80 dark:border-neutral-700">
                   <svg
                     className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -1039,24 +832,25 @@ export default function MatchingDemoPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-neutral-900 mb-1">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
                     Contact details stay private
                   </h3>
-                  <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
-                    Donor names and phone numbers remain hidden during matching. Contact details are revealed only after the donor accepts.
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal">
+                    Donor names and phone numbers remain masked during candidate matching and alert dispatch. Contact details are revealed only after a donor explicitly accepts and the requester clicks Reveal Contact.
                   </p>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Safety & Clinical Disclaimer */}
-            <div className="p-4 rounded-2xl bg-neutral-100/80 border border-neutral-200/80 text-xs text-neutral-500 leading-relaxed text-center sm:text-left flex items-start gap-3">
+            <div className="p-4 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/50 border border-neutral-200/80 dark:border-neutral-800 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed text-center sm:text-left flex items-start gap-3">
               <svg
-                className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5"
+                className="w-4 h-4 text-neutral-400 dark:text-neutral-500 shrink-0 mt-0.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -1069,17 +863,17 @@ export default function MatchingDemoPage() {
               </span>
             </div>
 
-            {/* Actions */}
+            {/* Bottom Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
                 href="/requests/new"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-sm border border-neutral-200/90 shadow-xs hover:shadow-sm text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs text-center transition-all"
               >
                 Create Another Request
               </Link>
               <Link
                 href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm shadow-xs text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
               >
                 Return to Home
               </Link>
