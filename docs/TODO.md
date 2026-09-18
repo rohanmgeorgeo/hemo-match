@@ -2,9 +2,9 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Branch:** `feature/notifications`
-**Current Milestone:** Step 7 — Notifications Dispatch (COMPLETE)
-**Next Milestone:** Step 8 — Donor Response & Acceptance (ACTIVE NEXT)
+**Current Branch:** `feature/donor-response`
+**Current Milestone:** Step 8 — Donor Response & Acceptance (COMPLETE)
+**Next Milestone:** Step 9 — Two-Way Contact Reveal Protocol (ACTIVE NEXT)
 
 ---
 
@@ -64,19 +64,23 @@
   - [x] **Step 7E**: Controlled live Supabase verification proving full Request → Match → Notify flow, idempotency, inbox isolation, and 100% baseline restoration
   - [x] **Step 7F**: 128 automated tests passing across 31 suites
 
+- [x] **Step 8: Donor Response & Acceptance Flow (COMPLETE)**
+  - [x] **Step 8A**: Migration `0004_atomic_donor_response.sql` with atomic RPC `record_donor_response()`
+  - [x] **Step 8B**: Pure pre-response revalidation (`revalidation.ts`) enforcing consent, availability, district, compatibility, and 120-day interval
+  - [x] **Step 8C**: Server-only response coordinator (`submitDonorResponse()`) and POST `/api/donors/responses`
+  - [x] **Step 8D**: Donor inbox UI real `Accept` and `Decline` controls with confirmation modals and safety notices
+  - [x] **Step 8E**: Persistent response derivation in donor inbox projection (`PublicDonorNotification.response`)
+  - [x] **Step 8F**: Controlled live Supabase verification proving Accept, Decline, stale rejection, idempotency, and zero contact reveals
+  - [x] **Step 8G**: 153 automated tests passing across 38 suites
 
 ---
 
 ## Upcoming Milestones
 
-- [ ] **Step 8: Donor Response & Acceptance Flow**
-  - [ ] Accept/decline actions via secure server Route Handler
-  - [ ] Update `matches.status` and record `donor_responses`
-  - [ ] Donor revalidation before acceptance confirmation
 - [ ] **Step 9: Two-Way Contact Reveal Protocol**
   - [ ] Requester reveal request after donor acceptance
   - [ ] Unmask contact details only when both parties have consented
-  - [ ] Audit trail in `contact_reveals` table
+  - [ ] Strict append-only audit trail in `contact_reveals` table
 - [ ] **Step 10: Real Authentication & Production Hardening**
   - [ ] Supabase Auth (SMS OTP / phone authentication)
   - [ ] Column-level encryption for `donors.phone_number` at rest

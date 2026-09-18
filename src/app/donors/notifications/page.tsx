@@ -39,6 +39,12 @@ export default function DonorNotificationsPage() {
 
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [markingReadId, setMarkingReadId] = useState<string | null>(null);
+  const [submittingResponseId, setSubmittingResponseId] = useState<string | null>(null);
+  const [responseError, setResponseError] = useState<{ notificationId: string; message: string } | null>(null);
+  const [activeModal, setActiveModal] = useState<{
+    notification: PublicDonorNotification;
+    action: 'accepted' | 'declined';
+  } | null>(null);
 
   const donorId = profile?.id ?? null;
 
@@ -149,6 +155,61 @@ export default function DonorNotificationsPage() {
     }
   };
 
+  const handleConfirmResponse = async () => {
+    if (!donorId || !activeModal || submittingResponseId) return;
+
+    const { notification, action } = activeModal;
+    setSubmittingResponseId(notification.id);
+    setResponseError(null);
+
+    try {
+      const res = await fetch('/api/donors/responses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donorId,
+          notificationId: notification.id,
+          response: action,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.success) {
+        // Update local state to reflect response and read status
+        setFetchState((prev) => {
+          if (!prev || !prev.notifications) return prev;
+          return {
+            ...prev,
+            notifications: prev.notifications.map((n) =>
+              n.id === notification.id
+                ? {
+                    ...n,
+                    response: action,
+                    status: 'read',
+                    readAt: n.readAt || new Date().toISOString(),
+                  }
+                : n
+            ),
+          };
+        });
+        setActiveModal(null);
+      } else {
+        setResponseError({
+          notificationId: notification.id,
+          message: json?.message || 'Unable to record response. Please try again.',
+        });
+      }
+    } catch {
+      setResponseError({
+        notificationId: notification.id,
+        message: 'Network error. Please verify your connection and try again.',
+      });
+    } finally {
+      setSubmittingResponseId(null);
+    }
+  };
+
   const formatDateTime = (isoString?: string | null) => {
     if (!isoString) return 'Not specified';
     try {
@@ -248,134 +309,119 @@ export default function DonorNotificationsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Donor Demo Identity Banner */}
-            <div className="bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200/60 flex items-center justify-center shrink-0">
-                  <span className="text-lg font-black text-rose-600">
-                    {profile.bloodGroup}
-                  </span>
-                </div>
+            {/* Header / Summary Card */}
+            <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm font-bold text-neutral-900">
-                    {profile.fullName}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                    Demo Donor Identity
                   </div>
-                  <div className="text-xs text-neutral-500">
-                    {profile.districtName || profile.districtId} {profile.approximateArea ? `• ${profile.approximateArea}` : ''}
-                  </div>
+                  <h1 className="text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
+                    Donor Notifications
+                  </h1>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    Urgent transfusion requests matching your blood group ({profile.bloodGroup}) and district.
+                  </p>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Notifications Active
-                </span>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setRetryTrigger((prev) => prev + 1)}
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <svg
+                      className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                      />
+                    </svg>
+                    Refresh
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Loading State */}
-            {isLoading && (
-              <div className="bg-white rounded-3xl border border-neutral-200/80 p-10 text-center shadow-xs relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 via-rose-600 to-rose-400" />
-                <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4 border border-rose-100 animate-pulse">
-                  <svg
-                    className="w-6 h-6 text-rose-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.75"
-                    stroke="currentColor"
-                  >
+            {/* Content States */}
+            {isLoading ? (
+              <div className="bg-white rounded-3xl border border-neutral-200/80 p-12 text-center shadow-xs">
+                <div className="inline-block w-8 h-8 border-3 border-rose-600 border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm text-neutral-500 font-medium">Checking for incoming match alerts...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-white rounded-3xl border border-red-200/80 p-8 text-center shadow-xs">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center mx-auto mb-3 text-rose-600">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
                     />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-neutral-600">Loading donor notifications...</p>
-              </div>
-            )}
-
-            {/* Error State */}
-            {!isLoading && error && (
-              <div className="bg-white rounded-3xl border border-rose-200/80 p-8 text-center shadow-xs">
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                  </svg>
-                </div>
-                <h2 className="text-base font-bold text-neutral-900 mb-1">Unable to Load Notifications</h2>
-                <p className="text-xs text-neutral-500 max-w-sm mx-auto mb-5">{error}</p>
+                <h3 className="text-base font-bold text-neutral-950 mb-1">Failed to Load Inbox</h3>
+                <p className="text-xs text-neutral-500 max-w-sm mx-auto mb-4">{error}</p>
                 <button
                   type="button"
-                  onClick={() => setRetryTrigger((r) => r + 1)}
-                  className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs transition-all shadow-xs"
+                  onClick={() => setRetryTrigger((prev) => prev + 1)}
+                  className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
                 >
-                  Try Again
+                  Retry
                 </button>
               </div>
-            )}
-
-            {/* Empty Inbox State */}
-            {!isLoading && !error && notifications && notifications.length === 0 && (
-              <div className="bg-white rounded-3xl border border-neutral-200/80 p-10 sm:p-14 text-center shadow-xs">
+            ) : notifications && notifications.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-neutral-200/80 p-12 text-center shadow-xs">
                 <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4 text-neutral-400">
-                  <svg
-                    className="w-7 h-7"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                  >
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                     />
                   </svg>
                 </div>
-                <h2 className="text-lg font-bold text-neutral-900 mb-2">Your Inbox is Empty</h2>
-                <p className="text-sm text-neutral-500 max-w-sm mx-auto mb-6 leading-relaxed">
-                  You have no pending blood request notifications. When an urgent compatible request in your district matches your profile, it will appear here.
+                <h2 className="text-lg font-bold text-neutral-950 mb-1">Your Inbox is Clear</h2>
+                <p className="text-xs text-neutral-500 max-w-sm mx-auto mb-6 leading-relaxed">
+                  No urgent blood requests currently require matching for your blood group and district. You will be notified in-app as soon as a patient need arises.
                 </p>
                 <Link
                   href="/donors/profile"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-xs transition-all shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-700 font-medium text-xs border border-neutral-200 shadow-xs transition-colors"
                 >
-                  View Profile Settings
+                  View Donor Profile
                 </Link>
               </div>
-            )}
-
-            {/* Populated Notifications List */}
-            {!isLoading && !error && notifications && notifications.length > 0 && (
+            ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <div>
-                    <h2 className="text-lg font-bold text-neutral-950">
-                      Match Notifications
-                    </h2>
-                    <p className="text-xs text-neutral-500">
-                      Preliminary compatibility matches based on your district profile.
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
-                    {notifications.length} Total
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-400">
+                    Incoming Match Requests ({notifications?.length ?? 0})
+                  </h2>
+                  <span className="text-xs text-neutral-400">
+                    {unreadCount} Unread
                   </span>
                 </div>
 
                 <div className="space-y-4">
-                  {notifications.map((item) => {
+                  {notifications?.map((item) => {
                     const isUnread = item.status !== 'read';
 
                     return (
                       <div
                         key={item.id}
-                        className={`rounded-3xl border transition-all p-6 sm:p-7 shadow-xs ${
+                        className={`bg-white rounded-3xl border transition-all p-5 sm:p-6 shadow-xs ${
                           isUnread
-                            ? 'bg-white border-rose-300 ring-1 ring-rose-200/60'
-                            : 'bg-white/90 border-neutral-200/80 text-neutral-700'
+                            ? 'border-rose-300 ring-1 ring-rose-100'
+                            : 'border-neutral-200/80 opacity-95'
                         }`}
                       >
                         {/* Notification Header */}
@@ -481,7 +527,21 @@ export default function DonorNotificationsPage() {
                           </span>
                         </div>
 
-                        {/* Actions / Future Step Placeholder */}
+                        {/* Error notice if response failed */}
+                        {responseError?.notificationId === item.id && (
+                          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between gap-2">
+                            <span>{responseError.message}</span>
+                            <button
+                              type="button"
+                              onClick={() => setResponseError(null)}
+                              className="text-rose-600 hover:text-rose-900 font-semibold cursor-pointer"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Step 8 Response Status & Actions */}
                         <div className="pt-3 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                           <div className="flex items-center gap-2 w-full sm:w-auto">
                             {isUnread && (
@@ -502,14 +562,45 @@ export default function DonorNotificationsPage() {
                             )}
                           </div>
 
-                          {/* Placeholder for Next Step (Accept/Decline) */}
-                          <div className="w-full sm:w-auto text-right">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-500 border border-neutral-200/80">
-                              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                              </svg>
-                              Response available in the next step
-                            </span>
+                          {/* Actionable Controls or Persisted Response State */}
+                          <div className="w-full sm:w-auto flex items-center justify-end gap-2">
+                            {item.response === 'accepted' ? (
+                              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                <span>Accepted</span>
+                                <span className="text-[11px] font-normal text-emerald-700 hidden sm:inline">
+                                  (Contact details remain private until Step 9)
+                                </span>
+                              </div>
+                            ) : item.response === 'declined' ? (
+                              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">
+                                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                                <span>Declined</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <button
+                                  type="button"
+                                  disabled={submittingResponseId === item.id}
+                                  onClick={() => setActiveModal({ notification: item, action: 'declined' })}
+                                  className="flex-1 sm:flex-initial px-4 py-2 rounded-full bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold border border-neutral-200/90 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                  Decline
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={submittingResponseId === item.id}
+                                  onClick={() => setActiveModal({ notification: item, action: 'accepted' })}
+                                  className="flex-1 sm:flex-initial px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                  Accept
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -557,6 +648,129 @@ export default function DonorNotificationsPage() {
           </div>
         )}
       </main>
+
+      {/* Accept / Decline Confirmation Modal */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl border border-neutral-200 max-w-md w-full p-6 shadow-xl space-y-5">
+            {activeModal.action === 'accepted' ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-neutral-950">Confirm Intent to Donate</h3>
+                    <p className="text-xs text-neutral-500">Voluntary donor participation confirmation</p>
+                  </div>
+                </div>
+
+                <div className="bg-neutral-50 rounded-2xl p-4 border border-neutral-100 text-xs text-neutral-700 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Request:</span>
+                    <span className="font-semibold">{activeModal.notification.unitsNeeded} unit(s) of {activeModal.notification.component} ({activeModal.notification.bloodGroup})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Hospital:</span>
+                    <span className="font-semibold">{activeModal.notification.hospitalName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Urgency:</span>
+                    <span className="font-semibold uppercase text-rose-600">{activeModal.notification.urgency}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-neutral-600 leading-relaxed bg-rose-50/60 border border-rose-100 rounded-2xl p-4">
+                  <p className="font-medium text-rose-950">
+                    Important Safety &amp; Privacy Notice:
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-rose-900/90 text-[11px]">
+                    <li>Accepting indicates you are willing to proceed with coordination.</li>
+                    <li>This is NOT a determination of medical eligibility. Final donor qualification is performed by qualified clinical personnel.</li>
+                    <li>Your contact details remain strictly private at this stage. Authorized contact reveal occurs in the next step.</li>
+                  </ul>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={submittingResponseId !== null}
+                    onClick={() => setActiveModal(null)}
+                    className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 text-xs font-semibold border border-neutral-200 cursor-pointer disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={submittingResponseId !== null}
+                    onClick={handleConfirmResponse}
+                    className="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
+                  >
+                    {submittingResponseId ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Recording...
+                      </>
+                    ) : (
+                      'Confirm Acceptance'
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-neutral-950">Decline Request</h3>
+                    <p className="text-xs text-neutral-500">Opt out of this emergency request</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  Are you sure you want to decline this request? Your decision is fully respected, and you will not receive further reminders for this match.
+                </p>
+
+                <div className="rounded-xl bg-neutral-50 border border-neutral-200/80 p-3 text-[11px] text-neutral-500">
+                  Your contact details remain completely private and are never shared.
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={submittingResponseId !== null}
+                    onClick={() => setActiveModal(null)}
+                    className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 text-xs font-semibold border border-neutral-200 cursor-pointer disabled:opacity-50"
+                  >
+                    Keep in Inbox
+                  </button>
+                  <button
+                    type="button"
+                    disabled={submittingResponseId !== null}
+                    onClick={handleConfirmResponse}
+                    className="px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
+                  >
+                    {submittingResponseId ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Declining...
+                      </>
+                    ) : (
+                      'Confirm Decline'
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

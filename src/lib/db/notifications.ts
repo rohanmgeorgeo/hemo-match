@@ -477,6 +477,7 @@ export interface PublicDonorNotification {
   urgency: string;
   requiredBy: string;
   compatibilityType: string;
+  response: 'accepted' | 'declined' | null;
 }
 
 export type GetDonorNotificationsResult =
@@ -513,10 +514,11 @@ export type MarkNotificationReadResult =
  * Retrieves privacy-safe notification projections for a specific demo donor identity.
  *
  * PRIVACY GUARANTEES:
- * - Omits donor_id, match_id, request_id from output.
+ * - Omits donor_id, match_id, request_id from public projection.
  * - Excludes donor phone_number and full_name.
  * - Excludes requester contact information and patient identifiers.
- * - Filtered strictly by donor_id at the database level.
+ * - Filters strictly by donor_id at the database level.
+ * - Derives authoritative response status ('accepted' | 'declined' | null) from donor_responses.
  */
 export async function getDonorNotifications(
   donorId: string
@@ -530,14 +532,14 @@ export async function getDonorNotifications(
     };
   }
 
-  // Narrow query: strictly omits donor_id, match_id, request_id in projection
-  const { data, error } = await client
+  // 1. Fetch notifications for donor (request_id used purely for server-side response lookup)
+  const { data: notifData, error: notifError } = await client
     .from('notifications')
-    .select('id, type, status, payload, created_at, read_at')
+    .select('id, type, status, payload, created_at, read_at, request_id')
     .eq('donor_id', donorId)
     .order('created_at', { ascending: false });
 
-  if (error) {
+  if (notifError) {
     return {
       success: false,
       error: 'database_error',
@@ -545,8 +547,24 @@ export async function getDonorNotifications(
     };
   }
 
-  const notifications: PublicDonorNotification[] = (data ?? []).map((row) => {
+  // 2. Fetch recorded responses for this donor to attach status without leaking IDs
+  const { data: responseRows } = await client
+    .from('donor_responses')
+    .select('request_id, status')
+    .eq('donor_id', donorId);
+
+  const responseMap = new Map<string, 'accepted' | 'declined'>();
+  if (responseRows) {
+    for (const r of responseRows) {
+      if (r.status === 'accepted' || r.status === 'declined') {
+        responseMap.set(r.request_id, r.status);
+      }
+    }
+  }
+
+  const notifications: PublicDonorNotification[] = (notifData ?? []).map((row) => {
     const payload = (row.payload ?? {}) as Partial<SafeNotificationPayload>;
+    const recordedResponse = row.request_id ? responseMap.get(row.request_id) ?? null : null;
     return {
       id: row.id,
       type: row.type,
@@ -563,6 +581,7 @@ export async function getDonorNotifications(
       urgency: payload.urgency ?? 'urgent',
       requiredBy: payload.requiredBy ?? '',
       compatibilityType: payload.compatibilityType ?? 'compatible',
+      response: recordedResponse,
     };
   });
 
