@@ -28,6 +28,13 @@ import {
 import {
   evaluateDonationInterval,
 } from '../eligibility/intervals';
+import {
+  calculateHaversineDistanceKm,
+  isValidCoordinate,
+} from '../geo/distance';
+import { MATCH_RADIUS_KM } from './constants';
+
+export { MATCH_RADIUS_KM };
 
 // ---------------------------------------------------------------------------
 // Exclusion Reason Types
@@ -42,6 +49,7 @@ export type DonorExclusionReason =
   | 'EXCLUDE_NO_CONSENT'
   | 'EXCLUDE_DONOR_UNAVAILABLE'
   | 'EXCLUDE_DIFFERENT_DISTRICT'
+  | 'EXCLUDE_OUTSIDE_PROXIMITY_RADIUS'
   | 'EXCLUDE_BLOOD_GROUP_INCOMPATIBLE'
   | 'EXCLUDE_DONATION_HISTORY_UNKNOWN'
   | 'EXCLUDE_NO_APPLICABLE_INTERVAL_RULE'
@@ -62,6 +70,9 @@ export interface EngineRequestInput {
   districtId: string;
   requiredBy: string; // ISO 8601 or TIMESTAMPTZ string
   status: string;
+  /** Private coordinates for proximity matching */
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 export interface EngineDonorInput {
@@ -75,6 +86,9 @@ export interface EngineDonorInput {
   notificationPreference?: NotificationPreference;
   hasPriorResponse?: boolean;
   isAlreadyMatched?: boolean;
+  /** Private coordinates for proximity matching */
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 export interface MatchMetadata {
@@ -85,14 +99,14 @@ export interface MatchMetadata {
   minimum_interval_days: number;
   eligibility_rule_id: string;
   evaluated_at: string;
+  distance_km?: number | null;
   rank_factors: {
     /** Priority 1: exact homologous before compatible alternative */
     is_homologous: boolean;
-    /** Priority 2: longer physiological recovery first (days descending) */
+    /** Priority 2: nearer distance first when available */
+    distance_km?: number | null;
+    /** Priority 3: longer physiological recovery first (days descending) */
     days_since_donation: number;
-    // NOTE: donor UUID tie-break (Priority 3) is applied at ranking time
-    // via EligibleMatchCandidate.donorId; it is NOT duplicated here because
-    // matches.donor_id already records the relationship in the database row.
   };
 }
 
@@ -107,6 +121,7 @@ export interface EligibleMatchCandidate {
   factualMatchReasons: string[];
   daysSinceLastDonation: number;
   status: 'candidate';
+  distanceKm?: number | null;
   metadata: MatchMetadata;
 }
 
@@ -152,6 +167,7 @@ export function buildFactualMatchReasons(params: {
   donorBloodGroup: BloodGroup;
   daysSinceLastDonation: number;
   minimumIntervalDays: number;
+  distanceKm?: number | null;
 }): string[] {
   const reasons: string[] = [];
 
@@ -167,7 +183,12 @@ export function buildFactualMatchReasons(params: {
     `Preliminary interval satisfied (${params.daysSinceLastDonation} days elapsed, minimum ${params.minimumIntervalDays} days)`
   );
 
-  reasons.push('Same district geographic alignment');
+  if (params.distanceKm != null) {
+    const formattedDistance = params.distanceKm < 0.1 ? '<0.1' : params.distanceKm.toFixed(1);
+    reasons.push(`Within proximity radius (~${formattedDistance} km)`);
+  } else {
+    reasons.push('Same district geographic alignment');
+  }
 
   return reasons;
 }
@@ -184,6 +205,7 @@ export function buildMatchMetadata(params: {
   minimumIntervalDays: number;
   eligibilityRuleId: string;
   evaluatedAt: string;
+  distanceKm?: number | null;
 }): MatchMetadata {
   return {
     compatibility_type: params.compatibilityType,
@@ -193,8 +215,10 @@ export function buildMatchMetadata(params: {
     minimum_interval_days: params.minimumIntervalDays,
     eligibility_rule_id: params.eligibilityRuleId,
     evaluated_at: params.evaluatedAt,
+    distance_km: params.distanceKm ?? null,
     rank_factors: {
       is_homologous: params.compatibilityType === 'homologous',
+      distance_km: params.distanceKm ?? null,
       days_since_donation: params.daysSinceLastDonation,
     },
   };
@@ -212,6 +236,8 @@ export function requestRowToEngineInput(row: BloodRequestRow): EngineRequestInpu
     districtId: row.district_id,
     requiredBy: row.required_by,
     status: row.status,
+    locationLatitude: row.location_latitude ?? null,
+    locationLongitude: row.location_longitude ?? null,
   };
 }
 
@@ -230,6 +256,8 @@ export function donorRowToEngineInput(
     notificationPreference: row.notification_preference as NotificationPreference,
     hasPriorResponse: options?.hasPriorResponse ?? false,
     isAlreadyMatched: options?.isAlreadyMatched ?? false,
+    locationLatitude: row.location_latitude ?? null,
+    locationLongitude: row.location_longitude ?? null,
   };
 }
 
@@ -253,6 +281,8 @@ export interface DonorMatchingRow {
   availability: DbDonorAvailability;
   notification_preference: DbNotificationPreference;
   consent_given: boolean;
+  location_latitude?: number | null;
+  location_longitude?: number | null;
 }
 
 /**
@@ -266,6 +296,8 @@ export interface RequestMatchingRow {
   district_id: string;
   required_by: string;
   status: string;
+  location_latitude?: number | null;
+  location_longitude?: number | null;
 }
 
 /**
@@ -287,6 +319,8 @@ export function donorMatchingRowToEngineInput(
     notificationPreference: row.notification_preference as NotificationPreference,
     hasPriorResponse: options?.hasPriorResponse ?? false,
     isAlreadyMatched: options?.isAlreadyMatched ?? false,
+    locationLatitude: row.location_latitude ?? null,
+    locationLongitude: row.location_longitude ?? null,
   };
 }
 
@@ -301,6 +335,8 @@ export function requestMatchingRowToEngineInput(row: RequestMatchingRow): Engine
     districtId: row.district_id,
     requiredBy: row.required_by,
     status: row.status,
+    locationLatitude: row.location_latitude ?? null,
+    locationLongitude: row.location_longitude ?? null,
   };
 }
 
@@ -311,8 +347,9 @@ export function requestMatchingRowToEngineInput(row: RequestMatchingRow): Engine
 /**
  * Deterministic candidate ranking comparator:
  * 1. Exact ABO/Rh homologous matches first (to preserve universal O- / alternative stocks)
- * 2. Greater days since known last donation first (longer physiological recovery preferred)
- * 3. Stable deterministic tie-breaker: donor UUID ascending
+ * 2. When real distance is available, nearer donor first (straight-line geodesic km)
+ * 3. Greater days since known last donation first (longer physiological recovery preferred)
+ * 4. Stable deterministic tie-breaker: donor UUID ascending
  *
  * NOTE: approximate_area is NEVER used for distance or ranking calculation.
  */
@@ -328,12 +365,26 @@ export function compareEligibleCandidates(
     return 1;
   }
 
-  // Priority 2: Greater days since last donation (descending)
+  // Priority 2: When real distance is available, nearer donor first
+  const aDist = a.distanceKm;
+  const bDist = b.distanceKm;
+  if (aDist != null && bDist != null) {
+    if (aDist !== bDist) {
+      return aDist - bDist;
+    }
+  } else if (aDist != null && bDist == null) {
+    // Measured proximity donor ranks ahead of unmeasured district fallback
+    return -1;
+  } else if (aDist == null && bDist != null) {
+    return 1;
+  }
+
+  // Priority 3: Greater days since last donation (descending)
   if (b.daysSinceLastDonation !== a.daysSinceLastDonation) {
     return b.daysSinceLastDonation - a.daysSinceLastDonation;
   }
 
-  // Priority 3: Stable deterministic tie-breaker: donor UUID ascending
+  // Priority 4: Stable deterministic tie-breaker: donor UUID ascending
   return a.donorId.localeCompare(b.donorId);
 }
 
@@ -398,15 +449,41 @@ export function evaluateDonorLevel(
     };
   }
 
-  // 3. Same district geographic alignment
-  if (donor.districtId !== request.districtId) {
-    return {
-      donorId: donor.id,
-      eligible: false,
-      exclusionReason: 'EXCLUDE_DIFFERENT_DISTRICT',
-      compatibilityType: null,
-      daysSinceLastDonation: null,
-    };
+  // 3. Geographic alignment: Proximity radius matching if both coordinates exist; otherwise district fallback
+  const hasRequestCoords = isValidCoordinate(request.locationLatitude, request.locationLongitude);
+  const hasDonorCoords = isValidCoordinate(donor.locationLatitude, donor.locationLongitude);
+
+  let distanceKm: number | null = null;
+
+  if (hasRequestCoords && hasDonorCoords) {
+    distanceKm = calculateHaversineDistanceKm(
+      request.locationLatitude!,
+      request.locationLongitude!,
+      donor.locationLatitude!,
+      donor.locationLongitude!
+    );
+
+    if (distanceKm > MATCH_RADIUS_KM) {
+      return {
+        donorId: donor.id,
+        eligible: false,
+        exclusionReason: 'EXCLUDE_OUTSIDE_PROXIMITY_RADIUS',
+        compatibilityType: null,
+        daysSinceLastDonation: null,
+      };
+    }
+  } else {
+    // Fallback: Same district requirement when coordinates are absent on either side
+    if (donor.districtId !== request.districtId) {
+      return {
+        donorId: donor.id,
+        eligible: false,
+        exclusionReason: 'EXCLUDE_DIFFERENT_DISTRICT',
+        compatibilityType: null,
+        daysSinceLastDonation: null,
+      };
+    }
+    // distanceKm remains null for district fallback matches
   }
 
   // 4. RBC Blood group compatibility
@@ -485,6 +562,7 @@ export function evaluateDonorLevel(
     minimumIntervalDays,
     eligibilityRuleId: ruleId,
     evaluatedAt: evaluatedAtIso,
+    distanceKm,
   });
 
   const factualMatchReasons = buildFactualMatchReasons({
@@ -493,6 +571,7 @@ export function evaluateDonorLevel(
     donorBloodGroup: donor.bloodGroup,
     daysSinceLastDonation,
     minimumIntervalDays,
+    distanceKm,
   });
 
   const candidate: EligibleMatchCandidate = {
@@ -506,6 +585,7 @@ export function evaluateDonorLevel(
     factualMatchReasons,
     daysSinceLastDonation,
     status: 'candidate',
+    distanceKm,
     metadata,
   };
 

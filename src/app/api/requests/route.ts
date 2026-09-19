@@ -119,6 +119,8 @@ export async function POST(request: Request) {
     requiredBy: requiredByIso,
     urgency: validData.urgency,
     notes: validData.notes ?? null,
+    locationLatitude: validData.locationLatitude ?? null,
+    locationLongitude: validData.locationLongitude ?? null,
   };
 
   // 10. Insert through the blood request DB helper

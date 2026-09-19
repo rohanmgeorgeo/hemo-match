@@ -82,6 +82,10 @@ export type DonorRow = {
   availability: DbDonorAvailability;
   notification_preference: DbNotificationPreference;
   consent_given: boolean;
+  /** PRIVATE matching coordinate — never expose in public queries or requester-facing APIs. */
+  location_latitude: number | null;
+  /** PRIVATE matching coordinate — never expose in public queries or requester-facing APIs. */
+  location_longitude: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -90,8 +94,9 @@ export type DonorRow = {
  * DonorPublicRow — safe projection of DonorRow without private fields.
  * Use this type for any server response that could reach client components
  * or be included in matching metadata visible to requesters.
+ * Coordinates are private matching data and must NEVER be in public projections.
  */
-export type DonorPublicRow = Omit<DonorRow, 'phone_number'>;
+export type DonorPublicRow = Omit<DonorRow, 'phone_number' | 'location_latitude' | 'location_longitude'>;
 
 export type BloodRequestRow = {
   id: string;
@@ -106,6 +111,9 @@ export type BloodRequestRow = {
   urgency: DbUrgencyLevel;
   status: DbRequestStatus;
   notes: string | null;
+  /** Matching coordinates for proximity radius calculation */
+  location_latitude: number | null;
+  location_longitude: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -181,13 +189,21 @@ export type Database = {
       };
       donors: {
         Row: DonorRow;
-        Insert: Omit<DonorRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
+        Insert: Omit<DonorRow, 'id' | 'created_at' | 'updated_at' | 'location_latitude' | 'location_longitude'> & {
+          id?: string;
+          location_latitude?: number | null;
+          location_longitude?: number | null;
+        };
         Update: Partial<Omit<DonorRow, 'id' | 'created_at'>>;
         Relationships: [];
       };
       blood_requests: {
         Row: BloodRequestRow;
-        Insert: Omit<BloodRequestRow, 'id' | 'created_at' | 'updated_at'> & { id?: string };
+        Insert: Omit<BloodRequestRow, 'id' | 'created_at' | 'updated_at' | 'location_latitude' | 'location_longitude'> & {
+          id?: string;
+          location_latitude?: number | null;
+          location_longitude?: number | null;
+        };
         Update: Partial<Omit<BloodRequestRow, 'id' | 'created_at'>>;
         Relationships: [];
       };

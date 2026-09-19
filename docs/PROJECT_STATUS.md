@@ -335,5 +335,23 @@ Landing Page (/)
 - **Navigation Purity**: Removed redundant "Home" / "Return to Home" buttons from the donor notifications inbox and profile; streamlined mobile bottom navigation to the 4 canonical workflow destinations (`Request`, `Matches`, `Inbox`, `Profile`). Global `Hemo Match` branding remains the clean home route.
 - **Verification**: 199 tests / 57 suites passing, typecheck clean, lint clean, production build clean, diff-check clean.
 - **Git Milestone Closure**: Merged `feature/signature-experience-polish` into `main` via merge commit (`9069f1a5f28ed5d572b87235bcf2690a9e568e50`).
-- **Status & Next Steps**: Step 13.5 complete and approved. Step 14 (Interactive Demo Mode / Scenario Runner) has NOT started.
+- **Status & Next Steps**: Step 13.5 complete and approved.
+
+### Step 14: Privacy-Safe Proximity Matching + Location Capture (in progress on feature/proximity-matching)
+- **Goal**: Replace same-district-only matching with real coordinate-based proximity matching while preserving district as an authoritative fallback for records without coordinates.
+- **Privacy Boundary**: Donor coordinates are server-side private matching data. Completely omitted from `DonorPublicRow`, `PublicMatchCandidate`, notifications, accepted-state projections, and contact reveal.
+- **Geospatial Engine**: Implemented pure server-side Haversine geodesic distance utility (`src/lib/geo/distance.ts`) with `-90 <= lat <= 90` and `-180 <= lon <= 180` boundary checks and `formatDistanceKm`. Internal calculation is exact; presentation is safely rounded (e.g. `~1.8 km away`).
+- **Application Matching Radius**: `MATCH_RADIUS_KM = 5` configured as an application matching parameter in `src/lib/matching/constants.ts` (explicitly documented as non-medical coordination policy).
+- **Physical Proximity Policy**: When both request and donor coordinates exist, proximity radius (`<= 5 km`) is authoritative across administrative district borders.
+- **Backwards Compatibility & Fallback**: When coordinates are missing on either side, the system falls back to same-district matching. No synthetic or fabricated distance is produced (`distanceKm: null`, UI shows `Same district`).
+- **Deterministic 4-Tier Ranking**:
+  1. Exact homologous ABO/Rh match first
+  2. Nearest straight-line distance (`a.distanceKm - b.distanceKm`) when real distance exists (measured proximity candidates precede district fallback candidates)
+  3. Greater elapsed calendar days since last donation
+  4. Donor UUID lexicographic tie-breaker
+- **Location Capture UX**: Reusable `LocationCapture` component integrated into `/requests/new` and `/donors/register` with explicit "Use current location" button, graceful handling of permission denied, timeouts, or unavailable location, and manual district/approximate area fallback.
+- **Donor Profile Indicator**: `/donors/profile` clearly informs registered donors: `"Location available for private nearby matching"` alongside approximate area and district, with zero raw coordinates rendered.
+- **Schema Migration**: Created additive migration `0006_proximity_matching_coordinates.sql` adding `location_latitude` and `location_longitude` (`DOUBLE PRECISION`, range check constraints, partial spatial indexes) to `blood_requests` and `donors`.
+- **Google Maps/Places Preparation**: Architecture accepts `{ latitude, longitude }` payloads cleanly, enabling future Google Places autocomplete or map selection without altering matching engine logic.
+- **Verification**: 231 tests / 67 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
 

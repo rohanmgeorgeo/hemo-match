@@ -34,7 +34,6 @@ import { getServerClient } from '@/lib/database';
 import type {
   Database,
   DbMatchStatus,
-  DistrictRow,
   MatchRow,
 } from '@/types/database';
 import type { BloodGroup, BloodComponent } from '@/types';
@@ -50,6 +49,7 @@ import {
   type MatchMetadata,
 } from '@/lib/matching/engine';
 import type { CompatibilityType } from '@/lib/matching/compatibility';
+import { isValidCoordinate } from '@/lib/geo/distance';
 
 // ---------------------------------------------------------------------------
 // Public result types
@@ -70,6 +70,7 @@ export interface PublicMatchCandidate {
   factualMatchReasons: string[];
   status: DbMatchStatus;
   createdAt: string;
+  distanceKm?: number | null;
 }
 
 export type FindAndCreateMatchesResult =
@@ -134,6 +135,7 @@ function buildPublicCandidateFromEngine(
     factualMatchReasons: candidate.factualMatchReasons,
     status: matchRow.status,
     createdAt: matchRow.created_at,
+    distanceKm: candidate.distanceKm ?? null,
   };
 }
 
@@ -154,6 +156,7 @@ function buildPublicCandidateFromRow(
 ): PublicMatchCandidate {
   const anonymizedRef = createAnonymizedDonorRef(donorId);
   const compatibilityType: CompatibilityType = metadata?.compatibility_type ?? 'compatible';
+  const distanceKm = typeof metadata?.distance_km === 'number' ? metadata.distance_km : null;
 
   const factualMatchReasons = metadata
     ? buildFactualMatchReasons({
@@ -162,6 +165,7 @@ function buildPublicCandidateFromRow(
         donorBloodGroup: metadata.donor_blood_group,
         daysSinceLastDonation: metadata.days_since_last_donation,
         minimumIntervalDays: metadata.minimum_interval_days,
+        distanceKm,
       })
     : ['Preliminary interval satisfied', 'Same district geographic alignment'];
 
@@ -176,6 +180,7 @@ function buildPublicCandidateFromRow(
     factualMatchReasons,
     status: matchRow.status,
     createdAt: matchRow.created_at,
+    distanceKm,
   };
 }
 
@@ -226,7 +231,7 @@ export async function findAndCreateMatches(
   // ---------------------------------------------------------------------------
   const { data: requestData, error: requestError } = await client
     .from('blood_requests')
-    .select('id, blood_group, component, district_id, required_by, status')
+    .select('id, blood_group, component, district_id, required_by, status, location_latitude, location_longitude')
     .eq('id', requestId)
     .maybeSingle<RequestMatchingRow>();
 
@@ -281,13 +286,11 @@ export async function findAndCreateMatches(
   }
 
   // ---------------------------------------------------------------------------
-  // Step 4: Fetch district name for display in public projections
+  // Step 4: Fetch district names for display in public projections
   // ---------------------------------------------------------------------------
   const { data: districtData, error: districtError } = await client
     .from('districts')
-    .select('id, name')
-    .eq('id', requestData.district_id)
-    .maybeSingle<Pick<DistrictRow, 'id' | 'name'>>();
+    .select('id, name');
 
   if (districtError) {
     return {
@@ -298,18 +301,38 @@ export async function findAndCreateMatches(
     };
   }
 
-  const districtName = districtData?.name ?? 'Unknown District';
+  const districtMap = new Map<string, string>(
+    (districtData ?? []).map((d) => [d.id, d.name])
+  );
+  const defaultDistrictName = districtMap.get(requestData.district_id) ?? 'Unknown District';
 
   // ---------------------------------------------------------------------------
-  // Step 5: Fetch donor candidates from the request district
+  // Step 5: Fetch prospective donor candidates
+  // If request has coordinates, fetch same-district donors AND any donors with coordinates
+  // (so candidates within radius across district boundaries can be evaluated).
+  // If coordinates are missing on request, fetch same-district donors only.
   // Explicitly selected columns — phone_number and full_name are NOT included.
   // ---------------------------------------------------------------------------
-  const { data: donorRows, error: donorError } = await client
+  const hasRequestCoords = isValidCoordinate(
+    requestData.location_latitude,
+    requestData.location_longitude
+  );
+
+  let donorQuery = client
     .from('donors')
     .select(
-      'id, blood_group, district_id, approximate_area, last_donation_date, availability, notification_preference, consent_given'
-    )
-    .eq('district_id', requestData.district_id);
+      'id, blood_group, district_id, approximate_area, last_donation_date, availability, notification_preference, consent_given, location_latitude, location_longitude'
+    );
+
+  if (hasRequestCoords) {
+    donorQuery = donorQuery.or(
+      `district_id.eq.${requestData.district_id},and(location_latitude.not.is.null,location_longitude.not.is.null)`
+    );
+  } else {
+    donorQuery = donorQuery.eq('district_id', requestData.district_id);
+  }
+
+  const { data: donorRows, error: donorError } = await donorQuery;
 
   if (donorError) {
     return {
@@ -485,6 +508,8 @@ export async function findAndCreateMatches(
       continue;
     }
 
+    const donorDistrictName = districtMap.get(donorData.district_id) ?? defaultDistrictName;
+
     // Prefer engine-produced candidate for freshly computed metadata and reasons.
     const engineCandidate = engineCandidateByDonorId.get(matchRow.donor_id);
     if (engineCandidate) {
@@ -492,7 +517,7 @@ export async function findAndCreateMatches(
         buildPublicCandidateFromEngine(
           engineCandidate,
           { id: matchRow.id, status: matchRow.status, created_at: matchRow.created_at },
-          districtName
+          donorDistrictName
         )
       );
     } else {
@@ -505,18 +530,31 @@ export async function findAndCreateMatches(
           donorData.blood_group as BloodGroup,
           donorData.approximate_area,
           requestId,
-          districtName,
+          donorDistrictName,
           metadata
         )
       );
     }
   }
 
-  // Apply the same deterministic sort used by the engine for stable output ordering.
-  // Homologous first, then days_since_donation descending, then donor UUID ascending.
+  // Apply the same deterministic sort used by the engine for stable output ordering:
+  // 1. Homologous first
+  // 2. When real distance is available, nearer donor first
+  // 3. Stable secondary sort by match UUID
   publicCandidates.sort((a, b) => {
     if (a.compatibilityType === 'homologous' && b.compatibilityType !== 'homologous') return -1;
     if (b.compatibilityType === 'homologous' && a.compatibilityType !== 'homologous') return 1;
+
+    const aDist = a.distanceKm;
+    const bDist = b.distanceKm;
+    if (aDist != null && bDist != null) {
+      if (aDist !== bDist) return aDist - bDist;
+    } else if (aDist != null && bDist == null) {
+      return -1;
+    } else if (aDist == null && bDist != null) {
+      return 1;
+    }
+
     return a.matchId.localeCompare(b.matchId); // stable secondary sort by match UUID
   });
 

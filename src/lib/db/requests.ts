@@ -19,6 +19,8 @@ export interface CreateBloodRequestParams {
   requiredBy: string; // Valid TIMESTAMPTZ ISO string
   urgency: DbUrgencyLevel;
   notes: string | null;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 export type CreateBloodRequestResult =
@@ -68,13 +70,15 @@ export async function createBloodRequest(
     urgency: params.urgency,
     status: 'active',
     notes: params.notes,
+    location_latitude: params.locationLatitude ?? null,
+    location_longitude: params.locationLongitude ?? null,
   };
 
   const { data, error } = await client
     .from('blood_requests')
     .insert(insertPayload)
     .select(
-      'id, blood_group, component, units_needed, district_id, approximate_area, hospital_name, required_by, urgency, status, notes, created_at, updated_at'
+      'id, blood_group, component, units_needed, district_id, approximate_area, hospital_name, required_by, urgency, status, notes, created_at, updated_at, location_latitude, location_longitude'
     )
     .single<BloodRequestRow>();
 

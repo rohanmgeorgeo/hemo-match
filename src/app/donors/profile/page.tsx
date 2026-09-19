@@ -210,9 +210,17 @@ export default function DonorProfilePage() {
                   <span className="block text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1">
                     District Locality
                   </span>
-                  <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
-                    {profile.districtName || profile.districtId}
-                  </span>
+                  <div className="space-y-1">
+                    <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 block">
+                      {profile.districtName || profile.districtId}
+                    </span>
+                    {profile.locationLatitude != null && profile.locationLongitude != null && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Location available for private nearby matching
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div>

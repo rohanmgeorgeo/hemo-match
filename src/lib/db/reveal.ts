@@ -272,6 +272,7 @@ export async function getRequestMatches(
     const factualMatchReasons = Array.isArray(metadata.factualMatchReasons)
       ? (metadata.factualMatchReasons as string[])
       : [];
+    const distanceKm = typeof metadata.distance_km === 'number' ? metadata.distance_km : null;
 
     candidates.push({
       matchId: m.id,
@@ -284,6 +285,7 @@ export async function getRequestMatches(
       factualMatchReasons,
       status: m.status as MatchStatus,
       createdAt: m.created_at,
+      distanceKm,
     });
   }
 

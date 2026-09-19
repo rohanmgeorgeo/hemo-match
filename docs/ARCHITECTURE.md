@@ -56,9 +56,12 @@ hemo-match/
 │   │   │   ├── notifications.ts # Dispatch & inbox request/query validators
 │   │   │   ├── responses.ts   # Donor response body validator
 │   │   │   └── reveal.ts      # Contact reveal body validator
+│   │   ├── geo/               # Pure geospatial math and coordinate validators
+│   │   │   └── distance.ts    # Haversine distance, bounds checks, formatters
 │   │   ├── matching/          # Core matching engine & pure algorithms
+│   │   │   ├── constants.ts     # MATCH_RADIUS_KM = 5 application configuration
 │   │   │   ├── compatibility.ts # RBC ABO/Rh 64-pair biological matrix
-│   │   │   ├── engine.ts        # Pure multi-factor ranking & exclusion engine
+│   │   │   ├── engine.ts        # Pure multi-factor ranking, proximity, & exclusion engine
 │   │   │   └── ui-helpers.ts    # Frontend storage validation & API response parsing
 │   │   ├── notifications/     # Notification pre-dispatch revalidation & config
 │   │   │   ├── config.ts      # Server-controlled dispatch limits
@@ -72,18 +75,22 @@ hemo-match/
 │   │   │   └── rules.ts       # Configurable interval rule definitions
 │   │   └── privacy/           # Phone masking utilities
 │   └── types/
-│       ├── index.ts           # Shared frontend domain types
-│       ├── matches.ts         # Privacy-safe match candidates & API response types
+│       ├── index.ts           # Shared frontend domain types (with coordinates)
+│       ├── matches.ts         # Privacy-safe match candidates & distanceKm
 │       └── database.ts        # Database row & insert types (server-side, snake_case)
 ├── supabase/migrations/
 │   ├── 0001_initial_schema.sql
 │   ├── 0002_notification_idempotency.sql
 │   ├── 0003_atomic_notification_dispatch.sql
 │   ├── 0004_atomic_donor_response.sql
-│   └── 0005_contact_reveal_authorization.sql
-└── tests/                     # 179 automated tests across domain, dispatch, response, and reveal logic
+│   ├── 0005_contact_reveal_authorization.sql
+│   └── 0006_proximity_matching_coordinates.sql
+└── tests/                     # 231 automated tests across domain, geospatial, dispatch, response, and reveal logic
     ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
     ├── intervals.test.ts      # Preliminary donation interval evaluation tests
+    ├── distance.test.ts       # Haversine distance calculation and boundary checks
+    ├── proximity.test.ts      # 5 km radius matching, district fallback, & ranking
+    ├── location-privacy.test.ts # Leak-prevention & projection privacy tests
     ├── engine.test.ts         # Pure matching engine, filters, ranking, and privacy tests
     ├── matches.route.test.ts  # Route validation & HTTP status mapping tests
     ├── matching-ui.test.ts    # Frontend UI helpers & privacy assertions
@@ -202,9 +209,43 @@ The implemented pipeline executes across seven discrete architectural stages:
 - **Minimum Contact Reveal Boundary**: Contact reveal is strictly gated behind verified donor acceptance. Only minimum coordination details (`name` and `phone`) are unmasked. No physical address, coordinates, email, or medical data are released.
 - **Audit Non-PII Invariant**: Audit log events for contact reveals record structural IDs only (`request_id`, `donor_id`, `match_id`); no phone numbers or names are stored in audit metadata.
 
+### C. Location Privacy Boundary
+- **Server-Side Private Coordinates**: Donor latitude and longitude are stored in PostgreSQL solely for server-side Haversine distance calculations. They are classified as strictly private matching data.
+- **Zero Coordinate Leakage**: Donor coordinates are NEVER returned in candidate objects, matching responses, notifications, donor profiles, or contact reveal payloads. `DonorPublicRow` explicitly omits `location_latitude` and `location_longitude`.
+- **Restrained Distance Projection**: Requester-facing candidate objects contain ONLY an approximate straight-line geodesic distance (e.g., `~1.8 km away`). If coordinates are absent on either side, `distanceKm` is `null` and the UI presents `Same district`.
+- **No Exact Donor Map or Map Pins**: The platform does not render map pins or exact donor location markers for candidate donors.
+- **Requester Location Discretion**: Requester coordinates represent the blood requirement matching location. Requester coordinates are not broadcast to donors; notification payloads contain only the district, hospital/blood centre name, and approximate area.
+
 ---
 
-## 5. Clinical Safety Boundary
+## 5. Proximity Matching Subsystem (Step 14)
+
+### A. Geodesic Distance Algorithm
+- Distances are calculated exclusively on the server using the Haversine great-circle formula:
+  $$\Delta\sigma = 2 \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta\lambda}{2}\right)}\right)$$
+  $$d = R \cdot \Delta\sigma \quad (R = 6371\text{ km})$$
+- Client-calculated distances are completely untrusted. Coordinate inputs are strictly validated on the server within bounds: $-90 \le \text{latitude} \le 90$ and $-180 \le \text{longitude} \le 180$.
+- **Distance Language**: Because straight-line distance is computed, the product NEVER claims driving distance, route travel distance, or travel times. Display copy uses conservative phrases such as `~1.8 km away`.
+
+### B. Application Matching Radius & Boundary Policy
+- **Configured Radius**: The matching engine uses `MATCH_RADIUS_KM = 5` defined as an application matching configuration parameter in `src/lib/matching/constants.ts` (not a medical rule).
+- **Physical Proximity Authority**: When both request and donor coordinates are present, physical radius matching is authoritative. If a donor is located within 5 km across an administrative district border, they are eligible and included.
+- **District Fallback Compatibility**: If coordinates are missing on either side (e.g., legacy records, donor did not grant geolocation permission), the engine automatically falls back to same-district matching. No synthetic distance is fabricated (`distanceKm: null`).
+
+### C. Deterministic 4-Tier Candidate Ranking
+1. **Homologous ABO/Rh Match First**: Exact blood group matches always precede compatible alternative blood groups.
+2. **Nearest Proximity Distance**: When real straight-line distance is available, nearer donors rank ahead of farther donors (`a.distanceKm - b.distanceKm`). Candidates with verified proximity rank ahead of district-fallback candidates.
+3. **Recovery Interval**: Donors with greater elapsed calendar days since last donation rank higher.
+4. **Tie-Breaker**: Lexicographic ordering by donor UUID guarantees absolute repeatability.
+
+### D. Extensibility & Future Mapping Providers
+- The UI location capture control (`LocationCapture.tsx`) yields standard `{ latitude, longitude }` coordinates.
+- Browser Geolocation API (`navigator.geolocation`) is used for client-side capture on explicit user action ("Use current location").
+- The architecture cleanly isolates coordinate capture so future Google Places autocomplete or map pin selection can supply matching coordinates without rewriting backend matching engine logic.
+
+---
+
+## 6. Clinical Safety Boundary
 
 > [!WARNING]
 > **Preliminary Donor Discovery Only**:

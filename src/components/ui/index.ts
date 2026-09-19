@@ -7,3 +7,4 @@ export * from './BloodGroupPicker';
 export * from './GlowSurface';
 export * from './AppBottomNav';
 export * from './AmbientPointerLight';
+export * from './LocationCapture';
