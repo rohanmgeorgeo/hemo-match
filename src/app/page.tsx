@@ -477,11 +477,10 @@ export default function HomePage() {
                   Donor Wellbeing
                 </div>
                 <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1.5">
-                  120-Day Recovery Rule
+                  120-Day Matching Policy
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed font-normal">
-                  Applies a conservative 120-calendar-day donation recovery interval during preliminary matching,
-                  ensuring responsible volunteer donor engagement.
+                  Applies Hemo Match&apos;s conservative 120-day application matching policy for this MVP. Final donor eligibility is determined by qualified blood-bank/clinical personnel.
                 </p>
               </div>
 

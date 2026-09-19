@@ -571,7 +571,7 @@ export default function MatchingDemoPage() {
                       Eligible Donor Matches
                     </h2>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      Evaluated against compatibility, recovery intervals, and district locality.
+                      Evaluated against compatibility, 120-day donation interval policy, and locality.
                     </p>
                   </div>
 
