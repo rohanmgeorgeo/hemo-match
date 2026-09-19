@@ -446,7 +446,6 @@ export default function CoordinatorRequestDetailPage() {
 function DetailStatusBadge({ status }: { status: CoordinatorRequestDetail['status'] }) {
   switch (status) {
     case 'active':
-    case 'matching':
     case 'open':
       return (
         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">

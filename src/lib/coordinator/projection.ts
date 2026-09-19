@@ -48,7 +48,7 @@ export interface AttentionResult {
  * Deterministically evaluates whether a blood request needs coordinator attention.
  *
  * RULES:
- * 1. An active or matching request with zero discovered candidates has no immediate donor pipeline.
+ * 1. An active request with zero discovered candidates has no immediate donor pipeline.
  * 2. A notified request with zero accepted responses is waiting for donor availability.
  * 3. An open/unfulfilled request past its required-by deadline requires coordinator review.
  * 4. An explicitly expired request is unfulfilled and closed without fulfillment.
@@ -62,7 +62,7 @@ export function evaluateRequestAttention(input: AttentionInput): AttentionResult
   const isPastDeadline = !Number.isNaN(requiredByTime) && requiredByTime < now.getTime();
 
   // Rule 1: Zero matches for open request
-  if (['active', 'matching'].includes(input.status) && input.matchCount === 0) {
+  if (input.status === 'active' && input.matchCount === 0) {
     reasons.push('Zero eligible candidates matched');
   }
 
@@ -72,7 +72,7 @@ export function evaluateRequestAttention(input: AttentionInput): AttentionResult
   }
 
   // Rule 3: Past deadline without fulfillment
-  if (['active', 'matching', 'notified'].includes(input.status) && isPastDeadline) {
+  if (['active', 'notified'].includes(input.status) && isPastDeadline) {
     reasons.push('Past required deadline without fulfillment');
   }
 
@@ -103,7 +103,7 @@ export function calculateCoordinatorMetrics(
   let fulfilledRequests = 0;
 
   for (const r of requests) {
-    if (['active', 'matching', 'notified'].includes(r.status)) {
+    if (['active', 'notified'].includes(r.status)) {
       activeRequests += 1;
     }
     if (r.status === 'fulfilled') {

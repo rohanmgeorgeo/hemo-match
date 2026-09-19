@@ -29,6 +29,7 @@ import type {
   CoordinatorRequestDetail,
   CoordinatorRequestSummary,
 } from '@/types/coordinator';
+import type { RequestStatus } from '@/types';
 
 const UUID_V4_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -161,9 +162,10 @@ export async function fetchCoordinatorOverview(): Promise<CoordinatorOverviewApi
       const acceptedCount = acceptedCounts.get(row.id) ?? 0;
       const declinedCount = declinedCounts.get(row.id) ?? 0;
       const contactRevealCount = revealCounts.get(row.id) ?? 0;
+      const status: RequestStatus = row.status === 'matching' ? 'active' : row.status;
 
       const attention = evaluateRequestAttention({
-        status: row.status,
+        status,
         requiredBy: row.required_by,
         matchCount,
         acceptedCount,
@@ -181,7 +183,7 @@ export async function fetchCoordinatorOverview(): Promise<CoordinatorOverviewApi
         hospitalName: row.hospital_name,
         requiredBy: row.required_by,
         urgency: row.urgency,
-        status: row.status,
+        status,
         notes: row.notes,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -327,8 +329,10 @@ export async function fetchCoordinatorRequestDetail(
     const notificationCount = (notifsData ?? []).length;
     const contactRevealCount = (revealsData ?? []).length;
 
+    const status: RequestStatus = req.status === 'matching' ? 'active' : req.status;
+
     const attention = evaluateRequestAttention({
-      status: req.status,
+      status,
       requiredBy: req.required_by,
       matchCount,
       acceptedCount,
@@ -346,7 +350,7 @@ export async function fetchCoordinatorRequestDetail(
       hospitalName: req.hospital_name,
       requiredBy: req.required_by,
       urgency: req.urgency,
-      status: req.status,
+      status,
       notes: req.notes,
       createdAt: req.created_at,
       updatedAt: req.updated_at,

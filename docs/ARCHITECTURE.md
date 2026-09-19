@@ -300,13 +300,17 @@ The coordinator dashboard is an operational workflow monitor, **not a donor dire
 - **Anonymized Candidates**: Candidate donors are identified only by sanitized references (e.g. `Donor •••• 0001` or `Donor •••• A628`).
 - **Contact Reveal Boundary**: Contact reveal details (name and phone) remain exclusively available to verified requesters for accepted donors through the existing atomic authorization RPC.
 
-### C. Deterministic "Needs Attention" Heuristic
+### C. Deterministic "Needs Attention" Heuristic & Pipeline Structure
 A request is flagged as needing attention (`needsAttention = true`) based strictly on deterministic system state:
-1. **Zero Discovered Candidates**: `status IN ('active', 'matching')` AND `match_count = 0` (`"Zero eligible candidates matched"`).
+1. **Zero Discovered Candidates**: `status = 'active'` AND `match_count = 0` (`"Zero eligible candidates matched"`).
 2. **Awaiting Responses**: `status = 'notified'` AND `accepted_count = 0` (`"Awaiting donor acceptance"`).
-3. **Past Due Unfulfilled**: `status IN ('active', 'matching', 'notified')` AND `required_by < NOW()` (`"Past required deadline without fulfillment"`).
+3. **Past Due Unfulfilled**: `status IN ('active', 'notified')` AND `required_by < NOW()` (`"Past required deadline without fulfillment"`).
 4. **Expired**: `status = 'expired'` (`"Request expired unfulfilled"`).
-This heuristic uses only verifiable database timestamps and status flags, avoiding synthetic clinical scoring or artificial urgency calculations.
+This heuristic uses only verifiable database timestamps and real persisted status flags (`active`, `notified`, `expired`), avoiding synthetic clinical scoring or artificial urgency calculations. "Active Requests" metric aggregates requests in `status IN ('active', 'notified')`.
+
+The request detail view structures the operational workflow into:
+- **4-Stage Operational Pipeline Cards**: High-level aggregate metric cards (1. Discovery, 2. Dispatched, 3. Responses, 4. Privacy Reveal).
+- **5-Step Lifecycle Audit Timeline**: Sequential chronological milestones reconstructed from authoritative database timestamps (1. Request Created, 2. Compatible Matches Identified, 3. In-App Notifications Dispatched, 4. Donor Responses Received, 5. Requester Contact Reveal Authorized).
 
 ### D. Authentication Boundary & Production Requirement
 - **Hackathon Scope**: For the hackathon MVP, coordinator views are prototype operational views. No login, OTP, Supabase Auth accounts, or fake "Verified Coordinator" claims are introduced.

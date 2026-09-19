@@ -378,17 +378,18 @@ Landing Page (/)
 - **Goal**: Add a focused, read-only Coordinator Operations Dashboard that makes Hemo Match's existing district blood-request workflow visible at a system level using real PostgreSQL data.
 - **Routes Added**:
   - `/coordinator` — Operations Overview (metric summary cards, searchable/filterable request list, deterministic attention alerts).
-  - `/coordinator/requests/[id]` — Request Detail & Workflow Lifecycle View (5-stage operational pipeline: Discovery → Dispatch → Responses → Privacy Reveal, anonymized candidate roster, operational audit timeline).
+  - `/coordinator/requests/[id]` — Request Detail & Workflow Lifecycle View (4-stage operational pipeline cards: Discovery → Dispatched → Responses → Privacy Reveal; anonymized candidate roster; 5-step operational audit timeline: Created → Matching → Notification → Response → Reveal).
   - `GET /api/coordinator/overview` — Server-only route handler returning real aggregate metrics and request summaries.
   - `GET /api/coordinator/requests/[id]` — Server-only route handler returning operational lifecycle detail.
 - **Privacy Boundary**:
   - Strictly omits donor phone numbers, emails, exact coordinates (latitude/longitude), and exact home addresses.
   - Candidates projected solely via anonymized references (`Donor •••• XXXX`).
   - Contact reveal authorization remains strictly between verified requester and accepted donors.
-- **Deterministic Needs Attention**:
-  - Zero eligible candidates discovered for open requests (`status IN ('active', 'matching') && matchCount === 0`).
+- **Deterministic Needs Attention & Metric Definitions**:
+  - Active Requests: Aggregates real persisted open workflow statuses (`status IN ('active', 'notified')`).
+  - Zero eligible candidates discovered for open requests (`status === 'active' && matchCount === 0`).
   - Awaiting donor acceptance on notified requests (`status === 'notified' && acceptedCount === 0`).
-  - Past required deadline without fulfillment (`status IN ('active', 'matching', 'notified') && requiredBy < now`).
+  - Past required deadline without fulfillment (`status IN ('active', 'notified') && requiredBy < now`).
   - Request expired unfulfilled (`status === 'expired'`).
 - **Read-Only Scope**: Deliberately excludes mutation actions (no deleting records, editing donor data, or forcing reveals).
 - **Authentication Note**: Prototype operational view for hackathon MVP; production deployment would require authenticated, authorized coordinator access (RBAC / SSO).

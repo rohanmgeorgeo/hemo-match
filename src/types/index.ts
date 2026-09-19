@@ -24,7 +24,6 @@ export type UrgencyLevel = 'critical' | 'urgent' | 'routine' | 'standard';
 export type RequestStatus =
   | 'draft'
   | 'active'
-  | 'matching'
   | 'notified'
   | 'partially_filled'
   | 'fulfilled'
