@@ -284,3 +284,30 @@ The implemented pipeline executes across seven discrete architectural stages:
   3. **Donor C** (`A+`, ~0.9 km): Excluded by Hemo Match's conservative 120-day application matching interval policy despite physical proximity. (Note: The 120-day interval is Hemo Match's conservative application matching policy for this MVP, not a universal medical eligibility rule. Final donor eligibility is determined by qualified blood-bank/clinical personnel.)
   4. **Donor D** (`A+`, ~1.8 km): Eligible in match candidate discovery, but safely skipped during notification dispatch due to `notification_preference = 'disabled'`.
   5. **Donor E** (`A+`, ~13.4 km): Excluded by the 5 km radius when coordinates exist; matches via district fallback when coordinates are omitted.
+
+---
+
+## 8. Coordinator Operations Dashboard Architecture (Step 16)
+
+### A. Purpose & Scope
+The Coordinator Operations Dashboard (`/coordinator` and `/coordinator/requests/[id]`) provides district health coordinators and emergency monitors with system-level visibility into Hemo Match's live request pipeline without building an intrusive admin panel.
+- **Read-Only MVP**: The dashboard performs zero database mutations. It enables operational monitoring without introducing unauthenticated write actions.
+- **Real Database State**: All counts (matches, notifications, responses, reveals) and metrics are derived directly from PostgreSQL records across `blood_requests`, `matches`, `notifications`, `donor_responses`, and `contact_reveals`.
+
+### B. Strict Privacy Projections
+The coordinator dashboard is an operational workflow monitor, **not a donor directory**.
+- **Excluded Fields**: Donor phone numbers, emails, exact coordinates (latitude/longitude), and exact home addresses are strictly excluded from API responses and client components.
+- **Anonymized Candidates**: Candidate donors are identified only by sanitized references (e.g. `Donor •••• 0001` or `Donor •••• A628`).
+- **Contact Reveal Boundary**: Contact reveal details (name and phone) remain exclusively available to verified requesters for accepted donors through the existing atomic authorization RPC.
+
+### C. Deterministic "Needs Attention" Heuristic
+A request is flagged as needing attention (`needsAttention = true`) based strictly on deterministic system state:
+1. **Zero Discovered Candidates**: `status IN ('active', 'matching')` AND `match_count = 0` (`"Zero eligible candidates matched"`).
+2. **Awaiting Responses**: `status = 'notified'` AND `accepted_count = 0` (`"Awaiting donor acceptance"`).
+3. **Past Due Unfulfilled**: `status IN ('active', 'matching', 'notified')` AND `required_by < NOW()` (`"Past required deadline without fulfillment"`).
+4. **Expired**: `status = 'expired'` (`"Request expired unfulfilled"`).
+This heuristic uses only verifiable database timestamps and status flags, avoiding synthetic clinical scoring or artificial urgency calculations.
+
+### D. Authentication Boundary & Production Requirement
+- **Hackathon Scope**: For the hackathon MVP, coordinator views are prototype operational views. No login, OTP, Supabase Auth accounts, or fake "Verified Coordinator" claims are introduced.
+- **Production Requirement**: Production deployment would require authenticated, authorized coordinator access (e.g., enterprise role-based access control, healthcare SSO, or multi-factor authentication).

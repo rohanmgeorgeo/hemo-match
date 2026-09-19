@@ -3,7 +3,7 @@
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
 **Branch:** `main`
-**Current Milestone:** Step 15: Selection Dataset & Evaluation Reliability (COMPLETE)
+**Current Milestone:** Step 16: Coordinator Operations Dashboard (in progress on feature/coordinator-dashboard)
 **Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-19
 
@@ -373,3 +373,23 @@ Landing Page (/)
   - Non-destructive: Never truncates tables or deletes unrelated user records.
 - **Verification Baseline**: 245 tests / 71 suites passing, typecheck clean, lint clean, production build clean.
 - **Git Milestone Closure**: Merged `feature/selection-dataset` into `main` via merge commit (`998f88ffe19c54f8b372d161d243e777da32ba9a`).
+
+### Step 16: Coordinator Operations Dashboard (in progress on feature/coordinator-dashboard)
+- **Goal**: Add a focused, read-only Coordinator Operations Dashboard that makes Hemo Match's existing district blood-request workflow visible at a system level using real PostgreSQL data.
+- **Routes Added**:
+  - `/coordinator` — Operations Overview (metric summary cards, searchable/filterable request list, deterministic attention alerts).
+  - `/coordinator/requests/[id]` — Request Detail & Workflow Lifecycle View (5-stage operational pipeline: Discovery → Dispatch → Responses → Privacy Reveal, anonymized candidate roster, operational audit timeline).
+  - `GET /api/coordinator/overview` — Server-only route handler returning real aggregate metrics and request summaries.
+  - `GET /api/coordinator/requests/[id]` — Server-only route handler returning operational lifecycle detail.
+- **Privacy Boundary**:
+  - Strictly omits donor phone numbers, emails, exact coordinates (latitude/longitude), and exact home addresses.
+  - Candidates projected solely via anonymized references (`Donor •••• XXXX`).
+  - Contact reveal authorization remains strictly between verified requester and accepted donors.
+- **Deterministic Needs Attention**:
+  - Zero eligible candidates discovered for open requests (`status IN ('active', 'matching') && matchCount === 0`).
+  - Awaiting donor acceptance on notified requests (`status === 'notified' && acceptedCount === 0`).
+  - Past required deadline without fulfillment (`status IN ('active', 'matching', 'notified') && requiredBy < now`).
+  - Request expired unfulfilled (`status === 'expired'`).
+- **Read-Only Scope**: Deliberately excludes mutation actions (no deleting records, editing donor data, or forcing reveals).
+- **Authentication Note**: Prototype operational view for hackathon MVP; production deployment would require authenticated, authorized coordinator access (RBAC / SSO).
+- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
