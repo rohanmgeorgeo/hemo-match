@@ -2,15 +2,15 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Milestone:** Step 9 — Authorized Minimum Contact Reveal (COMPLETE)
-**Last Updated:** 2026-09-18
+**Current Milestone:** Step 17.5 / Final Portfolio Polish (COMPLETE)
+**Last Updated:** 2026-09-19
 
 ---
 
 ## 1. Active Blocking Bugs
 
 **None.**
-The Step 9 audit and controlled live verification confirmed zero blocking bugs across contact reveal authorization, atomic RPC reveal recording, minimum contact projection, database persistence, and user interface components. All 179 automated unit tests pass cleanly.
+The Step 9 audit and controlled live verification confirmed zero blocking bugs across contact reveal authorization, atomic RPC reveal recording, minimum contact projection, database persistence, and user interface components. All 259 automated tests across 76 suites pass cleanly.
 
 ---
 
@@ -47,10 +47,10 @@ The following items are intentional architectural tradeoffs for the hackathon MV
    - The engine applies a uniform 120-day policy as an application-level safety precaution.
    - Production requirement: Add sex/gender field to donor profile to support tailored 90-day intervals.
 
-3. **Same-District Boundary (No GPS / Real-Time Map SDK)**:
-   - Matching is strictly scoped to the same administrative district (`donor.district_id === request.district_id`).
-   - Prevents inaccurate straight-line distance calculations and heavy client battery drain.
-   - Production requirement: Integrate taluk/hospital cluster routing or GIS district bounding boxes.
+3. **Coordinate-First Proximity Matching with Same-District Fallback**:
+   - Implemented in Step 14: the matching engine evaluates straight-line Haversine distance within a 5 km application radius (`MATCH_RADIUS_KM = 5`) when coordinates are available for both request and donor.
+   - When coordinates are absent on either side, the engine gracefully falls back to matching within the same administrative district (`donor.district_id === request.district_id`).
+   - Production requirement: Integrate hospital place search autocomplete, map pin selection, and route-based travel time estimation (e.g., OSRM / Mapbox).
 
 4. **LocalStorage View Caching & Demo Identity**:
    - `hemo_match_active_request` and `hemo_match_demo_donor` are temporarily cached in browser `localStorage` to bridge view state between forms and confirmation/matching views without pseudo-auth.
