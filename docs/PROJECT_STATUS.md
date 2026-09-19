@@ -374,7 +374,7 @@ Landing Page (/)
 - **Verification Baseline**: 245 tests / 71 suites passing, typecheck clean, lint clean, production build clean.
 - **Git Milestone Closure**: Merged `feature/selection-dataset` into `main` via merge commit (`998f88ffe19c54f8b372d161d243e777da32ba9a`).
 
-### Step 16: Coordinator Operations Dashboard (in progress on feature/coordinator-dashboard)
+### Step 16: Coordinator Operations Dashboard (COMPLETE)
 - **Goal**: Add a focused, read-only Coordinator Operations Dashboard that makes Hemo Match's existing district blood-request workflow visible at a system level using real PostgreSQL data.
 - **Routes Added**:
   - `/coordinator` — Operations Overview (metric summary cards, searchable/filterable request list, deterministic attention alerts).
@@ -393,4 +393,5 @@ Landing Page (/)
   - Request expired unfulfilled (`status === 'expired'`).
 - **Read-Only Scope**: Deliberately excludes mutation actions (no deleting records, editing donor data, or forcing reveals).
 - **Authentication Note**: Prototype operational view for hackathon MVP; production deployment would require authenticated, authorized coordinator access (RBAC / SSO).
-- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
+- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean, diff-check clean.
+- **Git Milestone Closure**: Merged `feature/coordinator-dashboard` into `main` via merge commit (`84572921a97d4c98f82da8aa551cbfe69a7c36fc`).
