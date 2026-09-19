@@ -395,7 +395,7 @@ Landing Page (/)
 - **Authentication Note**: Prototype operational view for hackathon MVP; production deployment would require authenticated, authorized coordinator access (RBAC / SSO).
 - **Git Milestone Closure**: Merged `feature/coordinator-dashboard` into `main` via merge commit (`84572921a97d4c98f82da8aa551cbfe69a7c36fc`).
 
-### Step 17: Final QA + Evaluator Experience (COMPLETE on feature/final-qa)
+### Step 17: Final QA + Evaluator Experience (COMPLETE)
 - **Goal**: Final quality-assurance audit, evaluator experience hardening, medical terminology consistency, and production readiness review.
 - **Audited Areas**:
   - Landing page (`/`), blood request flow (`/requests/new`), matching dashboard (`/requests/matching-demo`), donor registration (`/donors/register`), donor profile (`/donors/profile`), donor inbox (`/donors/notifications`), coordinator overview (`/coordinator`), coordinator request detail (`/coordinator/requests/[id]`), shared desktop navigation (`AppHeader`), mobile bottom navigation (`AppBottomNav`), dark/light themes, and error boundaries.
@@ -423,3 +423,6 @@ Landing Page (/)
   - Browser Automation: Disclosed Playwright driver CDN 404 (`playwright.azureedge.net/builds/driver/playwright-1.57.0-mac-arm64.zip`); runtime HTTP verification passed completely.
 - **Evaluation Dataset Status**:
   - Step 15 remote selection dataset was **NOT** seeded. Remote Supabase database state remains intact and unmutated.
+- **Git Milestone Closure**:
+  - Merged `feature/final-qa` into `main` via merge commit (`4b33698d28a38ea5f72ea98c366ff4820980cf65`).
+  - Next milestone is final selection preparation.
