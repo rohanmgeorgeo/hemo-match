@@ -3,7 +3,7 @@
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
 **Branch:** `main`
-**Current Milestone:** Step 13.5: Signature Experience Polish & Global Ambient Pointer Light (COMPLETE)
+**Current Milestone:** Step 14: Privacy-Safe Proximity Matching + Location Capture (COMPLETE)
 **Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-19
 
@@ -337,7 +337,7 @@ Landing Page (/)
 - **Git Milestone Closure**: Merged `feature/signature-experience-polish` into `main` via merge commit (`9069f1a5f28ed5d572b87235bcf2690a9e568e50`).
 - **Status & Next Steps**: Step 13.5 complete and approved.
 
-### Step 14: Privacy-Safe Proximity Matching + Location Capture (in progress on feature/proximity-matching)
+### Step 14: Privacy-Safe Proximity Matching + Location Capture (complete, merged)
 - **Goal**: Replace same-district-only matching with real coordinate-based proximity matching while preserving district as an authoritative fallback for records without coordinates.
 - **Privacy Boundary**: Donor coordinates are server-side private matching data. Completely omitted from `DonorPublicRow`, `PublicMatchCandidate`, notifications, accepted-state projections, and contact reveal.
 - **Geospatial Engine**: Implemented pure server-side Haversine geodesic distance utility (`src/lib/geo/distance.ts`) with `-90 <= lat <= 90` and `-180 <= lon <= 180` boundary checks and `formatDistanceKm`. Internal calculation is exact; presentation is safely rounded (e.g. `~1.8 km away`).
@@ -352,6 +352,9 @@ Landing Page (/)
 - **Location Capture UX**: Reusable `LocationCapture` component integrated into `/requests/new` and `/donors/register` with explicit "Use current location" button, graceful handling of permission denied, timeouts, or unavailable location, and manual district/approximate area fallback.
 - **Donor Profile Indicator**: `/donors/profile` clearly informs registered donors: `"Location available for private nearby matching"` alongside approximate area and district, with zero raw coordinates rendered.
 - **Schema Migration**: Created additive migration `0006_proximity_matching_coordinates.sql` adding `location_latitude` and `location_longitude` (`DOUBLE PRECISION`, range check constraints, partial spatial indexes) to `blood_requests` and `donors`.
+- **Remote Migration Status**: Verified and applied remotely to Supabase production PostgreSQL. Confirmed with runtime API success (`POST /api/requests` → 201, `POST /api/donors` → 201, `GET /api/donors/notifications` → 200, `GET/POST /api/requests/matches` → 200).
 - **Google Maps/Places Preparation**: Architecture accepts `{ latitude, longitude }` payloads cleanly, enabling future Google Places autocomplete or map selection without altering matching engine logic.
-- **Verification**: 231 tests / 67 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
+- **Verification Baseline**: 231 tests / 67 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
+- **Git Milestone Closure**: Merged `feature/proximity-matching` into `main` via merge commit.
+
 
