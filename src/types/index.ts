@@ -22,11 +22,14 @@ export type BloodComponent =
 export type UrgencyLevel = 'critical' | 'urgent' | 'routine' | 'standard';
 
 export type RequestStatus =
-  | 'open'
-  | 'matching'
+  | 'draft'
+  | 'active'
+  | 'notified'
+  | 'partially_filled'
   | 'fulfilled'
   | 'cancelled'
-  | 'expired';
+  | 'expired'
+  | 'open';
 
 export type DonorAvailability = 'available' | 'temporarily_unavailable' | 'paused';
 

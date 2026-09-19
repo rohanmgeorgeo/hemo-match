@@ -620,3 +620,14 @@ This document records the core architectural and technology choices locked for *
   * Allows repeatable, idempotent test runs: running `npm run seed:selection` upserts the 5 deterministic donor profiles and cleans up prior evaluation notifications/matches without touching unrelated data.
   * Avoids building intrusive "Demo Mode" buttons, simulator bars, or evaluator-only UI into the product. Evaluators test the authentic application workflow directly.
   * All 5 seeded cases pass through standard biological matching, Haversine proximity evaluation, conservative 120-day application matching interval policy, and notification preference filters unchanged.
+
+---
+
+## 63. Coordinator Operations Dashboard Privacy Projection & Read-Only MVP Scope
+
+* **Decision:** Implement a read-only Coordinator Operations Dashboard (`/coordinator` and `/coordinator/requests/[id]`) backed by server-only projections of real PostgreSQL state (`blood_requests`, `matches`, `notifications`, `donor_responses`, `contact_reveals`). The dashboard enforces strict donor privacy by omitting phone numbers, emails, exact coordinates, and exact home addresses, projecting only aggregate counts and anonymized candidate references (`Donor •••• XXXX`). Operational "Needs Attention" status is derived deterministically from existing schema attributes without synthetic scores or AI.
+* **Rationale:**
+  * Provides district healthcare administrators and emergency coordinators system-level operational visibility into blood request fulfillment, matching discovery, notification delivery, and donor acceptances without building a bloated administrative panel.
+  * Preserves strict donor privacy invariants: the dashboard is an operational workflow monitor, NOT a donor directory. Contact reveal remains an authorized transaction strictly between the requester and accepted donors.
+  * Keeps the MVP strictly read-only: without production-grade authentication, mutation capabilities (e.g. deleting records, manually overriding statuses, or forcing reveals) are deliberately excluded to eliminate security risks.
+  * Production deployment requirement: Production deployment would require authenticated, authorized coordinator access (e.g. role-based access control, institutional SSO, or multi-factor authentication).

@@ -23,6 +23,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
     { href: '/requests/matching-demo', label: 'Matches' },
     { href: '/donors/notifications', label: 'Donor Inbox' },
     { href: '/donors/profile', label: 'Donor Profile' },
+    { href: '/coordinator', label: 'Coordinator' },
   ];
 
   return (
