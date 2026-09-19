@@ -105,7 +105,7 @@ export interface MatchMetadata {
     is_homologous: boolean;
     /** Priority 2: nearer distance first when available */
     distance_km?: number | null;
-    /** Priority 3: longer physiological recovery first (days descending) */
+    /** Priority 3: longer rest interval first (days descending) */
     days_since_donation: number;
   };
 }
@@ -348,7 +348,7 @@ export function requestMatchingRowToEngineInput(row: RequestMatchingRow): Engine
  * Deterministic candidate ranking comparator:
  * 1. Exact ABO/Rh homologous matches first (to preserve universal O- / alternative stocks)
  * 2. When real distance is available, nearer donor first (straight-line geodesic km)
- * 3. Greater days since known last donation first (longer physiological recovery preferred)
+ * 3. Greater days since known last donation first (longer interval rest preferred)
  * 4. Stable deterministic tie-breaker: donor UUID ascending
  *
  * NOTE: approximate_area is NEVER used for distance or ranking calculation.

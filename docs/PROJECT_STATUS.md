@@ -393,5 +393,33 @@ Landing Page (/)
   - Request expired unfulfilled (`status === 'expired'`).
 - **Read-Only Scope**: Deliberately excludes mutation actions (no deleting records, editing donor data, or forcing reveals).
 - **Authentication Note**: Prototype operational view for hackathon MVP; production deployment would require authenticated, authorized coordinator access (RBAC / SSO).
-- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean, diff-check clean.
 - **Git Milestone Closure**: Merged `feature/coordinator-dashboard` into `main` via merge commit (`84572921a97d4c98f82da8aa551cbfe69a7c36fc`).
+
+### Step 17: Final QA + Evaluator Experience (COMPLETE on feature/final-qa)
+- **Goal**: Final quality-assurance audit, evaluator experience hardening, medical terminology consistency, and production readiness review.
+- **Audited Areas**:
+  - Landing page (`/`), blood request flow (`/requests/new`), matching dashboard (`/requests/matching-demo`), donor registration (`/donors/register`), donor profile (`/donors/profile`), donor inbox (`/donors/notifications`), coordinator overview (`/coordinator`), coordinator request detail (`/coordinator/requests/[id]`), shared desktop navigation (`AppHeader`), mobile bottom navigation (`AppBottomNav`), dark/light themes, and error boundaries.
+- **Defects Found & Corrected**:
+  1. *Landing Page Medical Wording*: Corrected Pillar 2 heading from `120-Day Recovery Rule` to `120-Day Matching Policy` and updated body text to the authoritative framing: *"Applies Hemo Match's conservative 120-day application matching policy for this MVP. Final donor eligibility is determined by qualified blood-bank/clinical personnel."*
+  2. *Matching Demo Subtitle*: Replaced `recovery intervals` with `120-day donation interval policy`.
+  3. *Matching Engine Comments*: Removed legacy references to `physiological recovery` in `src/lib/matching/engine.ts`, replacing with `rest interval` / `interval rest`.
+- **Core Workflow Regression**:
+  - Requester flow: Validated request creation, candidate matching, 4-tier ranking, and notification dispatch.
+  - Donor flow: Validated volunteer intake, 120-day interval evaluation, notification inbox, and atomic Accept / Decline response RPC.
+  - Contact Reveal flow: Validated locked state on acceptance, explicit requester-authorized reveal, non-PII audit logging, and minimum projection (name + phone only).
+  - Coordinator flow: Validated read-only system monitoring, 4-stage pipeline cards, 5-step lifecycle timeline, deterministic Needs Attention alerts, and zero PII exposure.
+- **Privacy & Security Verification**:
+  - Verified zero donor phone numbers, emails, or raw coordinates exposed in API responses, matching candidates, or coordinator views.
+  - Confirmed all database operations with `SUPABASE_SERVICE_ROLE_KEY` are strictly isolated behind `server-only` server boundaries.
+  - Confirmed error responses return sanitized user messages without stack traces or internal schema details.
+- **Automated Verification**:
+  - `npm test`: 259 tests passing across 76 suites (0 failures).
+  - `npm run typecheck`: TypeScript clean (0 errors).
+  - `npm run lint`: ESLint clean (0 warnings).
+  - `npm run build`: Turbopack production build clean.
+  - `git diff --check`: Clean (0 whitespace/formatting errors).
+- **Runtime & Production Verification**:
+  - Production Deployment (`https://hemomatch.vercel.app/`): Verified HTTP 200 availability across `/`, `/requests/new`, `/requests/matching-demo`, `/donors/register`, `/donors/notifications`, and `/coordinator`.
+  - Browser Automation: Disclosed Playwright driver CDN 404 (`playwright.azureedge.net/builds/driver/playwright-1.57.0-mac-arm64.zip`); runtime HTTP verification passed completely.
+- **Evaluation Dataset Status**:
+  - Step 15 remote selection dataset was **NOT** seeded. Remote Supabase database state remains intact and unmutated.
