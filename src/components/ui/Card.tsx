@@ -4,6 +4,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: 'div' | 'section' | 'article';
   variant?: 'default' | 'subtle' | 'interactive' | 'accent' | 'success';
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  glow?: boolean | 'default' | 'subtle' | 'elevated';
   children: React.ReactNode;
 }
 
@@ -18,10 +19,40 @@ export const Card: React.FC<CardProps> = ({
   as: Component = 'div',
   variant = 'default',
   padding = 'md',
+  glow = false,
   className = '',
   children,
+  onPointerMove,
+  onPointerLeave,
   ...props
 }) => {
+  const isGlowActive = Boolean(glow);
+  const glowVariantClass =
+    glow === 'subtle'
+      ? 'cursor-glow-surface cursor-glow-subtle'
+      : glow === 'elevated'
+      ? 'cursor-glow-surface cursor-glow-elevated'
+      : isGlowActive
+      ? 'cursor-glow-surface'
+      : '';
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isGlowActive && e.pointerType === 'mouse') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      e.currentTarget.style.setProperty('--pointer-x', `${e.clientX - rect.left}px`);
+      e.currentTarget.style.setProperty('--pointer-y', `${e.clientY - rect.top}px`);
+      e.currentTarget.style.setProperty('--pointer-active', '1');
+    }
+    onPointerMove?.(e);
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isGlowActive) {
+      e.currentTarget.style.setProperty('--pointer-active', '0');
+    }
+    onPointerLeave?.(e);
+  };
+
   const baseClasses =
     'rounded-2xl sm:rounded-3xl transition-all duration-150 relative';
 
@@ -42,7 +73,9 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <Component
-      className={`${baseClasses} ${variantClasses} ${paddingClass} ${className}`.trim()}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className={`${baseClasses} ${variantClasses} ${paddingClass} ${glowVariantClass} ${className}`.trim()}
       {...props}
     >
       {children}

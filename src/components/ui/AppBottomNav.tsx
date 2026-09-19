@@ -16,31 +16,6 @@ export const AppBottomNav: React.FC = () => {
 
   const navItems: NavItem[] = [
     {
-      href: '/',
-      label: 'Home',
-      isActive: (p) => p === '/',
-      icon: (active) => (
-        <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
-          fill={active ? 'currentColor' : 'none'}
-          viewBox="0 0 24 24"
-          strokeWidth={active ? '0' : '2'}
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          {active ? (
-            <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z"
-            />
-          )}
-        </svg>
-      ),
-    },
-    {
       href: '/requests/new',
       label: 'Request',
       isActive: (p) => p === '/requests/new',

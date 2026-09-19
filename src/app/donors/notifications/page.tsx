@@ -270,18 +270,12 @@ export default function DonorNotificationsPage() {
               >
                 Register as Donor
               </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs"
-              >
-                Home
-              </Link>
             </div>
           </Card>
         ) : (
           <div className="space-y-6">
             {/* Header & Inbox Context Card */}
-            <Card variant="default" className="p-6 sm:p-8 shadow-xs">
+            <Card variant="default" glow="elevated" className="p-6 sm:p-8 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60 mb-2">
@@ -402,6 +396,7 @@ export default function DonorNotificationsPage() {
                       <Card
                         key={item.id}
                         variant="default"
+                        glow="subtle"
                         className={`transition-all p-5 sm:p-6 shadow-xs ${
                           isUnread
                             ? 'border-rose-300/90 dark:border-rose-800 ring-1 ring-rose-100 dark:ring-rose-950/40'
@@ -623,18 +618,12 @@ export default function DonorNotificationsPage() {
             </div>
 
             {/* Navigation Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex items-center justify-center pt-2">
               <Link
                 href="/donors/profile"
                 className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-sm text-center transition-all"
               >
                 Donor Profile
-              </Link>
-              <Link
-                href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
-              >
-                Return to Home
               </Link>
             </div>
           </div>
@@ -647,9 +636,9 @@ export default function DonorNotificationsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md transition-opacity"
         >
-          <div className="bg-white dark:bg-[#171717] rounded-3xl border border-neutral-200/90 dark:border-neutral-800 max-w-md w-full p-6 shadow-xl space-y-5 text-neutral-900 dark:text-neutral-100 animate-unmask">
+          <div className="glass-floating rounded-3xl border border-neutral-200/90 dark:border-neutral-800/90 max-w-md w-full p-6 shadow-2xl space-y-5 text-neutral-900 dark:text-neutral-100 animate-unmask">
             {activeModal.action === 'accepted' ? (
               <>
                 <div className="flex items-center gap-3">

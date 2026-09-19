@@ -142,7 +142,7 @@ export default function DonorProfilePage() {
             </div>
 
             {/* Profile Hero Card */}
-            <Card variant="default" className="p-6 sm:p-8 shadow-xs relative overflow-hidden">
+            <Card variant="default" glow="elevated" className="p-6 sm:p-8 shadow-xs relative overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                 {/* Blood Group Avatar — Strongest Identifier */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/60 flex flex-col items-center justify-center shrink-0 shadow-2xs">
@@ -190,7 +190,7 @@ export default function DonorProfilePage() {
             </Card>
 
             {/* Profile Attributes & 120-Day Policy Card */}
-            <Card variant="default" className="p-6 sm:p-7 shadow-xs">
+            <Card variant="default" glow="default" className="p-6 sm:p-7 shadow-xs">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-5 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                 Coordination &amp; Recovery Attributes
@@ -270,7 +270,7 @@ export default function DonorProfilePage() {
             </Card>
 
             {/* Privacy Protection Card */}
-            <Card variant="default" className="p-6 sm:p-7 shadow-xs">
+            <Card variant="default" glow="subtle" className="p-6 sm:p-7 shadow-xs">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 border border-neutral-200/80 dark:border-neutral-700">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.75" stroke="currentColor">
@@ -331,12 +331,6 @@ export default function DonorProfilePage() {
                 className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-sm text-center transition-all cursor-pointer"
               >
                 Update Profile
-              </Link>
-              <Link
-                href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all cursor-pointer"
-              >
-                Return to Home
               </Link>
             </div>
           </div>

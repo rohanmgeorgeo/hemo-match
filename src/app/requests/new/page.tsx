@@ -230,7 +230,7 @@ export default function NewBloodRequestPage() {
           {/* LEFT COLUMN: Request Form (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Card 1: Blood Need */}
-            <Card variant="default" className="p-5 sm:p-7">
+            <Card variant="default" glow="default" className="p-5 sm:p-7">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-500" />
                 1. Required Blood Specification
@@ -355,7 +355,7 @@ export default function NewBloodRequestPage() {
             </Card>
 
             {/* Card 2: District & Location */}
-            <Card variant="default" className="p-5 sm:p-7">
+            <Card variant="default" glow="default" className="p-5 sm:p-7">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-500" />
                 2. District &amp; Location Context
@@ -452,7 +452,7 @@ export default function NewBloodRequestPage() {
             </Card>
 
             {/* Card 3: Urgency & Timing */}
-            <Card variant="default" className="p-5 sm:p-7">
+            <Card variant="default" glow="default" className="p-5 sm:p-7">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-500" />
                 3. Timing &amp; Urgency Tier
@@ -587,7 +587,7 @@ export default function NewBloodRequestPage() {
             </Card>
 
             {/* Card 4: Coordination Notes */}
-            <Card variant="default" className="p-5 sm:p-7">
+            <Card variant="default" glow="default" className="p-5 sm:p-7">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-500" />
                 4. Coordination Notes (Optional)
@@ -612,7 +612,7 @@ export default function NewBloodRequestPage() {
 
           {/* RIGHT COLUMN: Live Request Summary & Sticky Action (4 cols) */}
           <div className="lg:col-span-4 mt-6 lg:mt-0 space-y-4 lg:sticky lg:top-20">
-            <GlowSurface className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] shadow-xs border border-neutral-200/90 dark:border-neutral-800">
+            <GlowSurface variant="elevated" className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] shadow-xs border border-neutral-200/90 dark:border-neutral-800">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800/80 mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Request Preview

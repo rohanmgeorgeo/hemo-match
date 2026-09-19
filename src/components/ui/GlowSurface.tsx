@@ -4,6 +4,7 @@ import React, { useCallback } from 'react';
 
 export interface GlowSurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: 'div' | 'section' | 'article';
+  variant?: 'default' | 'subtle' | 'elevated';
   children: React.ReactNode;
   className?: string;
 }
@@ -16,12 +17,20 @@ export interface GlowSurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
  */
 export const GlowSurface: React.FC<GlowSurfaceProps> = ({
   as: Component = 'div',
+  variant = 'default',
   children,
   className = '',
   onPointerMove,
   onPointerLeave,
   ...props
 }) => {
+  const variantClass =
+    variant === 'subtle'
+      ? 'cursor-glow-subtle'
+      : variant === 'elevated'
+      ? 'cursor-glow-elevated'
+      : '';
+
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (e.pointerType === 'mouse') {
@@ -49,7 +58,7 @@ export const GlowSurface: React.FC<GlowSurfaceProps> = ({
     <Component
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className={`cursor-glow-surface ${className}`.trim()}
+      className={`cursor-glow-surface ${variantClass} ${className}`.trim()}
       {...props}
     >
       {children}

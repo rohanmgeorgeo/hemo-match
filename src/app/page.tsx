@@ -323,7 +323,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Requester Role Card */}
-            <div className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
@@ -365,10 +365,10 @@ export default function HomePage() {
                   View active matching dashboard →
                 </Link>
               </div>
-            </div>
+            </GlowSurface>
 
             {/* Donor Role Card */}
-            <div className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
@@ -411,13 +411,13 @@ export default function HomePage() {
                   Register volunteer donor profile →
                 </Link>
               </div>
-            </div>
+            </GlowSurface>
           </div>
         </section>
 
         {/* Product Principles: Grouped Clean Surface (Reduces Card Clutter) */}
         <section aria-label="Core Coordination Principles" className="mb-12">
-          <div className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-8 shadow-xs">
+          <GlowSurface variant="subtle" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-8 shadow-xs">
             <div className="mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                 Domain Principles
@@ -514,7 +514,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-          </div>
+          </GlowSurface>
         </section>
 
         {/* Clinical Disclaimer Callout */}

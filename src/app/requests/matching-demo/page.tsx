@@ -362,7 +362,7 @@ export default function MatchingDemoPage() {
             <RequestLifecycle {...lifecycleStates} />
 
             {/* Request Command Header (with subtle desktop cursor illumination) */}
-            <GlowSurface className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-7 shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-7 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -626,7 +626,7 @@ export default function MatchingDemoPage() {
 
                 {/* Step 3: Highly Visible Coordination Action Panel — Notify Eligible Donors */}
                 {matchState.matches.length > 0 && (
-                  <Card variant="default" className="p-5 sm:p-7 shadow-xs mt-6">
+                  <Card variant="default" glow="default" className="p-5 sm:p-7 shadow-xs mt-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -814,7 +814,7 @@ export default function MatchingDemoPage() {
             )}
 
             {/* Privacy Shield Card */}
-            <Card variant="default" className="p-5 sm:p-6 shadow-xs">
+            <Card variant="default" glow="subtle" className="p-5 sm:p-6 shadow-xs">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 border border-neutral-200/80 dark:border-neutral-700">
                   <svg

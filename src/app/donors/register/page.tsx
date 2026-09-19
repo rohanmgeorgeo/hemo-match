@@ -179,7 +179,7 @@ export default function DonorRegisterPage() {
 
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
           {/* Card 1: Donor Identity */}
-          <Card variant="default" className="p-5 sm:p-7">
+          <Card variant="default" glow="default" className="p-5 sm:p-7">
             <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               1. Donor Identity
@@ -281,7 +281,7 @@ export default function DonorRegisterPage() {
           </Card>
 
           {/* Card 2: Location */}
-          <Card variant="default" className="p-5 sm:p-7">
+          <Card variant="default" glow="default" className="p-5 sm:p-7">
             <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               2. District &amp; Location
@@ -347,7 +347,7 @@ export default function DonorRegisterPage() {
           </Card>
 
           {/* Card 3: Donation History */}
-          <Card variant="default" className="p-5 sm:p-7">
+          <Card variant="default" glow="default" className="p-5 sm:p-7">
             <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               3. Donation History &amp; Recovery Interval
@@ -387,7 +387,7 @@ export default function DonorRegisterPage() {
           </Card>
 
           {/* Card 4: Participation & Consent */}
-          <Card variant="default" className="p-5 sm:p-7">
+          <Card variant="default" glow="default" className="p-5 sm:p-7">
             <h2 className="text-base font-bold text-neutral-900 dark:text-white mb-4 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               4. Participation &amp; Notification Settings

@@ -113,40 +113,50 @@ input[type="time"] {
   transform: scale(0.98);
 }
 
-/* Glass Material Design System (Translucent layered materials) */
+/* Glass Material Design System (Translucent layered materials with authentic blur) */
 .glass-bar {
-  background-color: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
 }
 .dark .glass-bar {
-  background-color: rgba(11, 11, 12, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(11, 11, 12, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-floating {
-  background-color: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  background-color: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border-color: rgba(0, 0, 0, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8), 0 8px 32px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
 }
 .dark .glass-floating {
-  background-color: rgba(18, 18, 20, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.4);
+  background-color: rgba(16, 16, 18, 0.76);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.3);
 }
 
 .glass-surface {
-  background-color: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
 }
 .dark .glass-surface {
-  background-color: rgba(23, 23, 23, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(22, 22, 24, 0.68);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Cursor-reactive signature surface (desktop / fine pointer only) */
@@ -161,19 +171,51 @@ input[type="time"] {
     inset: 0;
     border-radius: inherit;
     background: radial-gradient(
-      380px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
-      rgba(217, 45, 32, 0.045),
+      360px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(217, 45, 32, 0.048),
       transparent 70%
     );
     pointer-events: none;
     z-index: 1;
     opacity: var(--pointer-active, 0);
-    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .dark .cursor-glow-surface::before {
     background: radial-gradient(
-      380px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
-      rgba(255, 69, 58, 0.065),
+      360px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(255, 69, 58, 0.068),
+      transparent 70%
+    );
+  }
+
+  /* Subtle illumination variant for dense workflow cards & list items */
+  .cursor-glow-subtle::before {
+    background: radial-gradient(
+      280px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(217, 45, 32, 0.035),
+      transparent 65%
+    );
+  }
+  .dark .cursor-glow-subtle::before {
+    background: radial-gradient(
+      280px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(255, 69, 58, 0.052),
+      transparent 65%
+    );
+  }
+
+  /* Elevated illumination variant for key summary cards */
+  .cursor-glow-elevated::before {
+    background: radial-gradient(
+      420px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(217, 45, 32, 0.065),
+      transparent 70%
+    );
+  }
+  .dark .cursor-glow-elevated::before {
+    background: radial-gradient(
+      420px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(255, 69, 58, 0.085),
       transparent 70%
     );
   }
