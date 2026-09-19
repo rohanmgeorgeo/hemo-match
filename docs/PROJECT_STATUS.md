@@ -384,7 +384,7 @@ Landing Page (/)
 - **Privacy Boundary**:
   - Strictly omits donor phone numbers, emails, exact coordinates (latitude/longitude), and exact home addresses.
   - Candidates projected solely via anonymized references (`Donor •••• XXXX`).
-  - Contact reveal authorization remains strictly between verified requester and accepted donors.
+  - Contact reveal authorization remains strictly between requesters and accepted donors via explicit authorization action.
 - **Deterministic Needs Attention & Metric Definitions**:
   - Active Requests: Aggregates real persisted open workflow statuses (`status IN ('active', 'notified')`).
   - Zero eligible candidates discovered for open requests (`status === 'active' && matchCount === 0`).

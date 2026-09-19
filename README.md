@@ -32,7 +32,7 @@ In medical emergencies, blood requests are frequently forwarded across unmoderat
 
 ## The Solution
 
-**Hemo Match** is a privacy-first district blood donor coordination platform built for emergency healthcare scenarios. It replaces indiscriminate public broadcasts with an authoritative, server-driven matching engine that evaluates ABO/Rh biological compatibility, strict donation rest intervals, and real-time physical proximity within 5 km (with same-district fallback). Crucially, Hemo Match safeguards donor privacy by keeping personal phone numbers and identities completely concealed throughout the matching, notification, and acceptance stages—exposing contact details only through an explicit, requester-authorized reveal action backed by atomic database transactions and an immutable audit trail.
+**Hemo Match** is a privacy-first district blood donor coordination platform built for emergency healthcare scenarios. It replaces indiscriminate public broadcasts with an authoritative, server-driven matching engine that evaluates ABO/Rh biological compatibility, a conservative 120-day application donation interval policy, and approximate straight-line Haversine distance within a configured 5 km application matching radius (with same-district fallback; not route distance or travel-time estimation). Crucially, Hemo Match protects donor privacy by keeping personal phone numbers and identities completely concealed throughout the matching, notification, and acceptance stages—exposing contact details only through an explicit, requester-authorized reveal action backed by atomic database transactions and an append-only application audit trail.
 
 ---
 
@@ -57,16 +57,16 @@ Request ──► Match ──► Notify ──► Accept ──► Reveal Conta
 - **Blood Request Intake**: Structured request submission capturing patient blood group, required units, urgency tier (`standard`, `urgent`, `critical`), required-by timestamp, and hospital location.
 - **Donor Registration & Profiles**: Volunteer donor registration with blood group, administrative district, optional coordinates, availability toggle, consent controls, and notification preferences.
 - **ABO/Rh Biological Compatibility**: Server-side 64-pair biological compatibility matrix supporting Whole Blood and Red Blood Cells (RBC).
-- **Conservative 120-Day Donation Interval Policy**: Application-level rest interval verification safeguarding donor health between donations.
-- **Coordinate-First Proximity Matching**: High-precision straight-line distance calculations using the Haversine formula when requester and donor coordinates are available.
-- **5 km Application Radius**: Focused local matching boundary to ensure rapid emergency physical transit.
+- **Conservative 120-Day Donation Interval Policy**: Application-level donation interval verification requiring at least 120 elapsed days since known last donation.
+- **Coordinate-First Proximity Matching**: Approximate straight-line distance calculations using the Haversine formula when requester and donor coordinates are available (not route distance or travel-time estimation).
+- **5 km Application Radius**: Configured 5 km application matching radius to prioritize nearby donors.
 - **Same-District Fallback**: Graceful fallback matching donors within the same administrative district when coordinates are unavailable.
-- **Deterministic 4-Tier Ranking**: Rigorous, reproducible candidate prioritization (Homologous match → Measured proximity → Rest interval → UUID tie-breaker).
+- **Deterministic 4-Tier Ranking**: Rigorous, reproducible candidate prioritization (Homologous match → Measured proximity → Elapsed donation interval → UUID tie-breaker).
 - **Targeted In-App Notifications**: Focused alerts delivered directly to eligible donor inboxes without public broadcasts.
 - **Duplicate Notification Protection**: Database-level partial unique indexes and atomic PostgreSQL RPC functions preventing duplicate dispatches.
 - **Donor Accept / Decline Workflow**: Authoritative response recording with server-side pre-response revalidation.
-- **Explicit Authorized Contact Reveal**: Two-step privacy gate requiring verified donor acceptance and explicit requester authorization to view donor contact details.
-- **Immutable Audit Trail**: Append-only security and operational audit log tracking all status transitions, notifications, responses, and reveal events.
+- **Explicit Authorized Contact Reveal**: Two-step privacy gate requiring donor acceptance and an explicit requester reveal action to view minimum donor contact details.
+- **Audit Trail**: Append-only application audit log tracking entity lifecycle events, status transitions, notifications, responses, and reveal actions (without storing PII).
 - **Coordinator Operations Dashboard**: Read-only system overview (`/coordinator` and `/coordinator/requests/[id]`) providing district health coordinators with aggregate metrics, 4-stage pipeline summaries, and anonymized candidate projections.
 - **Responsive Web UI**: Accessible on both mobile and desktop viewports with seamless Light and Dark theme support.
 - **Internal Selection Dataset Tooling**: Developer-only deterministic seeding scripts (`scripts/seed-selection.ts`) for repeatable evaluation runs.
@@ -88,7 +88,7 @@ Privacy is not an add-on in Hemo Match; it is the core architectural boundary:
 
 ## Matching Logic
 
-The Hemo Match matching engine applies a deterministic, multi-stage evaluation pipeline to ensure fair, reproducible, and clinically safe candidate selection:
+The Hemo Match matching engine applies a deterministic, multi-stage evaluation pipeline to ensure fair, reproducible, and deterministic preliminary candidate matching:
 
 ```
 Candidate Donors in District
@@ -106,7 +106,7 @@ Candidate Donors in District
         ▼ 6. Deterministic 4-Tier Ranking
         │      ├── Tier 1: Homologous ABO/Rh Match First (exact match over compatible)
         │      ├── Tier 2: Physical Proximity (nearer distance ranks higher)
-        │      ├── Tier 3: Rest Interval (greater elapsed rest days ranks higher)
+        │      ├── Tier 3: Elapsed Donation Interval (greater elapsed days since last donation ranks higher)
         │      └── Tier 4: UUID Lexicographical Tie-Breaker
         ▼
 Ranked Candidate Matches
@@ -141,7 +141,7 @@ flowchart TD
     subgraph Database ["Supabase / PostgreSQL Layer"]
         Tables[("Relational Tables<br/>districts, donors, blood_requests,<br/>matches, notifications, responses, reveals")]
         RPC["Atomic PostgreSQL RPC Functions<br/>(claim_match, record_response, record_reveal)"]
-        Audit[("Immutable Audit Trail<br/>(audit_logs)")]
+        Audit[("Audit Trail<br/>(audit_logs)")]
     end
 
     UI --> AppRoutes
@@ -206,13 +206,13 @@ The Coordinator Operations Dashboard (`/coordinator` and `/coordinator/requests/
 Hemo Match utilizes an 8-table relational PostgreSQL schema designed for strict referential integrity and transactional safety:
 
 - **`districts`**: Administrative district reference data with centroid coordinates and active status.
-- **`donors`**: Volunteer donor profiles, blood groups, administrative district, optional coordinates, rest interval dates, availability toggle, consent, and notification preferences.
-- **`blood_requests`**: Emergency blood requests specifying blood group, units, urgency, required-by timestamp, hospital details, coordinates, and lifecycle status (`draft`, `active`, `notified`, `fulfilled`, `cancelled`, `expired`).
+- **`donors`**: Volunteer donor profiles, blood groups, administrative district, optional coordinates, last donation date, availability toggle, consent, and notification preferences.
+- **`blood_requests`**: Emergency blood requests specifying blood group, units, urgency, required-by timestamp, hospital details, coordinates, and request lifecycle status (PostgreSQL `request_status` enum includes `draft`, `active`, `matching`, `notified`, `partially_filled`, `fulfilled`, `expired`, `cancelled`; current application workflow actively utilizes `active`, `notified`, `fulfilled`, `cancelled`, and `expired`).
 - **`matches`**: Candidate associations linking requests to compatible donors, recording ranking metadata and match status (`candidate`, `notified`, `accepted`, `declined`, `expired`).
 - **`notifications`**: In-app alerts dispatched to donors with atomic claiming, idempotency constraints, and read tracking.
-- **`donor_responses`**: Immutable donor response records capturing `accepted` or `declined` decisions with timestamp and optional notes.
+- **`donor_responses`**: Donor response records capturing `accepted` or `declined` decisions with timestamp and optional notes.
 - **`contact_reveals`**: Authorized contact reveal records created only upon explicit requester action for accepted donors.
-- **`audit_logs`**: Append-only security and operational audit trail recording entity lifecycle events, status changes, and reveal actions (without storing PII).
+- **`audit_logs`**: Append-only application audit trail recording entity lifecycle events, status changes, and reveal actions (without storing PII).
 
 ---
 
@@ -263,13 +263,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### 4. Database Setup
 
-Apply the sequential migrations located in `migrations/` using the Supabase SQL Editor or Supabase CLI:
+Apply the sequential migrations located in `supabase/migrations/` using the Supabase SQL Editor or Supabase CLI:
 
-- `migrations/0001_initial_schema.sql` — Core tables, enums, constraints, and RLS policies
-- `migrations/0002_notification_idempotency.sql` — Partial unique indexes for dispatch idempotency
-- `migrations/0003_atomic_notification_dispatch.sql` — Atomic `claim_match_and_create_notification` RPC
-- `migrations/0004_atomic_donor_response.sql` — Atomic `record_donor_response` RPC
-- `migrations/0005_contact_reveal_authorization.sql` — Atomic `record_contact_reveal` RPC
+- `supabase/migrations/0001_initial_schema.sql` — Core tables, enums, constraints, and RLS policies
+- `supabase/migrations/0002_notification_idempotency.sql` — Partial unique indexes for dispatch idempotency
+- `supabase/migrations/0003_atomic_notification_dispatch.sql` — Atomic `claim_match_and_create_notification` RPC
+- `supabase/migrations/0004_atomic_donor_response.sql` — Atomic `record_donor_response` RPC
+- `supabase/migrations/0005_contact_reveal_authorization.sql` — Atomic `record_contact_reveal` RPC
+- `supabase/migrations/0006_proximity_matching_coordinates.sql` — Server-side private matching coordinates for requests and donors, boundary constraints, partial spatial indexes, and proximity-matching support
 
 ### 5. Start the Development Server
 

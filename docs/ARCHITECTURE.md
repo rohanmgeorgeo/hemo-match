@@ -309,7 +309,7 @@ The Coordinator Operations Dashboard (`/coordinator` and `/coordinator/requests/
 The coordinator dashboard is an operational workflow monitor, **not a donor directory**.
 - **Excluded Fields**: Donor phone numbers, emails, exact coordinates (latitude/longitude), and exact home addresses are strictly excluded from API responses and client components.
 - **Anonymized Candidates**: Candidate donors are identified only by sanitized references (e.g. `Donor •••• 0001` or `Donor •••• A628`).
-- **Contact Reveal Boundary**: Contact reveal details (name and phone) remain exclusively available to verified requesters for accepted donors through the existing atomic authorization RPC.
+- **Contact Reveal Boundary**: Contact reveal details (name and phone) remain exclusively available to requesters for accepted donors through the explicit authorized reveal RPC.
 
 ### C. Deterministic "Needs Attention" Heuristic & Pipeline Structure
 A request is flagged as needing attention (`needsAttention = true`) based strictly on deterministic system state:
