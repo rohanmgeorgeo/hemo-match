@@ -3,7 +3,7 @@
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
 **Branch:** `main`
-**Current Milestone:** Step 13: Premium UI/UX Redesign (COMPLETE)
+**Current Milestone:** Step 13.5: Signature Experience Polish & Global Ambient Pointer Light (COMPLETE)
 **Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-19
 
@@ -326,4 +326,14 @@ Landing Page (/)
 - **Baseline before this status update**: `e26b8d4a8196eed3f1657e87aa2ab48d59576f47`.
 - **Verification**: 199 tests / 57 suites passing, typecheck clean, lint clean, production build clean.
 - **Git / Vercel Author Identity**: Corrected commit author configuration (`Rohan M George <rohanmgeorgeo@gmail.com>`) to resolve Vercel deployment blocker.
-- **Status & Next Steps**: Production visual QA pending successful Vercel deployment. Step 14 (Demo Mode) has NOT started.
+
+### Step 13.5: Signature Experience Polish & Global Ambient Pointer Light (complete, merged)
+- **Glass Specularity & Material Refinement**: Replaced flat translucency with physical glass refraction (`blur(20px)–blur(24px) saturate(180%–190%)`), crisp specular top highlights (`inset 0 1px 0 0 rgba(255,255,255,...)`), and deep elevation shadows on floating controls, mobile bottom navigation, dialogs, and headers.
+- **Unified Global Ambient Pointer Light**: Implemented single, high-performance root-level ambient light (`AmbientPointerLight`) positioned at `z-0` behind application content (`relative z-1`). Translucent glass surfaces naturally refract and catch this subtle light as the pointer moves across the application.
+- **Fine-Pointer Only & Zero-Jank Performance**: Scoped strictly to `@media (hover: hover) and (pointer: fine)`. Zero React state updates on pointermove; updates coalesced via `requestAnimationFrame` directly to CSS custom properties (`--global-pointer-x`, `--global-pointer-y`, `--global-pointer-active`). Touch devices and `prefers-reduced-motion: reduce` completely suppress the effect (`display: none !important`).
+- **Retired Local Card Spotlights**: Removed redundant per-card mousemove handlers to prevent double-glows and competing hotspots, leaving ONE unified global lighting system.
+- **Navigation Purity**: Removed redundant "Home" / "Return to Home" buttons from the donor notifications inbox and profile; streamlined mobile bottom navigation to the 4 canonical workflow destinations (`Request`, `Matches`, `Inbox`, `Profile`). Global `Hemo Match` branding remains the clean home route.
+- **Verification**: 199 tests / 57 suites passing, typecheck clean, lint clean, production build clean, diff-check clean.
+- **Git Milestone Closure**: Merged `feature/signature-experience-polish` into `main` via merge commit (`9069f1a5f28ed5d572b87235bcf2690a9e568e50`).
+- **Status & Next Steps**: Step 13.5 complete and approved. Step 14 (Interactive Demo Mode / Scenario Runner) has NOT started.
+
