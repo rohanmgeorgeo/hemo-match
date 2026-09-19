@@ -17,6 +17,9 @@ To evaluate Hemo Match independently without developer assistance, a determinist
 - **Required By**: Any valid future time (e.g., today + 4 hours or tomorrow)
 - **Urgency**: `Urgent` or `Standard`
 
+> [!IMPORTANT]
+> The 120-day interval is Hemo Match's conservative application matching policy for this MVP. It is not a universal medical eligibility rule. Final donor eligibility is determined by qualified blood-bank/clinical personnel.
+
 ---
 
 ## 2. Seeded Evaluation Donor Pool
@@ -27,7 +30,7 @@ Five deterministic, clearly fictional volunteer donor records have been prepared
 | :--- | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :--- |
 | **Donor A** | Adarsh Menon | `A+` | Kaloor | 9.9916, 76.2879 | ~1.4 km | 160 days ago | Enabled | **Match #1**: Homologous exact match within 5 km. Ranks 1st. |
 | **Donor B** | Biju Varma | `O+` | Panampilly Nagar | 9.9650, 76.2900 | ~2.2 km | 150 days ago | Enabled | **Match #2**: Universal compatible alternative within 5 km. Ranks after homologous. |
-| **Donor C** | Cyril Joseph | `A+` | Ernakulam North | 9.9750, 76.2750 | ~0.9 km | 40 days ago | Enabled | **Excluded**: Physically close (~0.9 km), but recent donation (< 120 days) excludes candidate. |
+| **Donor C** | Cyril Joseph | `A+` | Ernakulam North | 9.9750, 76.2750 | ~0.9 km | 40 days ago | Enabled | **Excluded**: Physically close (~0.9 km), but recent donation (< 120 days) excludes candidate via conservative 120-day application matching interval policy. |
 | **Donor D** | Deepak Nair | `A+` | Marine Drive West | 9.9890, 76.2650 | ~1.8 km | 170 days ago | **Disabled** | **Match Candidate / Skip Dispatch**: Qualifies in candidate list; skipped during notification dispatch. |
 | **Donor E** | Eldho Paul | `A+` | Aluva | 10.0800, 76.3500 | ~13.4 km | 180 days ago | Enabled | **Radius Exclusion / Fallback**: Excluded by 5 km radius when coordinates exist; matches under district fallback if coordinates missing. |
 
@@ -62,7 +65,7 @@ Because evaluators may test from anywhere (locally or remotely outside Kerala), 
   - Do **not** click "Use current location" (or leave location unselected).
   - Hemo Match smoothly falls back to **Same District** matching without failing or fabricating fake kilometers.
   - You will observe the restrained badge: `Same district`.
-  - **Donor A**, **Donor B**, **Donor D**, and **Donor E** will match via district alignment; **Donor C** remains excluded by interval.
+  - **Donor A**, **Donor B**, **Donor D**, and **Donor E** will match via district alignment; **Donor C** remains excluded by the conservative 120-day application matching interval policy.
 
 ### Step 3: Discover Matches & Observe Deterministic Ranking
 1. Click **Submit Blood Request**.
@@ -71,7 +74,7 @@ Because evaluators may test from anywhere (locally or remotely outside Kerala), 
    - **Top Match**: `Donor •••• 0001` (Donor A) — Exact blood-group match (A+), ~1.4 km away (or Same district).
    - **Compatible Match**: `Donor •••• 0002` (Donor B) — Compatible alternative (O+), ~2.2 km away.
    - **Notification Preference Candidate**: `Donor •••• 0004` (Donor D) — Exact match (A+), ~1.8 km away.
-   - **Excluded Donors**: Donor C is automatically filtered out by the 120-day interval policy.
+   - **Excluded Donors**: Donor C is automatically filtered out by Hemo Match's conservative 120-day application matching interval policy (not a universal medical eligibility rule; final eligibility is determined by qualified blood-bank/clinical personnel).
 
 ### Step 4: Dispatch In-App Notifications
 1. Click **Notify Eligible Donors**.
@@ -121,7 +124,7 @@ npm run seed:selection:reset
   - Request Type: `A+` Whole Blood, `Ernakulam District` (`General Hospital, Ernakulam` / `Marine Drive`)
 - **Key Capabilities Demonstrated Live**:
   1. **Dual Location Handling**: Real 5 km Haversine straight-line proximity when coordinates exist (`~1.4 km away`); graceful district fallback (`Same district`) when testing remotely.
-  2. **Clinical Safety & Priority**: Exact homologous matches prioritized over compatible alternatives; 120-day donation interval strictly excludes recent donors (Donor C).
+  2. **Matching Priority & Policy Safeguard**: Exact homologous matches prioritized over compatible alternatives; conservative 120-day application matching interval policy excludes recent donors (Donor C). (The 120-day interval is Hemo Match's conservative application matching policy for this MVP. It is not a universal medical eligibility rule. Final donor eligibility is determined by qualified blood-bank/clinical personnel.)
   3. **Preference-Respecting Dispatch**: In-app alerts delivered only to opted-in donors; non-consenting candidates (Donor D) skipped.
   4. **Strict Contact Privacy**: Anonymized candidate cards; donor contact remains locked after acceptance until requester triggers an audited, explicit **Reveal Contact**.
 - **Real Infrastructure**: Real Next.js App Router, real Supabase PostgreSQL persistence, real atomic RPCs, zero mock timers or fake delays.

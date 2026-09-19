@@ -281,6 +281,6 @@ The implemented pipeline executes across seven discrete architectural stages:
 - Demonstrates all key system properties through real code paths:
   1. **Donor A** (`A+`, ~1.4 km): Exact homologous ABO/Rh match within 5 km, ranks #1.
   2. **Donor B** (`O+`, ~2.2 km): Universal compatible alternative within 5 km, ranks after homologous.
-  3. **Donor C** (`A+`, ~0.9 km): Excluded by 120-day physiological recovery rule despite physical proximity.
+  3. **Donor C** (`A+`, ~0.9 km): Excluded by Hemo Match's conservative 120-day application matching interval policy despite physical proximity. (Note: The 120-day interval is Hemo Match's conservative application matching policy for this MVP, not a universal medical eligibility rule. Final donor eligibility is determined by qualified blood-bank/clinical personnel.)
   4. **Donor D** (`A+`, ~1.8 km): Eligible in match candidate discovery, but safely skipped during notification dispatch due to `notification_preference = 'disabled'`.
   5. **Donor E** (`A+`, ~13.4 km): Excluded by the 5 km radius when coordinates exist; matches via district fallback when coordinates are omitted.

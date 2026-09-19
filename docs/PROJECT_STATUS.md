@@ -364,7 +364,7 @@ Landing Page (/)
 - **Deterministic 5-Donor Evaluation Pool**:
   - **Donor A** (`a0000000-0000-4000-8000-000000000001`): A+, ~1.4 km (Kaloor), 160 days rest, enabled. Exact homologous match, ranks #1.
   - **Donor B** (`a0000000-0000-4000-8000-000000000002`): O+, ~2.2 km (Panampilly Nagar), 150 days rest, enabled. Universal compatible alternative, ranks #2.
-  - **Donor C** (`a0000000-0000-4000-8000-000000000003`): A+, ~0.9 km (Ernakulam North), 40 days rest. Excluded by 120-day interval rule despite proximity.
+  - **Donor C** (`a0000000-0000-4000-8000-000000000003`): A+, ~0.9 km (Ernakulam North), 40 days rest. Excluded by conservative 120-day application matching interval policy despite proximity (not a universal clinical rule; final eligibility determined by blood bank).
   - **Donor D** (`a0000000-0000-4000-8000-000000000004`): A+, ~1.8 km (Marine Drive West), 170 days rest, notifications disabled. Eligible for matching, safely skipped during notification dispatch.
   - **Donor E** (`a0000000-0000-4000-8000-000000000005`): A+, ~13.4 km (Aluva), 180 days rest, enabled. Excluded by 5 km radius when coordinates exist; matches via district fallback when coordinates are omitted.
 - **Developer Tooling**:

@@ -619,4 +619,4 @@ This document records the core architectural and technology choices locked for *
   * Guarantees absolute safety for production databases: table truncation, schema dropping, or clearing unrelated donor/request/coordination records is strictly prohibited.
   * Allows repeatable, idempotent test runs: running `npm run seed:selection` upserts the 5 deterministic donor profiles and cleans up prior evaluation notifications/matches without touching unrelated data.
   * Avoids building intrusive "Demo Mode" buttons, simulator bars, or evaluator-only UI into the product. Evaluators test the authentic application workflow directly.
-  * All 5 seeded cases pass through standard biological matching, Haversine proximity evaluation, 120-day interval rest, and notification preference filters unchanged.
+  * All 5 seeded cases pass through standard biological matching, Haversine proximity evaluation, conservative 120-day application matching interval policy, and notification preference filters unchanged.

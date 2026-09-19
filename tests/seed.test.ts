@@ -8,7 +8,7 @@
  * - Pure matching engine compatibility with seeded donor definitions:
  *   - Donor A (A+, Homologous match #1)
  *   - Donor B (O+, Compatible match #2)
- *   - Donor C (A+, Interval exclusion: recent donation < 120 days)
+ *   - Donor C (A+, Interval exclusion: recent donation < 120 days via conservative application policy)
  *   - Donor D (A+, Match eligible, skipped during notification dispatch)
  *   - Donor E (A+, Excluded by > 5 km proximity radius, included in district fallback)
  * - Safe isolation: Seed and reset operations target ONLY KNOWN_SELECTION_DONOR_IDS
@@ -182,7 +182,7 @@ describe('Step 15 — Selection Dataset & Evaluation Reliability', () => {
       assert.strictEqual(indexA < indexB, true, 'Homologous Donor A must rank ahead of compatible Donor B');
     });
 
-    it('verifies Donor C is excluded by the 120-day donation interval rule despite proximity', () => {
+    it('verifies Donor C is excluded by the conservative 120-day application matching interval policy despite proximity', () => {
       const donors = buildEngineDonors();
       const distance = calculateHaversineDistanceKm(
         SELECTION_EVAL_CENTER.latitude,

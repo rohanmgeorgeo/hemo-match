@@ -9,6 +9,10 @@
  * 3. Scope Isolation: Seed tooling operates ONLY on KNOWN_SELECTION_DONOR_IDS.
  * 4. Clinical Non-Interference: These donors pass through standard matching engine
  *    rules with zero special-casing or logic modifications.
+ * 5. Interval Policy Framing: The 120-day interval is Hemo Match's conservative
+ *    application matching policy for this MVP. It is not a universal medical
+ *    eligibility rule. Final donor eligibility is determined by qualified
+ *    blood-bank/clinical personnel.
  */
 
 import type { BloodGroup, DonorAvailability, NotificationPreference } from '@/types';
@@ -112,7 +116,7 @@ export const SELECTION_DONOR_DEFINITIONS: readonly SelectionDonorDefinition[] = 
     consentGiven: true,
     scenarioRole: 'DONOR C — INTERVAL EXCLUSION',
     expectedBehavior:
-      'Located physically nearby (~0.9 km), but recent donation (40 days ago) excludes candidate via 120-day interval rule.',
+      'Located physically nearby (~0.9 km), but recent donation (40 days ago) excludes candidate via the conservative 120-day application matching interval policy (not a universal medical eligibility rule; final eligibility determined by blood bank).',
   },
   {
     id: DONOR_D_ID,
