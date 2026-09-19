@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { AppBottomNav } from '@/components/ui';
+import { AmbientPointerLight, AppBottomNav } from '@/components/ui';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -53,7 +53,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col antialiased bg-[#F7F7F5] dark:bg-[#0B0B0C] text-[#111111] dark:text-[#F3F4F6] transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
-        {children}
+        <AmbientPointerLight />
+        <div className="relative z-1 flex flex-col min-h-full flex-1">
+          {children}
+        </div>
         <AppBottomNav />
       </body>
     </html>

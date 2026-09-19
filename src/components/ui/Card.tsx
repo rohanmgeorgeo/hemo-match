@@ -22,36 +22,12 @@ export const Card: React.FC<CardProps> = ({
   glow = false,
   className = '',
   children,
-  onPointerMove,
-  onPointerLeave,
   ...props
 }) => {
   const isGlowActive = Boolean(glow);
-  const glowVariantClass =
-    glow === 'subtle'
-      ? 'cursor-glow-surface cursor-glow-subtle'
-      : glow === 'elevated'
-      ? 'cursor-glow-surface cursor-glow-elevated'
-      : isGlowActive
-      ? 'cursor-glow-surface'
-      : '';
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isGlowActive && e.pointerType === 'mouse') {
-      const rect = e.currentTarget.getBoundingClientRect();
-      e.currentTarget.style.setProperty('--pointer-x', `${e.clientX - rect.left}px`);
-      e.currentTarget.style.setProperty('--pointer-y', `${e.clientY - rect.top}px`);
-      e.currentTarget.style.setProperty('--pointer-active', '1');
-    }
-    onPointerMove?.(e);
-  };
-
-  const handlePointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isGlowActive) {
-      e.currentTarget.style.setProperty('--pointer-active', '0');
-    }
-    onPointerLeave?.(e);
-  };
+  const glowHoverClass = isGlowActive
+    ? 'hover:border-neutral-300 dark:hover:border-neutral-700'
+    : '';
 
   const baseClasses =
     'rounded-2xl sm:rounded-3xl transition-all duration-150 relative';
@@ -73,9 +49,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <Component
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      className={`${baseClasses} ${variantClasses} ${paddingClass} ${glowVariantClass} ${className}`.trim()}
+      className={`${baseClasses} ${variantClasses} ${paddingClass} ${glowHoverClass} ${className}`.trim()}
       {...props}
     >
       {children}

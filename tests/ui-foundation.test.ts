@@ -42,6 +42,7 @@ describe('UI Foundation & Design System', () => {
       assert.strictEqual(typeof UI.EmergencyBanner, 'function');
       assert.strictEqual(typeof UI.GlowSurface, 'function');
       assert.strictEqual(typeof UI.AppBottomNav, 'function');
+      assert.strictEqual(typeof UI.AmbientPointerLight, 'function');
     });
   });
 });

@@ -9,7 +9,7 @@ export default function HomePage() {
   const [activeStage, setActiveStage] = useState<'match' | 'accepted' | 'revealed'>('accepted');
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
+    <div className="min-h-screen flex flex-col justify-between bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
       {/* Global App Header */}
       <AppHeader />
 
