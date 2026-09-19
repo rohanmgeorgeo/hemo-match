@@ -3,6 +3,7 @@
 import React from 'react';
 import type { PublicMatchCandidate } from '@/types/matches';
 import { getCompatibilityBadgeDetails } from '@/lib/matching/ui-helpers';
+import { GlowSurface } from '@/components/ui/GlowSurface';
 import {
   ContactRevealCard,
   type RevealedContactInfo,
@@ -28,7 +29,8 @@ export function CandidateCard({
   const badge = getCompatibilityBadgeDetails(candidate.compatibilityType);
 
   return (
-    <div
+    <GlowSurface
+      variant="subtle"
       className={`bg-white dark:bg-[#171717] rounded-2xl sm:rounded-3xl border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-6 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-all ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
@@ -130,6 +132,6 @@ export function CandidateCard({
         revealError={revealError}
         onReveal={onReveal}
       />
-    </div>
+    </GlowSurface>
   );
 }

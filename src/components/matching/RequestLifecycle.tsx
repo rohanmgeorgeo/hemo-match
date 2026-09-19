@@ -78,11 +78,11 @@ export function RequestLifecycle({
             <React.Fragment key={step.id}>
               <div className="flex flex-col items-center flex-1 min-w-0 text-center">
                 <div
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     step.isCompleted
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : step.isActive
-                      ? 'bg-rose-600 text-white ring-2 ring-rose-500/30'
+                      ? 'bg-rose-600 text-white shadow-xs ring-4 ring-rose-500/20 dark:ring-rose-500/30'
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500'
                   }`}
                 >
@@ -102,7 +102,7 @@ export function RequestLifecycle({
                       />
                     </svg>
                   ) : (
-                    <span>{step.id}</span>
+                    <span className="tabular-nums">{step.id}</span>
                   )}
                 </div>
 

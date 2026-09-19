@@ -4,6 +4,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: 'div' | 'section' | 'article';
   variant?: 'default' | 'subtle' | 'interactive' | 'accent' | 'success';
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  glow?: boolean | 'default' | 'subtle' | 'elevated';
   children: React.ReactNode;
 }
 
@@ -18,10 +19,16 @@ export const Card: React.FC<CardProps> = ({
   as: Component = 'div',
   variant = 'default',
   padding = 'md',
+  glow = false,
   className = '',
   children,
   ...props
 }) => {
+  const isGlowActive = Boolean(glow);
+  const glowHoverClass = isGlowActive
+    ? 'hover:border-neutral-300 dark:hover:border-neutral-700'
+    : '';
+
   const baseClasses =
     'rounded-2xl sm:rounded-3xl transition-all duration-150 relative';
 
@@ -42,7 +49,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <Component
-      className={`${baseClasses} ${variantClasses} ${paddingClass} ${className}`.trim()}
+      className={`${baseClasses} ${variantClasses} ${paddingClass} ${glowHoverClass} ${className}`.trim()}
       {...props}
     >
       {children}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Card } from '@/components/ui/Card';
+import { GlowSurface } from '@/components/ui/GlowSurface';
 import { RequestLifecycle, CandidateCard } from '@/components/matching';
 import type { PublicMatchCandidate } from '@/types/matches';
 import {
@@ -301,9 +302,9 @@ export default function MatchingDemoPage() {
   }, [isValid, request, matchState, dispatchState, revealedContacts]);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
-      {/* Global App Header with Requester Context */}
-      <AppHeader roleContext="requester" backHref="/requests/new" backLabel="New Request" />
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-28 md:pb-16">
+      {/* Global App Header */}
+      <AppHeader />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
@@ -360,8 +361,8 @@ export default function MatchingDemoPage() {
             {/* Request Lifecycle Stepper */}
             <RequestLifecycle {...lifecycleStates} />
 
-            {/* Request Command Header */}
-            <Card variant="default" className="p-5 sm:p-7 shadow-xs">
+            {/* Request Command Header (with subtle desktop cursor illumination) */}
+            <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-7 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -426,7 +427,7 @@ export default function MatchingDemoPage() {
                   </span>
                 </div>
               </div>
-            </Card>
+            </GlowSurface>
 
             {/* Matching Engine States */}
             {isLoading && (
@@ -489,7 +490,7 @@ export default function MatchingDemoPage() {
                   type="button"
                   onClick={handleRetry}
                   disabled={isLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
                 >
                   <svg
                     className="w-3.5 h-3.5"
@@ -625,7 +626,7 @@ export default function MatchingDemoPage() {
 
                 {/* Step 3: Highly Visible Coordination Action Panel — Notify Eligible Donors */}
                 {matchState.matches.length > 0 && (
-                  <Card variant="default" className="p-5 sm:p-7 shadow-xs mt-6">
+                  <Card variant="default" glow="default" className="p-5 sm:p-7 shadow-xs mt-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -754,10 +755,10 @@ export default function MatchingDemoPage() {
                             href="/donors/notifications"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
                           >
                             <span>Open Donor Inbox</span>
-                            <svg className="w-3.5 h-3.5 text-white/70 dark:text-neutral-950/70" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                            <svg className="w-3.5 h-3.5 text-white/70 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                             </svg>
                           </Link>
@@ -813,7 +814,7 @@ export default function MatchingDemoPage() {
             )}
 
             {/* Privacy Shield Card */}
-            <Card variant="default" className="p-5 sm:p-6 shadow-xs">
+            <Card variant="default" glow="subtle" className="p-5 sm:p-6 shadow-xs">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 border border-neutral-200/80 dark:border-neutral-700">
                   <svg
@@ -873,7 +874,7 @@ export default function MatchingDemoPage() {
               </Link>
               <Link
                 href="/"
-                className="w-full sm:w-auto px-6 py-3 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
               >
                 Return to Home
               </Link>
