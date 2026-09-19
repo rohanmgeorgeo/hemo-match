@@ -73,11 +73,16 @@ hemo-match/
 │   │   ├── eligibility/       # Preliminary donation interval subsystem
 │   │   │   ├── intervals.ts   # Timezone-independent calendar math (120-day policy)
 │   │   │   └── rules.ts       # Configurable interval rule definitions
+│   │   ├── selection/         # Evaluation selection dataset definitions & seed logic
+│   │   │   ├── data.ts        # Deterministic donor pool definitions & coordinates
+│   │   │   └── seed.ts        # Idempotent database upsert & scoped reset operations
 │   │   └── privacy/           # Phone masking utilities
 │   └── types/
 │       ├── index.ts           # Shared frontend domain types (with coordinates)
 │       ├── matches.ts         # Privacy-safe match candidates & distanceKm
 │       └── database.ts        # Database row & insert types (server-side, snake_case)
+├── scripts/
+│   └── seed-selection.ts      # Developer CLI runner (npm run seed:selection)
 ├── supabase/migrations/
 │   ├── 0001_initial_schema.sql
 │   ├── 0002_notification_idempotency.sql
@@ -85,12 +90,13 @@ hemo-match/
 │   ├── 0004_atomic_donor_response.sql
 │   ├── 0005_contact_reveal_authorization.sql
 │   └── 0006_proximity_matching_coordinates.sql
-└── tests/                     # 231 automated tests across domain, geospatial, dispatch, response, and reveal logic
+└── tests/                     # 245 automated tests across domain, geospatial, dispatch, response, and reveal logic
     ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
     ├── intervals.test.ts      # Preliminary donation interval evaluation tests
     ├── distance.test.ts       # Haversine distance calculation and boundary checks
     ├── proximity.test.ts      # 5 km radius matching, district fallback, & ranking
     ├── location-privacy.test.ts # Leak-prevention & projection privacy tests
+    ├── seed.test.ts           # Selection dataset definitions, isolation, & matching tests
     ├── engine.test.ts         # Pure matching engine, filters, ranking, and privacy tests
     ├── matches.route.test.ts  # Route validation & HTTP status mapping tests
     ├── matching-ui.test.ts    # Frontend UI helpers & privacy assertions
@@ -252,3 +258,29 @@ The implemented pipeline executes across seven discrete architectural stages:
 > Hemo Match performs preliminary algorithmic donor discovery and coordination only.
 > It does **NOT** determine final clinical eligibility, transfusion compatibility, or medical clearance.
 > All blood collection, donor screening, deferral determination, and crossmatching must be conducted by qualified medical officers and licensed blood-bank personnel in accordance with national transfusion guidelines.
+
+---
+
+## 7. Evaluation Selection Dataset & Infrastructure (Step 15)
+
+> [!NOTE]
+> Selection dataset is internal evaluation infrastructure and does not alter Hemo Match matching behavior.
+
+### A. Purpose & Zero UI Footprint
+- Designed specifically for independent evaluation runs submitted via the evaluation form.
+- Introduces **zero** public demo modes, evaluator buttons, simulated progress bars, or fake states. The normal deployed Hemo Match product remains completely authentic from the user's perspective.
+
+### B. Safe Scope Isolation & Idempotency
+- **Deterministic Identifier Strategy**: All evaluation donors are bound to 5 RFC 4122 v4 UUIDs (`a0000000-0000-4000-8000-000000000001` through `0005`).
+- **Targeted Operations**: Seed (`npm run seed:selection`) and reset (`npm run seed:selection:reset`) operations target **strictly** `KNOWN_SELECTION_DONOR_IDS`.
+- **Non-Destructive Guarantee**: The seed utility NEVER truncates tables, NEVER drops schemas, and NEVER clears unrelated donor, request, match, notification, or response records.
+- **Repeatable Execution**: Running the seed multiple times performs an idempotent `upsert` on the 5 donor records and purges prior evaluation coordination rows tied specifically to those 5 donor UUIDs.
+
+### C. Primary Evaluation Scenario Architecture (Ernakulam)
+- Centered on Ernakulam District (`dist-ekm`, `General Hospital, Ernakulam` / `Marine Drive`, coordinates: `9.9816, 76.2799`) for an `A+` Whole Blood requirement.
+- Demonstrates all key system properties through real code paths:
+  1. **Donor A** (`A+`, ~1.4 km): Exact homologous ABO/Rh match within 5 km, ranks #1.
+  2. **Donor B** (`O+`, ~2.2 km): Universal compatible alternative within 5 km, ranks after homologous.
+  3. **Donor C** (`A+`, ~0.9 km): Excluded by 120-day physiological recovery rule despite physical proximity.
+  4. **Donor D** (`A+`, ~1.8 km): Eligible in match candidate discovery, but safely skipped during notification dispatch due to `notification_preference = 'disabled'`.
+  5. **Donor E** (`A+`, ~13.4 km): Excluded by the 5 km radius when coordinates exist; matches via district fallback when coordinates are omitted.

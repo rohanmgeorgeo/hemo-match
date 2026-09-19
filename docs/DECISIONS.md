@@ -609,3 +609,14 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Validates the core proximity matching architecture, privacy boundaries, and database schema first without introducing external API keys, billing accounts, or heavy SDK dependencies.
   * Future addition of Google Places search (e.g. hospital search) or map pin selection can simply supply coordinates to the existing API payload without modifying the matching engine.
+
+---
+
+## 62. Selection Dataset Isolation & Idempotent Deterministic UUID Strategy
+
+* **Decision:** Internal evaluation seed tooling operates exclusively on a fixed array of 5 deterministic RFC 4122 v4 UUIDs (`a0000000-0000-4000-8000-000000000001` through `0005`) centered in Ernakulam district. Selection dataset is internal evaluation infrastructure and does not alter Hemo Match matching behavior.
+* **Rationale:**
+  * Guarantees absolute safety for production databases: table truncation, schema dropping, or clearing unrelated donor/request/coordination records is strictly prohibited.
+  * Allows repeatable, idempotent test runs: running `npm run seed:selection` upserts the 5 deterministic donor profiles and cleans up prior evaluation notifications/matches without touching unrelated data.
+  * Avoids building intrusive "Demo Mode" buttons, simulator bars, or evaluator-only UI into the product. Evaluators test the authentic application workflow directly.
+  * All 5 seeded cases pass through standard biological matching, Haversine proximity evaluation, 120-day interval rest, and notification preference filters unchanged.

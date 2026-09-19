@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/**/*.test.ts"
+    "test": "tsx --test tests/**/*.test.ts",
+    "seed:selection": "tsx scripts/seed-selection.ts",
+    "seed:selection:reset": "tsx scripts/seed-selection.ts --reset"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
