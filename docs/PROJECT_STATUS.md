@@ -3,7 +3,7 @@
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
 **Branch:** `main`
-**Current Milestone:** Step 14: Privacy-Safe Proximity Matching + Location Capture (COMPLETE)
+**Current Milestone:** Step 15: Selection Dataset & Evaluation Reliability (COMPLETE)
 **Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-19
 
@@ -357,7 +357,7 @@ Landing Page (/)
 - **Verification Baseline**: 231 tests / 67 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
 - **Git Milestone Closure**: Merged `feature/proximity-matching` into `main` via merge commit (`716a891f1c79e604ec22da33d2e9e2ef80235a96`).
 
-### Step 15: Selection Dataset & Evaluation Reliability (in progress on feature/selection-dataset)
+### Step 15: Selection Dataset & Evaluation Reliability (COMPLETE)
 - **Goal**: Provide a reliable, reproducible evaluation dataset and developer-side seed tooling for independent evaluation without altering the product's real public behavior or creating fake/demo UI.
 - **Explicit Invariant**: Selection dataset is internal evaluation infrastructure and does not alter Hemo Match matching behavior.
 - **Scenario Definition**: Centered on Ernakulam District (`dist-ekm`, `General Hospital, Ernakulam` / `Marine Drive`) for an A+ Whole Blood request.
@@ -372,3 +372,4 @@ Landing Page (/)
   - `npm run seed:selection:reset` — Safely removes only the 5 selection donor records and their related test data.
   - Non-destructive: Never truncates tables or deletes unrelated user records.
 - **Verification Baseline**: 245 tests / 71 suites passing, typecheck clean, lint clean, production build clean.
+- **Git Milestone Closure**: Merged `feature/selection-dataset` into `main` via merge commit (`998f88ffe19c54f8b372d161d243e777da32ba9a`).
