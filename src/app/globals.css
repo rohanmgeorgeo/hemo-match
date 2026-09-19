@@ -113,6 +113,42 @@ input[type="time"] {
   transform: scale(0.98);
 }
 
+/* Glass Material Design System (Translucent layered materials) */
+.glass-bar {
+  background-color: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark .glass-bar {
+  background-color: rgba(11, 11, 12, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-floating {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+.dark .glass-floating {
+  background-color: rgba(18, 18, 20, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.4);
+}
+
+.glass-surface {
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.dark .glass-surface {
+  background-color: rgba(23, 23, 23, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Cursor-reactive signature surface (desktop / fine pointer only) */
 @media (hover: hover) and (pointer: fine) {
   .cursor-glow-surface {
@@ -125,19 +161,19 @@ input[type="time"] {
     inset: 0;
     border-radius: inherit;
     background: radial-gradient(
-      450px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
-      rgba(217, 45, 32, 0.055),
+      380px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(217, 45, 32, 0.045),
       transparent 70%
     );
     pointer-events: none;
     z-index: 1;
     opacity: var(--pointer-active, 0);
-    transition: opacity 0.25s ease;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .dark .cursor-glow-surface::before {
     background: radial-gradient(
-      450px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
-      rgba(255, 69, 58, 0.075),
+      380px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(255, 69, 58, 0.065),
       transparent 70%
     );
   }

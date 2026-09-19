@@ -5,3 +5,4 @@ export * from './Button';
 export * from './EmergencyBanner';
 export * from './BloodGroupPicker';
 export * from './GlowSurface';
+export * from './AppBottomNav';

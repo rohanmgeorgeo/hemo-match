@@ -11,33 +11,32 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
       {/* Global App Header */}
-      <AppHeader roleContext="overview" />
+      <AppHeader />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex flex-col justify-center">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
         {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 rounded-full bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 px-3.5 py-1 text-xs font-semibold text-rose-800 dark:text-rose-300 mb-5">
+        <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 pt-2 sm:pt-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 px-3 py-1 text-xs font-semibold text-rose-800 dark:text-rose-300 mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
-            Privacy-first district blood coordination
+            District blood donor matching
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-neutral-950 dark:text-white leading-[1.15] mb-4">
-            Rapid blood matching,{' '}
+          <h1 className="text-2xl sm:text-4xl lg:text-[2.65rem] font-extrabold tracking-tight text-neutral-950 dark:text-white leading-[1.2] mb-3">
+            Rapid blood matching,<br className="hidden sm:inline" />{' '}
             <span className="text-rose-600 dark:text-rose-500">protected by design.</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6 font-normal max-w-2xl mx-auto">
-            Broad blood broadcasts disturb dozens of donors and expose contact numbers.
-            Hemo Match privately matches district donors and protects contact information
-            until donor acceptance and explicit requester authorization.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6 font-normal max-w-xl mx-auto">
+            Hemo Match privately coordinates district donors and protects contact numbers
+            until voluntary donor acceptance and explicit requester authorization.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/requests/new"
               id="request-blood-btn"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-xs sm:text-sm shadow-xs hover:shadow transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-xs sm:text-sm shadow-xs hover:shadow transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
             >
               <svg
                 aria-hidden="true"
@@ -55,7 +54,7 @@ export default function HomePage() {
             <Link
               href="/donors/notifications"
               id="donor-notifications-btn"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-850 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-xs transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-white/90 dark:bg-[#171717] hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-xs transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
             >
               <svg
                 aria-hidden="true"
@@ -105,8 +104,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('match')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'match'
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                   }`}
                 >
                   1. Discovery
@@ -118,8 +117,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('accepted')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'accepted'
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                   }`}
                 >
                   2. Accepted (Locked)
@@ -131,8 +130,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('revealed')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'revealed'
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                   }`}
                 >
                   3. Explicit Reveal
@@ -273,8 +272,11 @@ export default function HomePage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between pt-1 text-xs">
-                          <span className="inline-flex items-center gap-1.5 bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded text-xs font-mono font-bold tracking-widest">
-                            🔒 ••••••••••
+                          <span className="inline-flex items-center gap-1.5 bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-neutral-700">
+                            <svg className="w-3 h-3 text-neutral-500 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                            ••••••••••
                           </span>
                           <span className="text-xs font-bold text-neutral-900 dark:text-white bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-3 py-1 rounded-full shadow-2xs">
                             Reveal Contact →
@@ -393,7 +395,7 @@ export default function HomePage() {
               <div className="space-y-2 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
                 <Link
                   href="/donors/notifications"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-950 text-white font-semibold text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 dark:text-white text-white font-semibold text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
                 >
                   <span>Open Donor Inbox</span>
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
@@ -539,7 +541,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-neutral-200/70 dark:border-neutral-800 bg-white dark:bg-[#121214] py-6 transition-colors mt-8">
+      <footer className="w-full border-t border-neutral-200/70 dark:border-neutral-800 bg-white dark:bg-[#121214] py-6 pb-24 md:pb-6 transition-colors mt-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-neutral-800 dark:text-neutral-200">Hemo Match</span>

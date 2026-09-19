@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
-import { Card } from '@/components/ui/Card';
+import { Card, GlowSurface } from '@/components/ui';
 import { type BloodRequest, DEMO_DISTRICTS } from '@/types';
 import {
   VALID_BLOOD_GROUPS,
@@ -195,9 +195,9 @@ export default function NewBloodRequestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
-      {/* Global App Header with Requester Context */}
-      <AppHeader roleContext="requester" backHref="/" backLabel="Home" />
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-28 md:pb-16">
+      {/* Global App Header */}
+      <AppHeader />
 
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
@@ -258,7 +258,7 @@ export default function NewBloodRequestPage() {
                         className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                           isSelected
                             ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
-                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 border-neutral-200/90 dark:border-neutral-700 font-semibold'
+                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700 font-semibold'
                         }`}
                       >
                         <span className="tabular-nums">{bg}</span>
@@ -295,7 +295,7 @@ export default function NewBloodRequestPage() {
                         className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 flex items-center justify-center text-center cursor-pointer border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                           isSelected
                             ? 'bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 border-neutral-950 dark:border-white shadow-xs'
-                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-700 dark:text-neutral-300 border-neutral-200/90 dark:border-neutral-700'
+                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700'
                         }`}
                       >
                         {comp}
@@ -530,7 +530,7 @@ export default function NewBloodRequestPage() {
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                       formData.urgency === 'critical'
                         ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-500 dark:border-rose-600 ring-2 ring-rose-500/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 border-neutral-200/90 dark:border-neutral-700'
+                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -549,7 +549,7 @@ export default function NewBloodRequestPage() {
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 ${
                       formData.urgency === 'urgent'
                         ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-500 dark:border-amber-600 ring-2 ring-amber-500/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 border-neutral-200/90 dark:border-neutral-700'
+                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -567,8 +567,8 @@ export default function NewBloodRequestPage() {
                     onClick={() => updateField('urgency', 'routine')}
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                       formData.urgency === 'routine'
-                        ? 'bg-neutral-100 dark:bg-neutral-750 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 border-neutral-200/90 dark:border-neutral-700'
+                        ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20'
+                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -612,7 +612,7 @@ export default function NewBloodRequestPage() {
 
           {/* RIGHT COLUMN: Live Request Summary & Sticky Action (4 cols) */}
           <div className="lg:col-span-4 mt-6 lg:mt-0 space-y-4 lg:sticky lg:top-20">
-            <Card variant="default" className="p-5 sm:p-6 shadow-xs border-neutral-200/90 dark:border-neutral-800">
+            <GlowSurface className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] shadow-xs border border-neutral-200/90 dark:border-neutral-800">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800/80 mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Request Preview
@@ -674,7 +674,7 @@ export default function NewBloodRequestPage() {
               </div>
 
               {/* Privacy Shield Info */}
-              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/70 dark:border-neutral-750 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed mb-5 flex items-start gap-2">
+              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200/70 dark:border-neutral-700 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed mb-5 flex items-start gap-2">
                 <svg
                   className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"
                   fill="none"
@@ -761,7 +761,7 @@ export default function NewBloodRequestPage() {
               <p className="text-center text-[11px] text-neutral-400 dark:text-neutral-500 mt-2.5">
                 Saved securely to district coordination records.
               </p>
-            </Card>
+            </GlowSurface>
           </div>
         </form>
       </main>

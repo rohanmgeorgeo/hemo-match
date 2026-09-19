@@ -147,9 +147,9 @@ export default function DonorRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
-      {/* Global App Header with Volunteer Donor Context */}
-      <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-28 md:pb-16">
+      {/* Global App Header */}
+      <AppHeader />
 
       {/* Main Container */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
@@ -266,7 +266,7 @@ export default function DonorRegisterPage() {
                       className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                         isSelected
                           ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
-                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 border-neutral-200/90 dark:border-neutral-700 font-semibold'
+                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700 font-semibold'
                       }`}
                     >
                       <span className="tabular-nums">{bg}</span>
@@ -372,7 +372,7 @@ export default function DonorRegisterPage() {
                     : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
                 }`}
               />
-              <div className="mt-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200/70 dark:border-neutral-750 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed space-y-1">
+              <div className="mt-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200/70 dark:border-neutral-700 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed space-y-1">
                 <p>
                   <strong>Application Policy Notice:</strong> For this hackathon matching policy, donors with a known last donation date must have at least 120 calendar days of recovery time.
                 </p>
@@ -425,7 +425,7 @@ export default function DonorRegisterPage() {
                       ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-500 dark:border-emerald-600 ring-2 ring-emerald-500/20'
                       : color === 'amber'
                       ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-500 dark:border-amber-600 ring-2 ring-amber-500/20'
-                      : 'bg-neutral-100 dark:bg-neutral-750 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20';
+                      : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20';
                   const dotColor =
                     color === 'emerald'
                       ? 'bg-emerald-500'
@@ -446,7 +446,7 @@ export default function DonorRegisterPage() {
                       aria-checked={isSelected}
                       onClick={() => updateField('availability', value)}
                       className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
-                        isSelected ? selectedClasses : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 border-neutral-200/90 dark:border-neutral-700'
+                        isSelected ? selectedClasses : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -487,7 +487,7 @@ export default function DonorRegisterPage() {
                       className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                         isSelected
                           ? 'bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 border-neutral-950 dark:border-white shadow-xs'
-                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-700 dark:text-neutral-300 border-neutral-200/90 dark:border-neutral-700'
+                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700'
                       }`}
                     >
                       {label}
@@ -506,7 +506,7 @@ export default function DonorRegisterPage() {
               className={`p-4 rounded-2xl border transition-colors ${
                 errors.consentGiven
                   ? 'border-rose-300 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20'
-                  : 'border-neutral-200/80 dark:border-neutral-750 bg-neutral-50/70 dark:bg-neutral-800/60'
+                  : 'border-neutral-200/80 dark:border-neutral-700 bg-neutral-50/70 dark:bg-neutral-800/60'
               }`}
             >
               <label className="flex items-start gap-3 cursor-pointer">

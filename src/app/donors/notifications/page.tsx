@@ -235,9 +235,9 @@ export default function DonorNotificationsPage() {
   }, [notifications]);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
-      {/* Global App Header with Volunteer Donor Context */}
-      <AppHeader roleContext="donor" backHref="/donors/profile" backLabel="Profile" />
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-28 md:pb-16">
+      {/* Global App Header */}
+      <AppHeader />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
         {/* Missing Profile State */}
@@ -371,7 +371,7 @@ export default function DonorNotificationsPage() {
                   <button
                     type="button"
                     onClick={() => setRetryTrigger((prev) => prev + 1)}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
                   >
                     Check for Updates
                   </button>
@@ -632,7 +632,7 @@ export default function DonorNotificationsPage() {
               </Link>
               <Link
                 href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all"
               >
                 Return to Home
               </Link>
@@ -666,7 +666,7 @@ export default function DonorNotificationsPage() {
                   </div>
                 </div>
 
-                <div className="bg-neutral-50 dark:bg-neutral-800/80 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-750 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
+                <div className="bg-neutral-50 dark:bg-neutral-800/80 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-neutral-500 dark:text-neutral-400">Request:</span>
                     <span className="font-bold">{activeModal.notification.unitsNeeded} unit(s) of {activeModal.notification.component} ({activeModal.notification.bloodGroup})</span>
@@ -681,7 +681,7 @@ export default function DonorNotificationsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed bg-neutral-50/80 dark:bg-neutral-850/60 border border-neutral-200/70 dark:border-neutral-800 rounded-2xl p-4">
+                <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-800 rounded-2xl p-4">
                   <p className="font-bold text-neutral-950 dark:text-neutral-100">
                     Important Safety &amp; Privacy Notice:
                   </p>
@@ -738,7 +738,7 @@ export default function DonorNotificationsPage() {
                   You are declining this blood request. Your decision is fully respected, and you will not receive further alerts for this match.
                 </p>
 
-                <div className="rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-750 p-3 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <div className="rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700 p-3 text-[11px] text-neutral-500 dark:text-neutral-400">
                   Your contact details remain completely private and are never shared.
                 </div>
 
@@ -755,7 +755,7 @@ export default function DonorNotificationsPage() {
                     type="button"
                     disabled={submittingResponseId !== null}
                     onClick={handleConfirmResponse}
-                    className="px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     {submittingResponseId ? (
                       <>

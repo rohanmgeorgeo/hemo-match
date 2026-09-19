@@ -99,9 +99,9 @@ export default function DonorProfilePage() {
   }, [lastDonationDate]);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-20">
-      {/* Global App Header with Volunteer Donor Context */}
-      <AppHeader roleContext="donor" backHref="/" backLabel="Home" />
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0B0B0C] text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200 pb-28 md:pb-16">
+      {/* Global App Header */}
+      <AppHeader />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
         {!profile ? (
@@ -334,7 +334,7 @@ export default function DonorProfilePage() {
               </Link>
               <Link
                 href="/"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs sm:text-sm shadow-xs text-center transition-all cursor-pointer"
               >
                 Return to Home
               </Link>

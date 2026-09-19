@@ -38,13 +38,14 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       'bg-rose-600 hover:bg-rose-700 text-white shadow-xs dark:bg-rose-600 dark:hover:bg-rose-500 border border-transparent',
     secondary:
-      'bg-neutral-950 hover:bg-neutral-800 text-white shadow-xs dark:bg-neutral-100 dark:hover:bg-white dark:text-neutral-900 border border-transparent',
+      'bg-neutral-950 hover:bg-neutral-800 text-white shadow-xs dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white dark:border-neutral-700 border border-transparent',
     outline:
       'bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-300/90 shadow-xs dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700',
     quiet:
-      'bg-transparent hover:bg-neutral-100/80 text-neutral-700 dark:hover:bg-neutral-800/80 dark:text-neutral-300 border border-transparent',
+      'bg-transparent hover:bg-neutral-100/80 text-neutral-700 dark:hover:bg-neutral-800/80 dark:text-neutral-300 dark:hover:text-white border border-transparent',
     destructive:
       'bg-red-700 hover:bg-red-800 text-white shadow-xs dark:bg-red-600 dark:hover:bg-red-500 border border-transparent',
+
   }[variant];
 
   const widthClass = fullWidth ? 'w-full' : '';
