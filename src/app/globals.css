@@ -95,6 +95,54 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Ensure native date and time controls match active theme */
+input[type="date"],
+input[type="time"] {
+  color-scheme: light;
+}
+.dark input[type="date"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}
+
+/* Tactile pressable microinteraction */
+.pressable {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease;
+}
+.pressable:active {
+  transform: scale(0.98);
+}
+
+/* Cursor-reactive signature surface (desktop / fine pointer only) */
+@media (hover: hover) and (pointer: fine) {
+  .cursor-glow-surface {
+    position: relative;
+    overflow: hidden;
+  }
+  .cursor-glow-surface::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      450px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(217, 45, 32, 0.055),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+    opacity: var(--pointer-active, 0);
+    transition: opacity 0.25s ease;
+  }
+  .dark .cursor-glow-surface::before {
+    background: radial-gradient(
+      450px circle at var(--pointer-x, -9999px) var(--pointer-y, -9999px),
+      rgba(255, 69, 58, 0.075),
+      transparent 70%
+    );
+  }
+}
+
 /* Respect user reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -104,5 +152,8 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .cursor-glow-surface::before {
+    display: none !important;
   }
 }

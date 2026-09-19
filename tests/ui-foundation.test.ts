@@ -33,13 +33,14 @@ describe('UI Foundation & Design System', () => {
   });
 
   describe('Component Barrel Exports', () => {
-    it('exports all 6 foundational UI components', () => {
+    it('exports all foundational UI components', () => {
       assert.strictEqual(typeof UI.AppHeader, 'function');
       assert.strictEqual(typeof UI.Card, 'function');
       assert.strictEqual(typeof UI.Badge, 'function');
       assert.strictEqual(typeof UI.Button, 'function');
       assert.strictEqual(typeof UI.BloodGroupPicker, 'function');
       assert.strictEqual(typeof UI.EmergencyBanner, 'function');
+      assert.strictEqual(typeof UI.GlowSurface, 'function');
     });
   });
 });

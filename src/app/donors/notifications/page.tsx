@@ -649,7 +649,7 @@ export default function DonorNotificationsPage() {
           aria-labelledby="modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-xs transition-opacity"
         >
-          <div className="bg-white dark:bg-[#171717] rounded-3xl border border-neutral-200/90 dark:border-neutral-800 max-w-md w-full p-6 shadow-xl space-y-5 text-neutral-900 dark:text-neutral-100">
+          <div className="bg-white dark:bg-[#171717] rounded-3xl border border-neutral-200/90 dark:border-neutral-800 max-w-md w-full p-6 shadow-xl space-y-5 text-neutral-900 dark:text-neutral-100 animate-unmask">
             {activeModal.action === 'accepted' ? (
               <>
                 <div className="flex items-center gap-3">

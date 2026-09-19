@@ -255,13 +255,13 @@ export default function NewBloodRequestPage() {
                         role="radio"
                         aria-checked={isSelected}
                         onClick={() => updateField('bloodGroup', bg)}
-                        className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center cursor-pointer border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
+                        className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                           isSelected
-                            ? 'bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-500/30 dark:ring-rose-500/50'
-                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 border-neutral-200/90 dark:border-neutral-700'
+                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
+                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-750 text-neutral-800 dark:text-neutral-200 border-neutral-200/90 dark:border-neutral-700 font-semibold'
                         }`}
                       >
-                        {bg}
+                        <span className="tabular-nums">{bg}</span>
                       </button>
                     );
                   })}

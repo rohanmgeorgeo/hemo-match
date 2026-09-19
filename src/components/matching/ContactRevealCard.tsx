@@ -46,7 +46,7 @@ export function ContactRevealCard({
   if (revealedContact) {
     return (
       <div
-        className={`mt-4 p-4 sm:p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300/90 dark:border-emerald-800/80 shadow-xs transition-colors ${className}`}
+        className={`mt-4 p-4 sm:p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300/90 dark:border-emerald-800/80 shadow-xs transition-all animate-unmask ${className}`}
       >
         <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200/80 dark:border-emerald-800/60 mb-3">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 dark:text-emerald-200">
@@ -69,9 +69,9 @@ export function ContactRevealCard({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
-            <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block font-medium mb-0.5">
+            <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block font-medium mb-1">
               Donor Name
             </span>
             <span className="font-bold text-neutral-950 dark:text-neutral-100 text-base">
@@ -80,17 +80,21 @@ export function ContactRevealCard({
           </div>
 
           <div>
-            <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block font-medium mb-0.5">
-              Phone Number
+            <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block font-medium mb-1">
+              Authorized Phone
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-neutral-900 dark:text-neutral-100 text-base tabular-nums font-mono">
+                {revealedContact.phone}
+              </span>
+
               <a
                 href={`tel:${revealedContact.phone}`}
-                className="font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 text-base inline-flex items-center gap-1.5 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                 aria-label={`Call donor at ${revealedContact.phone}`}
               >
                 <svg
-                  className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"
+                  className="w-3 h-3 text-white"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="2"
@@ -103,13 +107,13 @@ export function ContactRevealCard({
                     d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
                   />
                 </svg>
-                <span className="tabular-nums">{revealedContact.phone}</span>
+                <span>Call</span>
               </a>
 
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 transition-colors cursor-pointer"
                 title="Copy phone number"
                 aria-label="Copy phone number"
               >
@@ -130,30 +134,30 @@ export function ContactRevealCard({
   if (candidateStatus === 'accepted') {
     return (
       <div
-        className={`mt-4 p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 transition-colors ${className}`}
+        className={`mt-4 p-4 sm:p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 transition-all ${className}`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-              <span>Donor Accepted Request</span>
+              <span>Donor Accepted Request • Coordination Authorized</span>
             </div>
 
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 font-mono flex items-center gap-2 flex-wrap">
-              <span className="font-sans text-neutral-600 dark:text-neutral-400 font-medium">Phone:</span>
-              <span className="bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 px-2 py-0.5 rounded text-[11px] font-semibold tracking-widest">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2 flex-wrap">
+              <span className="font-sans text-neutral-700 dark:text-neutral-300 font-medium">Phone:</span>
+              <span className="inline-flex items-center gap-1.5 bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-neutral-700">
+                <svg className="w-3 h-3 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
                 ••••••••••
               </span>
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-sans font-medium">
-                (Hidden)
-              </span>
-              <span className="text-[10px] text-amber-800 dark:text-amber-400 font-sans font-semibold bg-amber-100/90 dark:bg-amber-950/80 border border-amber-300/70 dark:border-amber-800/60 px-2 py-0.5 rounded-full">
-                Contact Protected Until Reveal
+              <span className="text-[10px] text-amber-800 dark:text-amber-400 font-sans font-semibold bg-amber-100/90 dark:bg-amber-950/80 border border-amber-300/70 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full">
+                Protected Until Explicit Reveal
               </span>
             </div>
 
-            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 leading-relaxed">
-              Donor accepted. Contact is still protected. Click below to explicitly unlock authorized coordination details.
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 leading-relaxed max-w-lg">
+              Donor accepted. Contact remains strictly protected. Click Reveal Contact below to authorize coordination.
             </p>
           </div>
 
@@ -162,7 +166,7 @@ export function ContactRevealCard({
               type="button"
               onClick={() => onReveal(matchId)}
               disabled={isRevealing}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 disabled:opacity-50 text-white font-semibold text-xs shadow-xs hover:shadow ring-2 ring-emerald-600/30 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 disabled:opacity-50 text-white font-bold text-xs shadow-xs hover:shadow ring-2 ring-emerald-600/30 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 group"
             >
               {isRevealing ? (
                 <>

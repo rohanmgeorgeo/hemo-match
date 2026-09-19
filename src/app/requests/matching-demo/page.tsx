@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useSyncExternalStore } from 'react
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Card } from '@/components/ui/Card';
+import { GlowSurface } from '@/components/ui/GlowSurface';
 import { RequestLifecycle, CandidateCard } from '@/components/matching';
 import type { PublicMatchCandidate } from '@/types/matches';
 import {
@@ -360,8 +361,8 @@ export default function MatchingDemoPage() {
             {/* Request Lifecycle Stepper */}
             <RequestLifecycle {...lifecycleStates} />
 
-            {/* Request Command Header */}
-            <Card variant="default" className="p-5 sm:p-7 shadow-xs">
+            {/* Request Command Header (with subtle desktop cursor illumination) */}
+            <GlowSurface className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-7 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -426,7 +427,7 @@ export default function MatchingDemoPage() {
                   </span>
                 </div>
               </div>
-            </Card>
+            </GlowSurface>
 
             {/* Matching Engine States */}
             {isLoading && (
