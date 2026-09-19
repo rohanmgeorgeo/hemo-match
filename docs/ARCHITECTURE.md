@@ -33,13 +33,19 @@ hemo-match/
 │   │   │   │   ├── matches/route.ts               # POST/GET /api/requests/matches (match engine & status)
 │   │   │   │   ├── contact-reveal/route.ts        # POST /api/requests/contact-reveal (Step 9)
 │   │   │   │   └── notifications/dispatch/route.ts # POST /api/requests/notifications/dispatch
+│   │   │   └── coordinator/
+│   │   │       ├── overview/route.ts              # GET /api/coordinator/overview (Step 16)
+│   │   │       └── requests/[id]/route.ts         # GET /api/coordinator/requests/[id] (Step 16)
 │   │   ├── requests/
 │   │   │   ├── new/page.tsx             # Blood request intake form
 │   │   │   └── matching-demo/page.tsx   # Request matching UI, status sync, & Contact Reveal CTA
-│   │   └── donors/
-│   │       ├── register/page.tsx        # Donor registration form
-│   │       ├── profile/page.tsx         # Donor profile confirmation view (masked phone)
-│   │       └── notifications/page.tsx   # Donor notification inbox & Accept/Decline screen
+│   │   ├── donors/
+│   │   │   ├── register/page.tsx        # Donor registration form
+│   │   │   ├── profile/page.tsx         # Donor profile confirmation view (masked phone)
+│   │   │   └── notifications/page.tsx   # Donor notification inbox & Accept/Decline screen
+│   │   └── coordinator/
+│   │       ├── page.tsx                 # Coordinator operations dashboard (Step 16)
+│   │       └── requests/[id]/page.tsx   # Coordinator request lifecycle detail view (Step 16)
 │   ├── lib/                   # Isolated subsystem contracts & utilities
 │   │   ├── db/                # Server-only database helper modules ('server-only')
 │   │   │   ├── districts.ts   # Slug-to-UUID resolver
@@ -48,7 +54,8 @@ hemo-match/
 │   │   │   ├── matches.ts     # findAndCreateMatches() server-only coordinator
 │   │   │   ├── notifications.ts # dispatchNotificationsForRequest(), getDonorNotifications()
 │   │   │   ├── responses.ts   # submitDonorResponse() server-only coordinator
-│   │   │   └── reveal.ts      # requestContactReveal(), getRequestMatches() coordinator
+│   │   │   ├── reveal.ts      # requestContactReveal(), getRequestMatches() coordinator
+│   │   │   └── coordinator.ts # getCoordinatorOverview(), getCoordinatorRequestDetail() (Step 16)
 │   │   ├── database/index.ts  # Supabase client factory (server-only)
 │   │   ├── validation/        # Schema validators, IST date parser, and UUID guards
 │   │   │   ├── index.ts       # Donor & request form validators
@@ -90,7 +97,7 @@ hemo-match/
 │   ├── 0004_atomic_donor_response.sql
 │   ├── 0005_contact_reveal_authorization.sql
 │   └── 0006_proximity_matching_coordinates.sql
-└── tests/                     # 245 automated tests across domain, geospatial, dispatch, response, and reveal logic
+└── tests/                     # 259 automated tests across domain, geospatial, dispatch, response, reveal, and coordinator logic
     ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
     ├── intervals.test.ts      # Preliminary donation interval evaluation tests
     ├── distance.test.ts       # Haversine distance calculation and boundary checks
@@ -103,7 +110,11 @@ hemo-match/
     ├── dispatch.test.ts       # Revalidation, ranking, and limit clamping tests
     ├── inbox.test.ts          # Donor inbox query, read update, and projection privacy tests
     ├── responses.test.ts      # Donor Accept/Decline revalidation and payload validation tests
-    └── reveal.test.ts         # Step 9 contact reveal authorization & projection tests
+    ├── reveal.test.ts         # Step 9 contact reveal authorization & projection tests
+    ├── coordinator.test.ts    # Coordinator overview, request detail & attention heuristics (Step 16)
+    ├── donor-experience.test.ts # Donor journey integration tests
+    ├── requester-experience.test.ts # Requester intake & reveal tests
+    └── ui-foundation.test.ts  # Theme & UI accessibility tests
 ```
 
 ---

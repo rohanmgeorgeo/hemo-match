@@ -3,7 +3,7 @@
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
 **Branch:** `main`
-**Current Milestone:** Step 16: Coordinator Operations Dashboard (in progress on feature/coordinator-dashboard)
+**Current Milestone:** Final GitHub & Portfolio Presentation Polish (COMPLETE)
 **Production URL:** https://hemomatch.vercel.app
 **Last Updated:** 2026-09-19
 
@@ -426,3 +426,17 @@ Landing Page (/)
 - **Git Milestone Closure**:
   - Merged `feature/final-qa` into `main` via merge commit (`4b33698d28a38ea5f72ea98c366ff4820980cf65`).
   - Next milestone is final selection preparation.
+
+### Step 17.5: Remote Selection Audit, Controlled Seed & Production Walkthrough (COMPLETE)
+- **Goal**: Audit remote Supabase database, safely clean development test records, seed the controlled 5-donor selection dataset, and verify the live production deployment.
+- **Audit & Cleanup (17.5A & 17.5B)**:
+  - Read-only audit verified remote environment state.
+  - Safely removed only approved developer test donor UUIDs without affecting reference data.
+  - Successfully seeded the 5 controlled RFC 4122 v4 evaluation donors in Ernakulam district via `seed-selection.ts`.
+- **Production Walkthrough (17.5C)**:
+  - Verified live deployment at `https://hemomatch.vercel.app/`.
+  - Validated emergency request creation, deterministic ranking, notification dispatch, and donor response flow.
+- **Coordinator Visual Consistency**:
+  - Unified coordinator views (`/coordinator`, `/coordinator/requests/[id]`) with Hemo Match design tokens, glow surfaces, and responsive light/dark themes.
+  - Merged into `main` via commit `8b5c450044b96bbbf32bbd20eae495878cac605a`.
+- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean, lint clean, build clean.

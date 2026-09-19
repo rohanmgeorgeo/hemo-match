@@ -2,9 +2,9 @@
 
 **Project:** Hemo Match
 **Challenge:** SC-12 — District Blood Donor Matching
-**Current Branch:** `feature/contact-reveal`
-**Current Milestone:** Step 9 — Authorized Minimum Contact Reveal (COMPLETE)
-**Next Milestone:** Post-Step-9 / Demo Polish & Delivery
+**Current Branch:** `feature/github-portfolio-polish`
+**Current Milestone:** Final GitHub & Portfolio Presentation Polish
+**Status:** 259 tests / 76 suites passing (0 regressions)
 
 ---
 
@@ -83,7 +83,45 @@
 
 ---
 
-## Upcoming Milestones
+
+- [x] **Step 14: Coordinate-First Proximity Matching & District Fallback (COMPLETE)**
+  - [x] Migration `0006_proximity_matching_coordinates.sql` adding coordinates to requests and donors
+  - [x] High-precision Haversine straight-line distance calculation (`src/lib/geo/distance.ts`)
+  - [x] 5 km application matching radius (`MATCH_RADIUS_KM = 5`)
+  - [x] Graceful same-district fallback when coordinates are omitted on either side
+  - [x] Deterministic 4-tier candidate ranking with physical proximity tier
+  - [x] Browser geolocation capture component (`LocationCapture.tsx`)
+
+- [x] **Step 15: Evaluation Selection Dataset & Infrastructure (COMPLETE)**
+  - [x] 5 deterministic RFC 4122 v4 evaluation donors in Ernakulam district (`src/lib/selection/data.ts`)
+  - [x] Idempotent developer seed CLI (`npm run seed:selection`) and scoped reset (`npm run seed:selection:reset`)
+  - [x] Zero public UI demo footprint; fully authentic application paths
+
+- [x] **Step 16: Coordinator Operations Dashboard (COMPLETE)**
+  - [x] Operations overview screen (`/coordinator`) with live metric summary cards
+  - [x] Request lifecycle detail screen (`/coordinator/requests/[id]`) with 4-stage pipeline cards and 5-step timeline
+  - [x] Server-only route handlers (`GET /api/coordinator/overview`, `GET /api/coordinator/requests/[id]`)
+  - [x] Deterministic Needs Attention alerts and active request definitions
+  - [x] Zero mutation actions (read-only monitoring MVP) and anonymized projections (`Donor •••• XXXX`)
+
+- [x] **Step 17: Final QA & Evaluator Experience (COMPLETE)**
+  - [x] Comprehensive review across all desktop and mobile flows
+  - [x] Medical wording alignment (authoritative 120-day donation interval policy framing)
+  - [x] 259 automated unit and integration tests passing across 76 suites
+
+- [x] **Step 17.5: Remote Selection Audit, Seed & Production Walkthrough (COMPLETE)**
+  - [x] Remote Supabase database audit and clean removal of developer test records
+  - [x] Controlled seeding of the 5 selection donors in Ernakulam
+  - [x] Live production evaluation walkthrough on `https://hemomatch.vercel.app/`
+  - [x] Coordinator visual consistency polish
+
+- [x] **Step 18: Final GitHub & Portfolio Polish (COMPLETE)**
+  - [x] Professional, recruiter-ready main `README.md`
+  - [x] Complete architectural diagrams, workflow documentation, and verified test results
+  - [x] Repository hygiene audit (.gitignore `!.env.example`, zero committed secrets)
+  - [x] Documentation synchronization across all `docs/` guides
+
+## Upcoming Production Hardening Roadmap
 
 - [ ] **Step 10: Real Authentication & Production Hardening**
   - [ ] Supabase Auth (SMS OTP / phone authentication)
