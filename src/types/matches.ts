@@ -34,6 +34,11 @@ export interface PublicMatchCandidate {
   factualMatchReasons: string[];
   status: MatchStatus;
   createdAt: string;
+  /**
+   * Approximate geodesic straight-line distance in km (from server-side Haversine).
+   * Null when coordinates are absent on either side (district fallback).
+   */
+  distanceKm?: number | null;
 }
 
 export interface MatchApiResponseSuccess {

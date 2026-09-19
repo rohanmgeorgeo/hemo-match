@@ -19,6 +19,8 @@ export interface CreateDonorParams {
   availability: DbDonorAvailability;
   notificationPreference: DbNotificationPreference;
   consentGiven: boolean;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 
@@ -44,6 +46,7 @@ export type CreateDonorResult =
  * - Server-only execution
  * - PostgreSQL generates the primary key UUID (no client ID accepted)
  * - Projections strictly omit phone_number in the return payload
+ * - Projections strictly omit private matching coordinates in the return payload
  * - No credentials or phone numbers logged
  */
 export async function createDonor(
@@ -68,6 +71,8 @@ export async function createDonor(
     availability: params.availability,
     notification_preference: params.notificationPreference,
     consent_given: params.consentGiven,
+    location_latitude: params.locationLatitude ?? null,
+    location_longitude: params.locationLongitude ?? null,
   };
 
   const { data, error } = await client

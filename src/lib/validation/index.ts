@@ -6,6 +6,7 @@
  */
 
 import type { BloodComponent, BloodGroup, UrgencyLevel } from '@/types';
+import { isValidCoordinate } from '@/lib/geo/distance';
 
 export const VALID_BLOOD_GROUPS: readonly BloodGroup[] = [
   'A+',
@@ -43,6 +44,8 @@ export interface BloodRequestFormData {
   requiredByTime: string;
   urgency: UrgencyLevel;
   notes?: string;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 export interface BloodRequestInput {
@@ -238,6 +241,29 @@ export function validateBloodRequest(
       ? data.notes.trim()
       : undefined;
 
+  // 11. Coordinates (optional matching data)
+  const rawLat = data.locationLatitude !== undefined ? data.locationLatitude : data.latitude;
+  const rawLon = data.locationLongitude !== undefined ? data.locationLongitude : data.longitude;
+
+  let locationLatitude: number | null = null;
+  let locationLongitude: number | null = null;
+
+  if (rawLat !== undefined && rawLat !== null && rawLat !== '' && rawLon !== undefined && rawLon !== null && rawLon !== '') {
+    const latNum = Number(rawLat);
+    const lonNum = Number(rawLon);
+    if (!isValidCoordinate(latNum, lonNum)) {
+      errors.location = 'Coordinates must be valid numbers (latitude between -90 and 90, longitude between -180 and 180)';
+    } else {
+      locationLatitude = latNum;
+      locationLongitude = lonNum;
+    }
+  } else if (
+    (rawLat !== undefined && rawLat !== null && rawLat !== '') ||
+    (rawLon !== undefined && rawLon !== null && rawLon !== '')
+  ) {
+    errors.location = 'Both latitude and longitude must be provided together';
+  }
+
   const isValid = Object.keys(errors).length === 0;
 
   return {
@@ -255,6 +281,8 @@ export function validateBloodRequest(
           requiredByTime,
           urgency: urgency as UrgencyLevel,
           notes,
+          locationLatitude,
+          locationLongitude,
         }
       : undefined,
   };
@@ -271,6 +299,8 @@ export interface DonorProfileFormData {
   availability: 'available' | 'temporarily_unavailable' | 'paused';
   notificationPreference: 'enabled' | 'disabled';
   consentGiven: boolean;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
 }
 
 /**
@@ -378,6 +408,29 @@ export function validateDonorProfile(
     errors.consentGiven = 'You must agree to the consent statement to register';
   }
 
+  // 10. Coordinates (optional private matching data)
+  const rawLat = data.locationLatitude !== undefined ? data.locationLatitude : data.latitude;
+  const rawLon = data.locationLongitude !== undefined ? data.locationLongitude : data.longitude;
+
+  let locationLatitude: number | null = null;
+  let locationLongitude: number | null = null;
+
+  if (rawLat !== undefined && rawLat !== null && rawLat !== '' && rawLon !== undefined && rawLon !== null && rawLon !== '') {
+    const latNum = Number(rawLat);
+    const lonNum = Number(rawLon);
+    if (!isValidCoordinate(latNum, lonNum)) {
+      errors.location = 'Coordinates must be valid numbers (latitude between -90 and 90, longitude between -180 and 180)';
+    } else {
+      locationLatitude = latNum;
+      locationLongitude = lonNum;
+    }
+  } else if (
+    (rawLat !== undefined && rawLat !== null && rawLat !== '') ||
+    (rawLon !== undefined && rawLon !== null && rawLon !== '')
+  ) {
+    errors.location = 'Both latitude and longitude must be provided together';
+  }
+
   const isValid = Object.keys(errors).length === 0;
 
   return {
@@ -394,6 +447,8 @@ export function validateDonorProfile(
           availability: availability as DonorProfileFormData['availability'],
           notificationPreference: notificationPreference as DonorProfileFormData['notificationPreference'],
           consentGiven: true,
+          locationLatitude,
+          locationLongitude,
         }
       : undefined,
   };

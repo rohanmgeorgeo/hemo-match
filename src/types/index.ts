@@ -67,6 +67,9 @@ export interface DonorProfile {
   availability: DonorAvailability;
   notificationPreference: NotificationPreference;
   consentGiven: boolean;
+  /** Private server-side matching coordinates — never exposed to requesters */
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
   createdAt: string;
 }
 
@@ -84,6 +87,9 @@ export interface BloodRequest {
   urgency: UrgencyLevel;
   status: RequestStatus;
   notes?: string;
+  /** Private server-side matching coordinates — never exposed to donors */
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
   createdAt: string;
   updatedAt: string;
   patientName?: string;

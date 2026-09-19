@@ -89,6 +89,8 @@ export async function POST(request: Request) {
     availability: validData.availability,
     notificationPreference: validData.notificationPreference,
     consentGiven: validData.consentGiven,
+    locationLatitude: validData.locationLatitude ?? null,
+    locationLongitude: validData.locationLongitude ?? null,
   };
 
   // 8. Insert through the donor DB helper

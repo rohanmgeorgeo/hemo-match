@@ -319,6 +319,76 @@ describe('Matching UI Helpers', () => {
       assert.strictEqual(candidateKeys.includes('fullName'), false);
       assert.strictEqual(candidateKeys.includes('full_name'), false);
       assert.strictEqual(candidateKeys.includes('coordinates'), false);
+      assert.strictEqual(candidateKeys.includes('location_latitude'), false);
+      assert.strictEqual(candidateKeys.includes('location_longitude'), false);
+      assert.strictEqual(candidateKeys.includes('donor_latitude'), false);
+      assert.strictEqual(candidateKeys.includes('donor_longitude'), false);
+    });
+
+    it('parses distanceKm correctly on candidate matches', () => {
+      const candidateWithDistance: PublicMatchCandidate = {
+        matchId: 'm-2',
+        requestId: 'r-1',
+        anonymizedDonorRef: 'Donor •••• B3C4',
+        bloodGroup: 'A+',
+        districtName: 'Ernakulam',
+        approximateArea: 'Palarivattom',
+        compatibilityType: 'homologous',
+        distanceKm: 1.8,
+        factualMatchReasons: [
+          'Exact ABO/Rh match (A+)',
+          'Preliminary interval satisfied',
+          'Within proximity radius (~1.8 km)',
+        ],
+        status: 'candidate',
+        createdAt: '2026-09-18T00:00:00.000Z',
+      };
+
+      const raw = {
+        success: true,
+        requestId: 'r-1',
+        totalMatches: 1,
+        matches: [candidateWithDistance],
+      };
+
+      const parsed = parseMatchApiResponse(200, raw);
+      assert.strictEqual(parsed.status, 'success');
+      if (parsed.status === 'success') {
+        assert.strictEqual(parsed.matches[0].distanceKm, 1.8);
+      }
+    });
+
+    it('safely supports district-fallback candidates with null distanceKm', () => {
+      const candidateFallback: PublicMatchCandidate = {
+        matchId: 'm-3',
+        requestId: 'r-1',
+        anonymizedDonorRef: 'Donor •••• C5D6',
+        bloodGroup: 'A+',
+        districtName: 'Ernakulam',
+        approximateArea: 'Aluva',
+        compatibilityType: 'homologous',
+        distanceKm: null,
+        factualMatchReasons: [
+          'Exact ABO/Rh match (A+)',
+          'Preliminary interval satisfied',
+          'Same district geographic alignment',
+        ],
+        status: 'candidate',
+        createdAt: '2026-09-18T00:00:00.000Z',
+      };
+
+      const raw = {
+        success: true,
+        requestId: 'r-1',
+        totalMatches: 1,
+        matches: [candidateFallback],
+      };
+
+      const parsed = parseMatchApiResponse(200, raw);
+      assert.strictEqual(parsed.status, 'success');
+      if (parsed.status === 'success') {
+        assert.strictEqual(parsed.matches[0].distanceKm, null);
+      }
     });
   });
 });

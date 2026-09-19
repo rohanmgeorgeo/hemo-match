@@ -557,3 +557,55 @@ This document records the core architectural and technology choices locked for *
 * **Rationale:**
   * Audit logs must demonstrate compliance and traceability without becoming secondary repositories of PII.
   * Observers or log analytics tools must not gain access to private contact details via audit inspection.
+
+---
+
+## 57. 5 km Application Proximity Matching Radius (`MATCH_RADIUS_KM = 5`)
+
+* **Decision:** Proximity matching uses a 5 km search radius defined as an application configuration constant (`MATCH_RADIUS_KM = 5` in `src/lib/matching/constants.ts`).
+* **Rationale:**
+  * 5 km represents an optimal initial urban/semi-urban coordination radius for time-sensitive blood requirements in Kerala districts.
+  * Explicitly designated as an application coordination configuration parameter, NOT a medical or clinical rule.
+  * Kept as a single constant to avoid magic numbers scattered across the codebase.
+
+---
+
+## 58. Pure Server-Side Haversine Geodesic Distance Calculation
+
+* **Decision:** Calculate distance using the standard Haversine great-circle formula in a pure server-side utility (`src/lib/geo/distance.ts`), without external geospatial or GIS dependencies.
+* **Rationale:**
+  * Eliminates heavyweight dependencies (PostGIS, turf.js, or external routing APIs) for the initial MVP.
+  * Calculation is deterministic, zero-cost, and computationally fast for candidate filtering.
+  * Coordinate boundaries are strictly validated on the server ($-90 \le \text{lat} \le 90$, $-180 \le \text{lon} \le 180$).
+  * Client-calculated distances are completely untrusted; the server always performs distance calculations.
+  * UI language explicitly reflects straight-line geodesic distance (e.g. `~1.8 km away`) and never claims driving distance, travel route, or travel time.
+
+---
+
+## 59. Coordinate-First Proximity with Backwards-Compatible Same-District Fallback
+
+* **Decision:** When both blood request and donor have valid coordinates, straight-line proximity within 5 km is authoritative across administrative district borders. When coordinates are missing on either side (legacy records, permission denied, or unsupported devices), matching automatically falls back to same-district matching.
+* **Rationale:**
+  * Physical proximity is more clinically relevant in emergencies than administrative boundaries when exact locations are known (e.g. a hospital on a district boundary matching a donor 2 km away in the neighboring district).
+  * Existing records without coordinates remain fully compatible and discoverable.
+  * For fallback candidates, `distanceKm` is explicitly `null` (no fabricated or synthetic distances). The UI displays `Same district`.
+
+---
+
+## 60. Strict Location Privacy Boundary (Server-Side Private Coordinates)
+
+* **Decision:** Donor coordinates (`location_latitude`, `location_longitude`) are stored exclusively for server-side proximity calculation and are NEVER returned in requester-facing candidate projections, notifications, donor profiles, or contact reveal responses.
+* **Rationale:**
+  * Prevents donor stalking, geolocation tracing, home triangulation, or unwanted direct visits.
+  * Requester-facing candidate objects receive only approximate rounded distance (e.g. `1.8 km`) or district fallback indicator (`Same district`).
+  * Donor profile displays confirmation that location is available for private matching, without ever exposing raw coordinates.
+  * No map pins, donor location markers, or exact addresses are rendered.
+
+---
+
+## 61. Deferred Google Maps / Places Integration (Provider-Agnostic Coordinate Contract)
+
+* **Decision:** Coordinate capture is abstracted behind standard `{ latitude, longitude }` objects in the UI (`LocationCapture.tsx`). Integration of Google Maps SDK, Google Places API, and map tiles is deferred.
+* **Rationale:**
+  * Validates the core proximity matching architecture, privacy boundaries, and database schema first without introducing external API keys, billing accounts, or heavy SDK dependencies.
+  * Future addition of Google Places search (e.g. hospital search) or map pin selection can simply supply coordinates to the existing API payload without modifying the matching engine.

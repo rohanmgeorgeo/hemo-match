@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
-import { Card, GlowSurface } from '@/components/ui';
+import { Card, GlowSurface, LocationCapture } from '@/components/ui';
 import { type BloodRequest, DEMO_DISTRICTS } from '@/types';
 import {
   VALID_BLOOD_GROUPS,
@@ -28,6 +28,8 @@ export default function NewBloodRequestPage() {
     requiredByTime: '',
     urgency: 'urgent',
     notes: '',
+    locationLatitude: null,
+    locationLongitude: null,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -115,6 +117,8 @@ export default function NewBloodRequestPage() {
       requiredByTime: d.requiredByTime,
       urgency: d.urgency,
       notes: d.notes || undefined,
+      locationLatitude: d.locationLatitude ?? null,
+      locationLongitude: d.locationLongitude ?? null,
     };
 
     try {
@@ -169,6 +173,8 @@ export default function NewBloodRequestPage() {
         urgency: d.urgency,
         notes: d.notes,
         status: 'open',
+        locationLatitude: d.locationLatitude ?? null,
+        locationLongitude: d.locationLongitude ?? null,
         createdAt: dbRequest.created_at || new Date().toISOString(),
         updatedAt: dbRequest.updated_at || new Date().toISOString(),
       };
@@ -360,6 +366,25 @@ export default function NewBloodRequestPage() {
                 <span className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-500" />
                 2. District &amp; Location Context
               </h2>
+
+              {/* Proximity Matching Location Control */}
+              <div className="mb-5">
+                <LocationCapture
+                  context="requester"
+                  value={
+                    formData.locationLatitude != null && formData.locationLongitude != null
+                      ? { latitude: formData.locationLatitude, longitude: formData.locationLongitude }
+                      : null
+                  }
+                  onChange={(coords) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      locationLatitude: coords?.latitude ?? null,
+                      locationLongitude: coords?.longitude ?? null,
+                    }));
+                  }}
+                />
+              </div>
 
               {/* D. District Dropdown */}
               <div className="mb-5" id="districtId">
