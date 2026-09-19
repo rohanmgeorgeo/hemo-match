@@ -355,6 +355,20 @@ Landing Page (/)
 - **Remote Migration Status**: Verified and applied remotely to Supabase production PostgreSQL. Confirmed with runtime API success (`POST /api/requests` → 201, `POST /api/donors` → 201, `GET /api/donors/notifications` → 200, `GET/POST /api/requests/matches` → 200).
 - **Google Maps/Places Preparation**: Architecture accepts `{ latitude, longitude }` payloads cleanly, enabling future Google Places autocomplete or map selection without altering matching engine logic.
 - **Verification Baseline**: 231 tests / 67 suites passing, typecheck clean (0 errors), lint clean (0 warnings), production build clean.
-- **Git Milestone Closure**: Merged `feature/proximity-matching` into `main` via merge commit.
+- **Git Milestone Closure**: Merged `feature/proximity-matching` into `main` via merge commit (`716a891f1c79e604ec22da33d2e9e2ef80235a96`).
 
-
+### Step 15: Selection Dataset & Evaluation Reliability (in progress on feature/selection-dataset)
+- **Goal**: Provide a reliable, reproducible evaluation dataset and developer-side seed tooling for independent evaluation without altering the product's real public behavior or creating fake/demo UI.
+- **Explicit Invariant**: Selection dataset is internal evaluation infrastructure and does not alter Hemo Match matching behavior.
+- **Scenario Definition**: Centered on Ernakulam District (`dist-ekm`, `General Hospital, Ernakulam` / `Marine Drive`) for an A+ Whole Blood request.
+- **Deterministic 5-Donor Evaluation Pool**:
+  - **Donor A** (`a0000000-0000-4000-8000-000000000001`): A+, ~1.4 km (Kaloor), 160 days rest, enabled. Exact homologous match, ranks #1.
+  - **Donor B** (`a0000000-0000-4000-8000-000000000002`): O+, ~2.2 km (Panampilly Nagar), 150 days rest, enabled. Universal compatible alternative, ranks #2.
+  - **Donor C** (`a0000000-0000-4000-8000-000000000003`): A+, ~0.9 km (Ernakulam North), 40 days rest. Excluded by conservative 120-day application matching interval policy despite proximity (not a universal clinical rule; final eligibility determined by blood bank).
+  - **Donor D** (`a0000000-0000-4000-8000-000000000004`): A+, ~1.8 km (Marine Drive West), 170 days rest, notifications disabled. Eligible for matching, safely skipped during notification dispatch.
+  - **Donor E** (`a0000000-0000-4000-8000-000000000005`): A+, ~13.4 km (Aluva), 180 days rest, enabled. Excluded by 5 km radius when coordinates exist; matches via district fallback when coordinates are omitted.
+- **Developer Tooling**:
+  - `npm run seed:selection` — Idempotently upserts the 5 deterministic selection donors and resets prior evaluation matches/notifications.
+  - `npm run seed:selection:reset` — Safely removes only the 5 selection donor records and their related test data.
+  - Non-destructive: Never truncates tables or deletes unrelated user records.
+- **Verification Baseline**: 245 tests / 71 suites passing, typecheck clean, lint clean, production build clean.
