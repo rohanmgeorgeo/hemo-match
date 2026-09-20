@@ -4,6 +4,7 @@ import React, { useSyncExternalStore, useMemo } from 'react';
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Card } from '@/components/ui/Card';
+import { GlowSurface } from '@/components/ui/GlowSurface';
 import type { DonorProfile } from '@/types';
 
 function subscribe(cb: () => void) {
@@ -103,7 +104,14 @@ export default function DonorProfilePage() {
       {/* Global App Header */}
       <AppHeader />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Subtle ambient emerald radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.18),rgba(16,185,129,0.04)_45%,transparent_70%)]" />
+        </div>
         {!profile ? (
           /* Empty State */
           <Card variant="default" className="p-10 sm:p-14 text-center">
@@ -128,7 +136,7 @@ export default function DonorProfilePage() {
             {/* Header / Intro */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-900/60 liquid-glass-pill shadow-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                   Volunteer Donor Workspace • Profile Card
                 </span>
@@ -142,10 +150,10 @@ export default function DonorProfilePage() {
             </div>
 
             {/* Profile Hero Card */}
-            <Card variant="default" glow="elevated" className="p-6 sm:p-8 shadow-xs relative overflow-hidden">
+            <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-6 sm:p-8 shadow-sm relative overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">
                 {/* Blood Group Avatar — Strongest Identifier */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/60 flex flex-col items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl liquid-glass-pill border border-rose-200/80 dark:border-rose-900/60 flex flex-col items-center justify-center shrink-0 shadow-xs">
                   <span className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-500">
                     {profile.bloodGroup}
                   </span>
@@ -179,7 +187,7 @@ export default function DonorProfilePage() {
                   const avail = AVAILABILITY_LABELS[profile.availability];
                   return (
                     <div className="shrink-0 self-start sm:self-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border ${avail.color}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border liquid-glass-pill shadow-xs ${avail.color}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${avail.dot}`} />
                         {avail.label}
                       </span>
@@ -187,7 +195,7 @@ export default function DonorProfilePage() {
                   );
                 })()}
               </div>
-            </Card>
+            </GlowSurface>
 
             {/* Profile Attributes & 120-Day Policy Card */}
             <Card variant="default" glow="default" className="p-6 sm:p-7 shadow-xs">

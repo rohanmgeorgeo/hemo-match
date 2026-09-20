@@ -158,11 +158,18 @@ export default function DonorRegisterPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Subtle ambient emerald radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.18),rgba(16,185,129,0.04)_45%,transparent_70%)]" />
+        </div>
         {/* Title & Introduction */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-900/60 liquid-glass-pill shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               Volunteer Donor Workspace • Onboarding
             </span>

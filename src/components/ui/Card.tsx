@@ -34,15 +34,15 @@ export const Card: React.FC<CardProps> = ({
 
   const variantClasses = {
     default:
-      'bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800/90 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] text-neutral-900 dark:text-neutral-100',
+      'bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_1px_3px_rgba(0,0,0,0.35)] text-neutral-900 dark:text-neutral-100',
     subtle:
-      'bg-neutral-50/90 dark:bg-[#1c1c1f] border border-neutral-200/70 dark:border-neutral-800/80 text-neutral-800 dark:text-neutral-200',
+      'bg-neutral-50/90 dark:bg-[#1a1a1d] border border-neutral-200/70 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] text-neutral-800 dark:text-neutral-200',
     interactive:
-      'bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800/90 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-900 dark:text-neutral-100 cursor-pointer',
+      'bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_1px_3px_rgba(0,0,0,0.35)] hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-900 dark:text-neutral-100 cursor-pointer',
     accent:
-      'bg-white dark:bg-[#171717] border border-rose-200/80 dark:border-rose-900/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] text-neutral-900 dark:text-neutral-100',
+      'bg-white dark:bg-[#171717] border border-rose-200/80 dark:border-rose-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_1px_3px_rgba(0,0,0,0.35)] text-neutral-900 dark:text-neutral-100',
     success:
-      'bg-white dark:bg-[#171717] border border-emerald-200/90 dark:border-emerald-900/50 shadow-[0_1px_3px_rgba(0,0,0,0.04)] text-neutral-900 dark:text-neutral-100',
+      'bg-white dark:bg-[#171717] border border-emerald-200/90 dark:border-emerald-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_1px_3px_rgba(0,0,0,0.35)] text-neutral-900 dark:text-neutral-100',
   }[variant];
 
   const paddingClass = PADDING_MAP[padding];

@@ -206,11 +206,18 @@ export default function NewBloodRequestPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Subtle ambient crimson radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[360px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+        </div>
         {/* Title & Introduction */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50/90 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60 liquid-glass-pill shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
               Requester Workspace • Step 1: Create Request
             </span>
@@ -263,7 +270,7 @@ export default function NewBloodRequestPage() {
                         onClick={() => updateField('bloodGroup', bg)}
                         className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                           isSelected
-                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
+                            ? 'bg-rose-600 text-white border-rose-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_8px_-1px_rgba(225,29,72,0.4)] ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
                             : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700 font-semibold'
                         }`}
                       >
@@ -637,7 +644,7 @@ export default function NewBloodRequestPage() {
 
           {/* RIGHT COLUMN: Live Request Summary & Sticky Action (4 cols) */}
           <div className="lg:col-span-4 mt-6 lg:mt-0 space-y-4 lg:sticky lg:top-20">
-            <GlowSurface variant="elevated" className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] shadow-xs border border-neutral-200/90 dark:border-neutral-800">
+            <GlowSurface variant="elevated" className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl liquid-glass-elevated shadow-sm border border-neutral-200/80 dark:border-white/10">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800/80 mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Request Preview

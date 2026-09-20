@@ -239,7 +239,14 @@ export default function DonorNotificationsPage() {
       {/* Global App Header */}
       <AppHeader />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Subtle ambient emerald/crimson radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+        </div>
         {/* Missing Profile State */}
         {!profile ? (
           <Card variant="default" className="p-8 sm:p-12 text-center">
@@ -406,7 +413,7 @@ export default function DonorNotificationsPage() {
                         {/* Notification Header */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-center font-black text-rose-600 dark:text-rose-500 text-base shrink-0">
+                            <div className="w-12 h-12 rounded-2xl liquid-glass-pill border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-center font-black text-rose-600 dark:text-rose-400 text-base shrink-0 shadow-xs">
                               {item.bloodGroup}
                             </div>
                             <div>
@@ -638,7 +645,7 @@ export default function DonorNotificationsPage() {
           aria-labelledby="modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md transition-opacity"
         >
-          <div className="glass-floating rounded-3xl border border-neutral-200/90 dark:border-neutral-800/90 max-w-md w-full p-6 shadow-2xl space-y-5 text-neutral-900 dark:text-neutral-100 animate-unmask">
+          <div className="liquid-glass-elevated specular-rim rounded-3xl border border-neutral-200/80 dark:border-white/10 max-w-md w-full p-6 shadow-2xl space-y-5 text-neutral-900 dark:text-neutral-100 animate-unmask">
             {activeModal.action === 'accepted' ? (
               <>
                 <div className="flex items-center gap-3">
@@ -655,7 +662,7 @@ export default function DonorNotificationsPage() {
                   </div>
                 </div>
 
-                <div className="bg-neutral-50 dark:bg-neutral-800/80 rounded-2xl p-4 border border-neutral-100 dark:border-neutral-700 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
+                <div className="liquid-glass rounded-2xl p-4 border border-neutral-200/80 dark:border-white/10 text-xs text-neutral-700 dark:text-neutral-300 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-neutral-500 dark:text-neutral-400">Request:</span>
                     <span className="font-bold">{activeModal.notification.unitsNeeded} unit(s) of {activeModal.notification.component} ({activeModal.notification.bloodGroup})</span>
@@ -670,7 +677,7 @@ export default function DonorNotificationsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-800 rounded-2xl p-4">
+                <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed liquid-glass border border-neutral-200/70 dark:border-white/10 rounded-2xl p-4">
                   <p className="font-bold text-neutral-950 dark:text-neutral-100">
                     Important Safety &amp; Privacy Notice:
                   </p>
@@ -686,7 +693,7 @@ export default function DonorNotificationsPage() {
                     type="button"
                     disabled={submittingResponseId !== null}
                     onClick={() => setActiveModal(null)}
-                    className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200 dark:border-neutral-700 cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200/80 dark:border-white/10 cursor-pointer disabled:opacity-50"
                   >
                     Cancel
                   </button>

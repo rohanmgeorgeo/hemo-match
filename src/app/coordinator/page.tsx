@@ -131,7 +131,14 @@ export default function CoordinatorDashboardPage() {
     <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 flex flex-col transition-colors pb-24 md:pb-12">
       <AppHeader roleContext="overview" />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <main className="relative flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* Subtle ambient radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-25 dark:opacity-15 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+        </div>
         {/* Operations Overview Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -251,7 +258,7 @@ export default function CoordinatorDashboardPage() {
         </div>
 
         {/* Filter & Search Bar */}
-        <Card className="p-4 space-y-3">
+        <div className="rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-4 space-y-3 shadow-xs">
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
             {/* Search Input */}
             <div className="relative flex-1">
@@ -305,8 +312,8 @@ export default function CoordinatorDashboardPage() {
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 font-semibold shadow-xs'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 font-medium'
                     }`}
                   >
                     {tab.label}
@@ -315,7 +322,7 @@ export default function CoordinatorDashboardPage() {
               })}
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Error Callout */}
         {error && (
@@ -454,7 +461,7 @@ function RequestCard({ req }: { req: CoordinatorRequestSummary }) {
         <div className="flex flex-wrap items-start justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
             {/* Blood Group Badge */}
-            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center font-bold text-base text-rose-600 dark:text-rose-400 shrink-0 shadow-xs">
+            <div className="w-10 h-10 rounded-xl liquid-glass-pill border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-center font-bold text-base text-rose-600 dark:text-rose-400 shrink-0 shadow-xs">
               {req.bloodGroup}
             </div>
 
@@ -466,7 +473,7 @@ function RequestCard({ req }: { req: CoordinatorRequestSummary }) {
                 {req.hasCoordinates && (
                   <span
                     title="Request coordinates captured for ~5 km proximity matching"
-                    className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-900/60 font-medium"
+                    className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-sky-50/90 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-900/60 font-semibold liquid-glass-pill shadow-xs"
                   >
                     GPS Proximity
                   </span>

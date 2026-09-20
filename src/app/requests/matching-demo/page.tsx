@@ -307,7 +307,14 @@ export default function MatchingDemoPage() {
       <AppHeader />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        {/* Subtle ambient crimson radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+        </div>
         {!isValid || !request ? (
           /* Empty / Missing Request State */
           <Card variant="default" className="p-8 sm:p-12 text-center">
@@ -345,7 +352,7 @@ export default function MatchingDemoPage() {
             {/* Page Header */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50/90 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60 liquid-glass-pill shadow-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
                   Requester Workspace • Step 2: Match &amp; Coordinate
                 </span>
@@ -362,7 +369,7 @@ export default function MatchingDemoPage() {
             <RequestLifecycle {...lifecycleStates} />
 
             {/* Request Command Header (with subtle desktop cursor illumination) */}
-            <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-7 shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-5 sm:p-7 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -580,7 +587,7 @@ export default function MatchingDemoPage() {
                       type="button"
                       onClick={handleRetry}
                       disabled={isLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-800 active:bg-neutral-100 transition-all border border-neutral-300 dark:border-neutral-700 shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] transition-all border border-neutral-300/80 dark:border-white/10 shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
                       title="Check for updated donor responses and reveal status"
                     >
                       <svg
@@ -600,7 +607,7 @@ export default function MatchingDemoPage() {
                       <span>Refresh Status</span>
                     </button>
 
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60">
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-800/60 liquid-glass-pill shadow-xs">
                       {matchState.totalMatches} {matchState.totalMatches === 1 ? 'candidate' : 'candidates'}
                     </span>
                   </div>
@@ -626,7 +633,7 @@ export default function MatchingDemoPage() {
 
                 {/* Step 3: Highly Visible Coordination Action Panel — Notify Eligible Donors */}
                 {matchState.matches.length > 0 && (
-                  <Card variant="default" glow="default" className="p-5 sm:p-7 shadow-xs mt-6">
+                  <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-5 sm:p-7 shadow-sm mt-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
                       <div>
                         <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">
@@ -808,7 +815,7 @@ export default function MatchingDemoPage() {
                         </span>
                       </div>
                     )}
-                  </Card>
+                  </GlowSurface>
                 )}
               </div>
             )}

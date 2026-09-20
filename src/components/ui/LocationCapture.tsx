@@ -123,10 +123,10 @@ export function LocationCapture({
     <div
       className={`rounded-2xl border transition-all p-4 sm:p-5 ${
         value
-          ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-800/60'
+          ? 'liquid-glass-emerald border-emerald-300/80 dark:border-emerald-700/60 specular-rim shadow-xs'
           : status === 'error'
-          ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-200/80 dark:border-amber-800/60'
-          : 'bg-neutral-50/80 dark:bg-neutral-800/40 border-neutral-200/80 dark:border-neutral-700/80'
+          ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/80 dark:border-amber-800/60 shadow-xs'
+          : 'liquid-glass border-neutral-200/80 dark:border-white/10 shadow-xs'
       } ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

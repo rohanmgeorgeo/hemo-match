@@ -96,7 +96,14 @@ export default function CoordinatorRequestDetailPage() {
     <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 flex flex-col transition-colors pb-24 md:pb-12">
       <AppHeader roleContext="overview" />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <main className="relative flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* Subtle ambient radial wash */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-25 dark:opacity-15 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+        </div>
         {/* Navigation Breadcrumb */}
         <div>
           <Link
@@ -160,10 +167,10 @@ export default function CoordinatorRequestDetailPage() {
         {data && !isLoading && (
           <div className="space-y-6">
             {/* Header Card */}
-            <Card className="p-5 sm:p-6 space-y-4">
+            <div className="rounded-2xl sm:rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-5 sm:p-6 space-y-4 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center font-black text-xl text-rose-600 dark:text-rose-400 shrink-0 shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl liquid-glass-pill border border-rose-200/80 dark:border-rose-900/60 flex items-center justify-center font-black text-xl text-rose-600 dark:text-rose-400 shrink-0 shadow-xs">
                     {data.bloodGroup}
                   </div>
                   <div>
@@ -267,11 +274,11 @@ export default function CoordinatorRequestDetailPage() {
                   <p className="mt-0.5 italic">{data.notes}</p>
                 </div>
               )}
-            </Card>
+            </div>
 
             {/* Operational Pipeline Metrics (4 Stages) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <GlowSurface className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-[#141414]/70">
+              <GlowSurface variant="subtle" className="p-4 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 shadow-xs">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 block">
                   1. Discovery
                 </span>
@@ -281,7 +288,7 @@ export default function CoordinatorRequestDetailPage() {
                 <p className="text-[11px] text-neutral-500 mt-0.5">Discovered candidates</p>
               </GlowSurface>
 
-              <GlowSurface className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-[#141414]/70">
+              <GlowSurface variant="subtle" className="p-4 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 shadow-xs">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 block">
                   2. Dispatched
                 </span>
@@ -291,7 +298,7 @@ export default function CoordinatorRequestDetailPage() {
                 <p className="text-[11px] text-neutral-500 mt-0.5">In-app notifications sent</p>
               </GlowSurface>
 
-              <GlowSurface className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-[#141414]/70">
+              <GlowSurface variant="subtle" className="p-4 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 shadow-xs">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 block">
                   3. Responses
                 </span>
@@ -303,7 +310,7 @@ export default function CoordinatorRequestDetailPage() {
                 </p>
               </GlowSurface>
 
-              <GlowSurface className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-[#141414]/70">
+              <GlowSurface variant="subtle" className="p-4 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 shadow-xs">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 block">
                   4. Privacy Reveal
                 </span>
