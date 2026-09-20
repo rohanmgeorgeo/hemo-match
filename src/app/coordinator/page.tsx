@@ -134,24 +134,24 @@ export default function CoordinatorDashboardPage() {
       <main className="relative flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Subtle ambient radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-25 dark:opacity-15 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.16),rgba(59,130,246,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Operations Overview Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                Operations Overview
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50/90 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 liquid-glass-pill shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+                Operations Workspace • Coordinator Overview
               </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-neutral-200/70 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-medium">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 border border-neutral-200/80 dark:border-white/10 liquid-glass-pill shadow-xs">
                 Read-Only MVP
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-950 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
               Coordinator Dashboard
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -163,11 +163,11 @@ export default function CoordinatorDashboardPage() {
             type="button"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#141414] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+            className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] transition-all border border-neutral-200/80 dark:border-white/10 shadow-xs cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
             aria-label="Refresh dashboard data"
           >
             <svg
-              className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-rose-500' : 'text-neutral-500'}`}
+              className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-500 dark:text-blue-400' : 'text-neutral-500 dark:text-neutral-400'}`}
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth="2"
@@ -280,7 +280,7 @@ export default function CoordinatorDashboardPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter by hospital, area, district, blood group…"
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#171717] text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors"
+                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-neutral-200/80 dark:border-white/10 liquid-glass text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -310,10 +310,10 @@ export default function CoordinatorDashboardPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setStatusFilter(tab.id)}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                       isActive
-                        ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 font-medium'
+                        ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-neutral-200/80 dark:border-white/10'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 border border-transparent font-medium'
                     }`}
                   >
                     {tab.label}
@@ -360,7 +360,7 @@ export default function CoordinatorDashboardPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-[#141414]/50 animate-pulse space-y-3"
+                className="p-5 rounded-2xl border border-neutral-200/80 dark:border-white/10 liquid-glass animate-pulse space-y-3"
               >
                 <div className="flex justify-between items-center">
                   <div className="h-5 w-32 bg-neutral-200 dark:bg-neutral-800 rounded" />
@@ -376,7 +376,7 @@ export default function CoordinatorDashboardPage() {
         {/* Empty State */}
         {!isLoading && filteredRequests.length === 0 && (
           <Card className="p-8 sm:p-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800/70 border border-neutral-200 dark:border-neutral-700 mx-auto flex items-center justify-center text-neutral-400">
+            <div className="w-12 h-12 rounded-2xl liquid-glass-pill border border-neutral-200/80 dark:border-white/10 mx-auto flex items-center justify-center text-neutral-400 shadow-xs">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -397,7 +397,7 @@ export default function CoordinatorDashboardPage() {
               <div className="pt-2">
                 <Link
                   href="/requests/new"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-colors shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-semibold text-xs transition-all shadow-xs"
                 >
                   Create a Blood Request
                 </Link>
@@ -410,7 +410,7 @@ export default function CoordinatorDashboardPage() {
                     setSearchQuery('');
                     setStatusFilter('all');
                   }}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all cursor-pointer"
                 >
                   Clear Filters
                 </button>
@@ -555,23 +555,23 @@ function RequestCard({ req }: { req: CoordinatorRequestSummary }) {
         {/* Bottom Operational Pipeline Stats & Detail CTA */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800/60">
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full liquid-glass-pill border border-neutral-200/70 dark:border-white/10 text-neutral-700 dark:text-neutral-300 font-medium text-[11px] shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
               {req.matchCount} candidate{req.matchCount === 1 ? '' : 's'}
             </span>
 
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full liquid-glass-pill border border-neutral-200/70 dark:border-white/10 text-neutral-700 dark:text-neutral-300 font-medium text-[11px] shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
               {req.notificationCount} notified
             </span>
 
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full liquid-glass-pill border border-neutral-200/70 dark:border-white/10 text-neutral-700 dark:text-neutral-300 font-medium text-[11px] shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {req.acceptedCount} accepted
             </span>
 
             {req.declinedCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-500 font-medium">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full liquid-glass-pill border border-neutral-200/70 dark:border-white/10 text-neutral-500 dark:text-neutral-400 font-medium text-[11px] shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
                 {req.declinedCount} declined
               </span>
@@ -598,35 +598,35 @@ function StatusBadge({ status }: { status: CoordinatorRequestSummary['status'] }
     case 'active':
     case 'open':
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50/90 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
           Active
         </span>
       );
     case 'notified':
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/60">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
           Notified
         </span>
       );
     case 'fulfilled':
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50/90 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           Fulfilled
         </span>
       );
     case 'expired':
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-300 border border-neutral-200/90 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
           Expired
         </span>
       );
     case 'cancelled':
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-300 dark:border-neutral-700">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 border border-neutral-200/90 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           Cancelled
         </span>
       );

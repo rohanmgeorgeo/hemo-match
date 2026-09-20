@@ -145,7 +145,7 @@ export function ContactRevealCard({
 
             <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2 flex-wrap">
               <span className="font-sans text-neutral-700 dark:text-neutral-300 font-medium">Phone:</span>
-              <span className="inline-flex items-center gap-1.5 liquid-glass-pill text-neutral-800 dark:text-neutral-200 px-2.5 py-1 rounded-lg text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-neutral-700">
+              <span className="inline-flex items-center gap-1.5 liquid-glass-pill text-neutral-800 dark:text-neutral-200 px-2.5 py-1 rounded-lg text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-white/10">
                 <svg className="w-3 h-3 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                 </svg>
@@ -215,7 +215,7 @@ export function ContactRevealCard({
   if (candidateStatus === 'declined') {
     return (
       <div
-        className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 transition-colors ${className}`}
+        className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-white/10 transition-colors ${className}`}
       >
         <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-1.5 font-medium">
@@ -241,7 +241,7 @@ export function ContactRevealCard({
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 font-mono">
           <span className="font-sans text-neutral-600 dark:text-neutral-400 font-medium">Phone:</span>
-          <span className="liquid-glass-pill text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold tracking-widest border border-neutral-200/80 dark:border-neutral-700">
+          <span className="liquid-glass-pill text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold tracking-widest border border-neutral-200/80 dark:border-white/10">
             ••••••••••
           </span>
           <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-sans font-semibold tracking-wide">

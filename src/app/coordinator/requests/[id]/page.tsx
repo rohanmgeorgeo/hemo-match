@@ -99,22 +99,22 @@ export default function CoordinatorRequestDetailPage() {
       <main className="relative flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         {/* Subtle ambient radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-25 dark:opacity-15 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.16),rgba(59,130,246,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Navigation Breadcrumb */}
         <div>
           <Link
             href="/coordinator"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] transition-all border border-neutral-200/80 dark:border-white/10 shadow-xs"
           >
             <svg
-              className="w-4 h-4"
+              className="w-4 h-4 text-neutral-500 dark:text-neutral-400"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth="2.5"
+              strokeWidth="2"
               stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
@@ -126,8 +126,8 @@ export default function CoordinatorRequestDetailPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="space-y-4">
-            <div className="h-28 rounded-2xl bg-white dark:bg-[#141414] border border-neutral-200 dark:border-neutral-800 animate-pulse" />
-            <div className="h-64 rounded-2xl bg-white dark:bg-[#141414] border border-neutral-200 dark:border-neutral-800 animate-pulse" />
+            <div className="h-28 rounded-2xl sm:rounded-3xl liquid-glass border border-neutral-200/80 dark:border-white/10 animate-pulse" />
+            <div className="h-64 rounded-2xl sm:rounded-3xl liquid-glass border border-neutral-200/80 dark:border-white/10 animate-pulse" />
           </div>
         )}
 
@@ -145,17 +145,17 @@ export default function CoordinatorRequestDetailPage() {
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
               {error}
             </p>
-            <div className="pt-2 flex items-center justify-center gap-2">
+            <div className="pt-2 flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={handleRetry}
-                className="px-4 py-2 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 font-semibold text-xs transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer"
               >
                 Retry
               </button>
               <Link
                 href="/coordinator"
-                className="px-4 py-2 rounded-xl bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition-colors"
+                className="px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 font-semibold text-xs border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all"
               >
                 Back to Dashboard
               </Link>
@@ -346,7 +346,7 @@ export default function CoordinatorRequestDetailPage() {
                     <Card key={cand.matchId} className="p-3.5 sm:p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center font-bold text-xs text-neutral-700 dark:text-neutral-300">
+                          <div className="w-8 h-8 rounded-xl liquid-glass-pill border border-neutral-200/80 dark:border-white/10 flex items-center justify-center font-bold text-xs text-neutral-900 dark:text-white shadow-xs">
                             {cand.bloodGroup}
                           </div>
                           <div>
@@ -455,35 +455,35 @@ function DetailStatusBadge({ status }: { status: CoordinatorRequestDetail['statu
     case 'active':
     case 'open':
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50/90 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
           Active
         </span>
       );
     case 'notified':
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900/60">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
           Notified
         </span>
       );
     case 'fulfilled':
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50/90 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           Fulfilled
         </span>
       );
     case 'expired':
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-300 border border-neutral-200/90 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
           Expired
         </span>
       );
     case 'cancelled':
       return (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-300 dark:border-neutral-700">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-100/90 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 border border-neutral-200/90 dark:border-white/10 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           Cancelled
         </span>
       );

@@ -158,13 +158,13 @@ export default function DonorRegisterPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         {/* Subtle ambient emerald radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.18),rgba(16,185,129,0.04)_45%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.16),rgba(16,185,129,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Title & Introduction */}
         <div className="mb-6">
@@ -278,8 +278,8 @@ export default function DonorRegisterPage() {
                       onClick={() => updateField('bloodGroup', bg)}
                       className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                         isSelected
-                          ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
-                          : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700 font-semibold'
+                          ? 'bg-rose-600 text-white border-rose-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_8px_-1px_rgba(225,29,72,0.4)] ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
+                          : 'liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-white/5 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/80 dark:border-white/10 font-semibold shadow-xs'
                       }`}
                     >
                       <span className="tabular-nums">{bg}</span>
@@ -478,7 +478,7 @@ export default function DonorRegisterPage() {
                       aria-checked={isSelected}
                       onClick={() => updateField('availability', value)}
                       className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
-                        isSelected ? selectedClasses : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
+                        isSelected ? selectedClasses : 'liquid-glass hover:border-neutral-300 dark:hover:border-neutral-700 border-neutral-200/80 dark:border-white/10 shadow-xs'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">

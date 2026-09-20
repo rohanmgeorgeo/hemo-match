@@ -149,7 +149,7 @@ export const AppBottomNav: React.FC = () => {
               className={`flex-1 min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 px-1.5 transition-all select-none pressable ${
                 active
                   ? "bg-rose-50/90 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold border border-rose-200/60 dark:border-rose-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40 border border-transparent"
               }`}
             >
               <div className="relative flex items-center justify-center">

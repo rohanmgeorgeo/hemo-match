@@ -206,13 +206,13 @@ export default function NewBloodRequestPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         {/* Subtle ambient crimson radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[360px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.16),rgba(225,29,72,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Title & Introduction */}
         <div className="mb-6">
@@ -271,7 +271,7 @@ export default function NewBloodRequestPage() {
                         className={`h-12 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer border select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                           isSelected
                             ? 'bg-rose-600 text-white border-rose-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_2px_8px_-1px_rgba(225,29,72,0.4)] ring-2 ring-rose-500/30 dark:ring-rose-500/40 font-bold scale-[1.02]'
-                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700 font-semibold'
+                            : 'liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-white/5 text-neutral-800 dark:text-neutral-200 dark:hover:text-white border-neutral-200/80 dark:border-white/10 font-semibold shadow-xs'
                         }`}
                       >
                         <span className="tabular-nums">{bg}</span>
@@ -308,7 +308,7 @@ export default function NewBloodRequestPage() {
                         className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 flex items-center justify-center text-center cursor-pointer border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                           isSelected
                             ? 'bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 border-neutral-950 dark:border-white shadow-xs'
-                            : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 dark:hover:text-white border-neutral-200/90 dark:border-neutral-700'
+                            : 'liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-white/5 text-neutral-700 dark:text-neutral-300 dark:hover:text-white border-neutral-200/80 dark:border-white/10 shadow-xs'
                         }`}
                       >
                         {comp}
@@ -562,7 +562,7 @@ export default function NewBloodRequestPage() {
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${
                       formData.urgency === 'critical'
                         ? 'bg-rose-50/90 dark:bg-rose-950/40 border-rose-500 dark:border-rose-600 ring-2 ring-rose-500/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
+                        : 'liquid-glass hover:border-neutral-300 dark:hover:border-neutral-700 border-neutral-200/80 dark:border-white/10 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -581,7 +581,7 @@ export default function NewBloodRequestPage() {
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 ${
                       formData.urgency === 'urgent'
                         ? 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-500 dark:border-amber-600 ring-2 ring-amber-500/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
+                        : 'liquid-glass hover:border-neutral-300 dark:hover:border-neutral-700 border-neutral-200/80 dark:border-white/10 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -600,7 +600,7 @@ export default function NewBloodRequestPage() {
                     className={`p-4 rounded-2xl text-left border transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ${
                       formData.urgency === 'routine'
                         ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-400 dark:border-neutral-600 ring-2 ring-neutral-400/20'
-                        : 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/90 dark:border-neutral-700'
+                        : 'liquid-glass hover:border-neutral-300 dark:hover:border-neutral-700 border-neutral-200/80 dark:border-white/10 shadow-xs'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">

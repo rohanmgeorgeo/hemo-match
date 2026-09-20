@@ -72,7 +72,7 @@ export function CandidateCard({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Proximity / District Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium liquid-glass-pill text-neutral-700 dark:text-neutral-300 border border-neutral-200/70 dark:border-neutral-700/70 shadow-xs">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium liquid-glass-pill text-neutral-700 dark:text-neutral-300 border border-neutral-200/70 dark:border-white/10 shadow-xs">
             <svg
               className="w-3 h-3 text-neutral-500 shrink-0"
               fill="none"

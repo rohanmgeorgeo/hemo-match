@@ -307,13 +307,13 @@ export default function MatchingDemoPage() {
       <AppHeader />
 
       {/* Main Content */}
-      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
         {/* Subtle ambient crimson radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.16),rgba(225,29,72,0.03)_45%,transparent_70%)]" />
         </div>
         {!isValid || !request ? (
           /* Empty / Missing Request State */

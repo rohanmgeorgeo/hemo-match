@@ -17,10 +17,10 @@ export default function HomePage() {
       <main className="relative flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
         {/* Subtle ambient crimson radial wash behind hero */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-35 dark:opacity-20 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.16),rgba(225,29,72,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Hero Section */}
         <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 pt-2 sm:pt-4">

@@ -22,7 +22,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
     { href: '/requests/new', label: 'Request Blood' },
     { href: '/requests/matching-demo', label: 'Matches' },
     { href: '/donors/notifications', label: 'Donor Inbox' },
-    { href: '/donors/profile', label: 'Donor Profile' },
+    {
+      href: '/donors/profile',
+      label: 'Donor Profile',
+      match: (p: string) => p.startsWith('/donors/profile') || p.startsWith('/donors/register'),
+    },
     { href: '/coordinator', label: 'Coordinator' },
   ];
 
@@ -57,17 +61,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
           <nav aria-label="Desktop Navigation" className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive =
-                link.href === '/'
+                'match' in link && typeof link.match === 'function'
+                  ? link.match(pathname || '')
+                  : link.href === '/'
                   ? pathname === '/'
                   : pathname?.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all select-none ${
                     isActive
-                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-semibold shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-neutral-800/40'
+                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold border border-neutral-200/80 dark:border-white/10 shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white border border-transparent hover:border-neutral-200/50 dark:hover:border-white/5 hover:bg-neutral-200/40 dark:hover:bg-neutral-800/40'
                   }`}
                 >
                   {link.label}
@@ -82,7 +88,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
             suppressHydrationWarning
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-neutral-200/80 dark:border-neutral-800 liquid-glass-pill hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-neutral-200/80 dark:border-white/10 liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
           >
             {mounted && isDark ? (
               // Sun icon (for switching to light)

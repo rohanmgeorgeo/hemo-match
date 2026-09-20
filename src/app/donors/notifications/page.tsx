@@ -239,13 +239,13 @@ export default function DonorNotificationsPage() {
       {/* Global App Header */}
       <AppHeader />
 
-      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
-        {/* Subtle ambient emerald/crimson radial wash */}
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        {/* Subtle ambient emerald radial wash */}
         <div
-          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
+          className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
           aria-hidden="true"
         >
-          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.15),rgba(225,29,72,0.04)_50%,transparent_70%)]" />
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.16),rgba(16,185,129,0.03)_45%,transparent_70%)]" />
         </div>
         {/* Missing Profile State */}
         {!profile ? (
@@ -285,7 +285,7 @@ export default function DonorNotificationsPage() {
             <Card variant="default" glow="elevated" className="p-6 sm:p-8 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60 mb-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-900/60 liquid-glass-pill shadow-xs mb-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                     Volunteer Donor Workspace
                   </div>
@@ -302,7 +302,7 @@ export default function DonorNotificationsPage() {
                     type="button"
                     onClick={() => setRetryTrigger((prev) => prev + 1)}
                     disabled={isLoading}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/90 dark:border-neutral-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] transition-all border border-neutral-200/80 dark:border-white/10 shadow-xs cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
                   >
                     <svg
                       className={`w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400 ${isLoading ? 'animate-spin' : ''}`}
@@ -372,13 +372,13 @@ export default function DonorNotificationsPage() {
                   <button
                     type="button"
                     onClick={() => setRetryTrigger((prev) => prev + 1)}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white font-semibold text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Check for Updates
                   </button>
                   <Link
                     href="/donors/profile"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-xs border border-neutral-200 dark:border-neutral-700 shadow-xs transition-colors"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 font-semibold text-xs border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all"
                   >
                     View Donor Profile
                   </Link>
@@ -407,7 +407,7 @@ export default function DonorNotificationsPage() {
                         className={`transition-all p-5 sm:p-6 shadow-xs ${
                           isUnread
                             ? 'border-rose-300/90 dark:border-rose-800 ring-1 ring-rose-100 dark:ring-rose-950/40'
-                            : 'border-neutral-200/80 dark:border-neutral-800'
+                            : 'border-neutral-200/80 dark:border-white/10'
                         }`}
                       >
                         {/* Notification Header */}
@@ -535,7 +535,7 @@ export default function DonorNotificationsPage() {
                                 type="button"
                                 disabled={markingReadId === item.id}
                                 onClick={() => handleMarkRead(item.id)}
-                                className="px-4 py-2 rounded-full bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200 dark:border-neutral-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-4 py-2 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 text-xs font-semibold border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                               >
                                 {markingReadId === item.id ? 'Marking...' : 'Mark as Read'}
                               </button>
@@ -580,7 +580,7 @@ export default function DonorNotificationsPage() {
                                   type="button"
                                   disabled={submittingResponseId === item.id}
                                   onClick={() => setActiveModal({ notification: item, action: 'declined' })}
-                                  className="flex-1 sm:flex-initial px-4 py-2 rounded-full bg-white dark:bg-[#171717] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200/90 dark:border-neutral-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+                                  className="flex-1 sm:flex-initial px-4 py-2 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 text-xs font-semibold border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all cursor-pointer disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
                                 >
                                   Decline
                                 </button>
@@ -743,7 +743,7 @@ export default function DonorNotificationsPage() {
                     type="button"
                     disabled={submittingResponseId !== null}
                     onClick={() => setActiveModal(null)}
-                    className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200 dark:border-neutral-700 cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200/80 dark:border-white/10 cursor-pointer disabled:opacity-50"
                   >
                     Keep in Inbox
                   </button>
@@ -751,7 +751,7 @@ export default function DonorNotificationsPage() {
                     type="button"
                     disabled={submittingResponseId !== null}
                     onClick={handleConfirmResponse}
-                    className="px-6 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 text-white text-xs font-bold shadow-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     {submittingResponseId ? (
                       <>
