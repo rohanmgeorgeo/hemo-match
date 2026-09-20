@@ -96,3 +96,92 @@ export async function createDonor(
     donor: data,
   };
 }
+
+export interface UpdateDonorParams {
+  id: string;
+  fullName: string;
+  bloodGroup: DbBloodGroup;
+  districtId: string;
+  approximateArea: string;
+  phoneNumber: string;
+  lastDonationDate: string | null;
+  availability: DbDonorAvailability;
+  notificationPreference: DbNotificationPreference;
+  consentGiven: boolean;
+  locationLatitude?: number | null;
+  locationLongitude?: number | null;
+}
+
+export type UpdateDonorResult =
+  | {
+      success: true;
+      donor: DonorPublicRow;
+      error?: never;
+      message?: never;
+    }
+  | {
+      success: false;
+      donor?: never;
+      error: "unconfigured" | "not_found" | "database_error";
+      message: string;
+    };
+
+/**
+ * Updates an existing donor record in public.donors.
+ *
+ * Requirements:
+ * - Server-only execution
+ * - Validates that the donor exists
+ * - Updates donor fields in PostgreSQL
+ * - Projections strictly omit phone_number in the return payload
+ * - Projections strictly omit private matching coordinates in the return payload
+ */
+export async function updateDonor(
+  params: UpdateDonorParams
+): Promise<UpdateDonorResult> {
+  const client = getServerClient();
+  if (!client) {
+    return {
+      success: false,
+      error: "unconfigured",
+      message: "Database client is not configured.",
+    };
+  }
+
+  const updatePayload: Database["public"]["Tables"]["donors"]["Update"] = {
+    full_name: params.fullName,
+    blood_group: params.bloodGroup,
+    district_id: params.districtId,
+    approximate_area: params.approximateArea,
+    phone_number: params.phoneNumber,
+    last_donation_date: params.lastDonationDate,
+    availability: params.availability,
+    notification_preference: params.notificationPreference,
+    consent_given: params.consentGiven,
+    location_latitude: params.locationLatitude ?? null,
+    location_longitude: params.locationLongitude ?? null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await client
+    .from("donors")
+    .update(updatePayload)
+    .eq("id", params.id)
+    .select(
+      "id, full_name, blood_group, district_id, approximate_area, last_donation_date, availability, notification_preference, consent_given, created_at, updated_at"
+    )
+    .single<DonorPublicRow>();
+
+  if (error || !data) {
+    return {
+      success: false,
+      error: "database_error",
+      message: error?.message || "Database update returned no row.",
+    };
+  }
+
+  return {
+    success: true,
+    donor: data,
+  };
+}

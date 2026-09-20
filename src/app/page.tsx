@@ -16,7 +16,7 @@ export default function HomePage() {
       <AppHeader />
 
       {/* Main Content Area */}
-      <main className="relative flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
+      <main className="relative flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center page-enter">
         {/* Subtle ambient crimson radial wash behind hero */}
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"

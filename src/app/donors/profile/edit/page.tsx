@@ -117,15 +117,52 @@ export default function EditDonorProfilePage() {
       locationLongitude: d.locationLongitude ?? null,
     };
 
+    const payload = {
+      id: existingDonor.id,
+      fullName: d.fullName,
+      bloodGroup: d.bloodGroup,
+      districtId: d.districtId,
+      approximateArea: d.approximateArea,
+      phoneNumber: d.phoneNumber,
+      lastDonationDate: d.lastDonationDate || undefined,
+      availability: d.availability,
+      notificationPreference: d.notificationPreference,
+      consentGiven: d.consentGiven,
+      locationLatitude: d.locationLatitude ?? null,
+      locationLongitude: d.locationLongitude ?? null,
+    };
+
     try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('hemo_match_demo_donor', JSON.stringify(updatedProfile));
+      const response = await fetch("/api/donors", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok && response.status !== 503) {
+        if (result?.errors && typeof result.errors === "object") {
+          setErrors(result.errors);
+        }
+        setSubmitError(result?.message || "Unable to update donor profile in database. Please check your details.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("hemo_match_demo_donor", JSON.stringify(updatedProfile));
         notifyDonorUpdated();
       }
-      router.push('/donors/profile');
+      router.push("/donors/profile");
     } catch {
-      setSubmitError('Unable to update donor profile in local storage. Please try again.');
-      setIsSubmitting(false);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("hemo_match_demo_donor", JSON.stringify(updatedProfile));
+        notifyDonorUpdated();
+      }
+      router.push("/donors/profile");
     }
   };
 
@@ -133,7 +170,7 @@ export default function EditDonorProfilePage() {
     return (
       <div className="flex-1 flex flex-col bg-transparent text-neutral-900 dark:text-neutral-100">
         <AppHeader />
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-12 text-center">
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-12 text-center page-enter">
           <div className="w-8 h-8 border-2 border-rose-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-xs text-neutral-500">Loading donor profile...</p>
         </main>

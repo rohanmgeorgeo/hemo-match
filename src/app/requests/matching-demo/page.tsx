@@ -309,7 +309,7 @@ export default function MatchingDemoPage() {
       <AppHeader />
 
       {/* Main Content */}
-      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 page-enter">
         {/* Subtle ambient crimson radial wash */}
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
@@ -511,35 +511,85 @@ export default function MatchingDemoPage() {
                 </div>
 
                 <h2 className="text-lg font-bold text-neutral-950 dark:text-white mb-2">
-                  No eligible candidate donors currently found in this district.
+                  No Currently Eligible Donors Found
                 </h2>
 
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto leading-relaxed mb-6">
-                  Matching enforces preliminary blood-group compatibility, availability, district locality, consent, and the 120-day donation interval policy.
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto leading-relaxed mb-6">
+                  Volunteer donors may be registered in this district, but none currently satisfy all preliminary matching constraints for this requirement.
                 </p>
 
-                <button
-                  type="button"
-                  onClick={handleRetry}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
-                >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
-                    stroke="currentColor"
-                    aria-hidden="true"
+                {/* Clear, privacy-preserving explanation of preliminary exclusion criteria */}
+                <div className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 text-left mb-6">
+                  <div className="p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/80 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      120-Day Donation Interval
+                    </div>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-[11px] leading-relaxed">
+                      Donors who donated recently (&lt;120 days) or whose history is unrecorded are held in recovery to protect volunteer health.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/80 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      ABO/Rh Compatibility
+                    </div>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-[11px] leading-relaxed">
+                      Matches strictly enforce medical compatibility for recipient blood group ({request?.bloodGroup ?? "requirement"}).
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/80 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+                      Volunteer Availability
+                    </div>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-[11px] leading-relaxed">
+                      Donors marked as paused or temporarily unavailable are excluded from active matching dispatch.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-800/60 border border-neutral-200/70 dark:border-neutral-700/80 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-neutral-900 dark:text-neutral-100 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      District &amp; Proximity
+                    </div>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-[11px] leading-relaxed">
+                      Evaluates volunteer candidates within 5 km proximity radius or the designated hospital district.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                    />
-                  </svg>
-                  <span>Re-evaluate Matches</span>
-                </button>
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                      />
+                    </svg>
+                    <span>Re-evaluate Matches</span>
+                  </button>
+                  {canEditRequest && (
+                    <Link
+                      href="/requests/new?mode=edit"
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 font-semibold text-xs border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all"
+                    >
+                      <span>Edit Request Details</span>
+                    </Link>
+                  )}
+                </div>
               </Card>
             )}
 

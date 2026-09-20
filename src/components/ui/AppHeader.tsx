@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
 import { useHasDonorProfile } from '@/lib/donor-state';
+import { LogoMark } from './LogoMark';
 
 export type RoleContext = 'requester' | 'donor' | 'overview';
 
@@ -44,7 +45,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
       ];
 
   return (
-    <header className="w-full border-b border-neutral-200/70 dark:border-white/10 glass-bar specular-rim sticky top-0 z-30 transition-colors duration-150">
+    <header className="w-full border-b border-neutral-200/70 dark:border-white/10 glass-bar specular-rim sticky top-0 z-40 transition-colors duration-150">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
         {/* Left: Brand Identity Strictly "Hemo Match" */}
         <Link
@@ -52,16 +53,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
           className="flex items-center gap-2.5 group rounded-xl p-1 -ml-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
           aria-label="Hemo Match Home"
         >
-          <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200/60 dark:border-rose-900/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shadow-xs group-hover:scale-105 transition-transform">
-            <svg
-              aria-hidden="true"
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
-            </svg>
-          </div>
+          <LogoMark size={32} className="w-8 h-8 rounded-xl shadow-xs group-hover:scale-105 transition-transform duration-150" />
           <span className="font-bold text-base sm:text-lg tracking-tight text-neutral-950 dark:text-white">
             Hemo Match
           </span>

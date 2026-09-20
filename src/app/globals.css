@@ -84,11 +84,11 @@
 
 html {
   scrollbar-gutter: stable;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
   background-color: var(--canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -109,6 +109,42 @@ input[type="time"] {
 .dark input[type="date"],
 .dark input[type="time"] {
   color-scheme: dark;
+}
+
+
+/* ==========================================================================
+   Motion System Tokens & Transition Classes
+   Fast: 140ms | Standard: 200ms | Surface/Page: 240ms
+   Easing: cubic-bezier(0.16, 1, 0.3, 1)
+   ========================================================================== */
+:root {
+  --motion-fast: 140ms;
+  --motion-std: 200ms;
+  --motion-surface: 240ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pageEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEntrance var(--motion-surface) var(--motion-ease) both;
+}
+
+.motion-fast {
+  transition: all var(--motion-fast) var(--motion-ease);
+}
+
+.motion-std {
+  transition: all var(--motion-std) var(--motion-ease);
 }
 
 /* Tactile pressable microinteraction */
@@ -347,8 +383,14 @@ input[type="time"] {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .animate-unmask {
+  .animate-unmask,
+  .page-enter {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pressable:active {
+    transform: none !important;
   }
   .ambient-pointer-container {
     display: none !important;

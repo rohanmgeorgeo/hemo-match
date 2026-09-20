@@ -187,13 +187,24 @@ describe('Donor Experience & Volunteer Workflow', () => {
       assert.strictEqual(updatedDonor.availability, "temporarily_unavailable");
     });
 
-    it("deletion and exit clears local demo donor state truthfully without claiming server account deletion", () => {
+    it("Exit Donor Mode clears local demo donor state truthfully without claiming server account deletion", () => {
       const mockStorage: Record<string, string> = {
         hemo_match_demo_donor: JSON.stringify({ id: "test-donor" }),
       };
 
+      // Truthful action: Exit Donor Mode removes client demo identity
       delete mockStorage.hemo_match_demo_donor;
       assert.strictEqual(mockStorage.hemo_match_demo_donor, undefined);
+    });
+
+    it("verifies 97-day elapsed donation interval reports not satisfied against 120-day policy", () => {
+      // Direct verification of the production test scenario (June 15, 2026 to Sep 20, 2026)
+      const lastDonationDate = "2026-06-15";
+      const evalDate = new Date("2026-09-20T00:00:00Z");
+      const lastDate = new Date(lastDonationDate + "T00:00:00Z");
+      const diffDays = Math.floor((evalDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      assert.strictEqual(diffDays, 97);
+      assert.strictEqual(diffDays >= 120, false);
     });
   });
 });

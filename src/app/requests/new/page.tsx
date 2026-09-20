@@ -396,7 +396,7 @@ function BloodRequestFormContent() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 page-enter">
         {/* Subtle ambient crimson radial wash */}
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"

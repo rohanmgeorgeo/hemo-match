@@ -43,6 +43,8 @@ describe('UI Foundation & Design System', () => {
       assert.strictEqual(typeof UI.GlowSurface, 'function');
       assert.strictEqual(typeof UI.AppBottomNav, 'function');
       assert.strictEqual(typeof UI.AmbientPointerLight, 'function');
+      assert.strictEqual(typeof UI.LogoMark, 'function');
+      assert.strictEqual(typeof UI.PageTransition, 'function');
     });
   });
   describe("Landing Page Coordination Flow Standards", () => {

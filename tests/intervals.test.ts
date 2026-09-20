@@ -121,6 +121,19 @@ describe('Interval Evaluation & Rule Configuration', () => {
       assert.strictEqual(result.nextEligibleDate, '2026-09-19');
     });
 
+    it('excludes 97 calendar days (2026-06-15 to 2026-09-20 production manual test scenario) with EXCLUDE_INTERVAL_TOO_SHORT', () => {
+      const result = evaluateDonationInterval(
+        '2026-06-15',
+        'Whole Blood',
+        '2026-09-20T00:00:00.000Z'
+      );
+      assert.strictEqual(result.eligible, false);
+      assert.strictEqual(result.reasonCode, 'EXCLUDE_INTERVAL_TOO_SHORT');
+      assert.strictEqual(result.daysSinceLastDonation, 97);
+      assert.strictEqual(result.minimumIntervalDays, 120);
+      assert.strictEqual(result.nextEligibleDate, '2026-10-13');
+    });
+
     it('approves exactly 120 calendar days as eligible', () => {
       // Evaluation date: 2026-09-18
       // 120 days prior = 2026-05-21

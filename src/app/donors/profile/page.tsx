@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useSyncExternalStore, useMemo, useState } from 'react';
+import React, { useSyncExternalStore, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { notifyDonorUpdated } from '@/lib/donor-state';
 import Link from 'next/link';
@@ -38,7 +38,6 @@ const AVAILABILITY_LABELS: Record<
 
 export default function DonorProfilePage() {
   const router = useRouter();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const storedJson = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const handleExitDonorMode = () => {
@@ -48,13 +47,7 @@ export default function DonorProfilePage() {
     router.push('/');
   };
 
-  const handleDeleteProfile = () => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.removeItem('hemo_match_demo_donor');
-    notifyDonorUpdated();
-    setShowDeleteModal(false);
-    router.push('/');
-  };
+
 
   const profile = useMemo<DonorProfile | null>(() => {
     if (!storedJson) return null;
@@ -123,7 +116,7 @@ export default function DonorProfilePage() {
       {/* Global App Header */}
       <AppHeader />
 
-      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      <main className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 page-enter">
         {/* Subtle ambient emerald radial wash */}
         <div
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[340px] -z-10 overflow-hidden opacity-30 dark:opacity-20 blur-3xl select-none"
@@ -376,79 +369,9 @@ export default function DonorProfilePage() {
                 Exit Donor Mode
               </button>
             </div>
-
-            {/* Secondary Danger Area: Demo Profile Removal */}
-            <div className="pt-6 border-t border-neutral-200/60 dark:border-neutral-800/60">
-              <Card variant="default" className="p-5 sm:p-6 border border-neutral-200/90 dark:border-neutral-800 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                      Delete Local Demo Profile
-                    </h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 max-w-md leading-relaxed">
-                      Removes the donor profile stored for this Hemo Match demo on this browser. You will need to register again to use the donor workspace.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteModal(true)}
-                    className="self-start sm:self-auto px-4 py-2 rounded-full text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 transition-colors cursor-pointer"
-                  >
-                    Delete Donor Profile
-                  </button>
-                </div>
-              </Card>
-            </div>
           </div>
         )}
       </main>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
-        >
-          <div className="w-full max-w-md p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200 dark:border-neutral-800 shadow-xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                </svg>
-              </div>
-              <div>
-                <h3 id="delete-modal-title" className="text-base font-bold text-neutral-950 dark:text-white">
-                  Delete donor profile?
-                </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  This action cannot be undone.
-                </p>
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-              This removes the donor profile stored for this Hemo Match demo on this browser. You will need to register again to use the donor workspace.
-            </p>
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 rounded-full text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteProfile}
-                className="px-4 py-2 rounded-full text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors cursor-pointer"
-              >
-                Delete Profile
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

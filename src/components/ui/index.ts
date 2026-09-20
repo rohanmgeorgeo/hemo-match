@@ -8,3 +8,5 @@ export * from './GlowSurface';
 export * from './AppBottomNav';
 export * from './AmbientPointerLight';
 export * from './LocationCapture';
+export * from './LogoMark';
+export * from './PageTransition';
