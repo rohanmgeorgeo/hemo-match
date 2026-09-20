@@ -4,7 +4,7 @@
 **Challenge:** SC-12 — District Blood Donor Matching
 **Current Branch:** `feature/github-portfolio-polish`
 **Current Milestone:** Final GitHub & Portfolio Presentation Polish
-**Status:** 259 tests / 76 suites passing (0 regressions)
+**Status:** 280 tests / 81 suites passing (0 regressions)
 
 ---
 
@@ -107,7 +107,7 @@
 - [x] **Step 17: Final QA & Evaluator Experience (COMPLETE)**
   - [x] Comprehensive review across all desktop and mobile flows
   - [x] Medical wording alignment (authoritative 120-day donation interval policy framing)
-  - [x] 259 automated unit and integration tests passing across 76 suites
+  - [x] 280 automated unit and integration tests passing across 81 suites
 
 - [x] **Step 17.5: Remote Selection Audit, Seed & Production Walkthrough (COMPLETE)**
   - [x] Remote Supabase database audit and clean removal of developer test records

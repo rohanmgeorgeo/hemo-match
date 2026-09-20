@@ -97,7 +97,7 @@ hemo-match/
 │   ├── 0004_atomic_donor_response.sql
 │   ├── 0005_contact_reveal_authorization.sql
 │   └── 0006_proximity_matching_coordinates.sql
-└── tests/                     # 259 automated tests across domain, geospatial, dispatch, response, reveal, and coordinator logic
+└── tests/                     # 280 automated tests across domain, geospatial, dispatch, response, reveal, coordinator, and donor lifecycle logic
     ├── compatibility.test.ts  # RBC 64-pair biological compatibility tests
     ├── intervals.test.ts      # Preliminary donation interval evaluation tests
     ├── distance.test.ts       # Haversine distance calculation and boundary checks

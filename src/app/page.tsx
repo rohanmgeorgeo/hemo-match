@@ -31,9 +31,9 @@ export default function HomePage() {
             District blood donor matching
           </div>
 
-          <h1 className="text-2xl sm:text-4xl lg:text-[2.65rem] font-extrabold tracking-tight text-neutral-950 dark:text-white leading-[1.2] mb-3">
-            Rapid blood matching,<br className="hidden sm:inline" />{' '}
-            <span className="text-rose-600 dark:text-rose-500">protected by design.</span>
+          <h1 className="text-[1.375rem] min-[360px]:text-[1.45rem] min-[390px]:text-2xl sm:text-4xl lg:text-[2.65rem] font-extrabold tracking-tight text-neutral-950 dark:text-white leading-[1.2] mb-3">
+            <span className="block">Rapid blood matching,</span>
+            <span className="block text-rose-600 dark:text-rose-500">protected by design.</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6 font-normal max-w-xl mx-auto">

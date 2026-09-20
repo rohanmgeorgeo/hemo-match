@@ -18,9 +18,8 @@ Use **two normal tabs side-by-side** in the same browser window:
 - **Tab 2**: Donor Device
 
 > [!IMPORTANT]
-> **Clinical Interval Demo Rule**:
-> When registering a donor, the **Last Donation Date** MUST be a **KNOWN date at least 120 calendar days before today** (e.g. `2024-01-15`).
-> Do **NOT** leave it blank or NULL. In Hemo Match, unrecorded/unknown donation history is conservatively excluded from matching (`EXCLUDE_DONATION_HISTORY_UNKNOWN`) to prioritize clinical donor safety.
+> **Application Interval Requirement**:
+> When registering a donor, the **Last Donation Date** is strictly required and must be a valid calendar date at least 120 calendar days before today (e.g. 5 months ago) to participate in preliminary matching under Hemo Match's conservative interval policy. Submitting an empty date is rejected by registration validation. (Donors with recent dates <120 days may register, but remain excluded from preliminary matching until the 120-day interval is met).
 
 ### Step-by-Step Live Execution:
 

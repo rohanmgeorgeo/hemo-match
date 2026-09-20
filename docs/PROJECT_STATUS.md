@@ -413,7 +413,7 @@ Landing Page (/)
   - Confirmed all database operations with `SUPABASE_SERVICE_ROLE_KEY` are strictly isolated behind `server-only` server boundaries.
   - Confirmed error responses return sanitized user messages without stack traces or internal schema details.
 - **Automated Verification**:
-  - `npm test`: 259 tests passing across 76 suites (0 failures).
+  - `npm test`: 280 tests passing across 81 suites (0 failures).
   - `npm run typecheck`: TypeScript clean (0 errors).
   - `npm run lint`: ESLint clean (0 warnings).
   - `npm run build`: Turbopack production build clean.
@@ -439,4 +439,4 @@ Landing Page (/)
 - **Coordinator Visual Consistency**:
   - Unified coordinator views (`/coordinator`, `/coordinator/requests/[id]`) with Hemo Match design tokens, glow surfaces, and responsive light/dark themes.
   - Merged into `main` via commit `8b5c450044b96bbbf32bbd20eae495878cac605a`.
-- **Verification Baseline**: 259 tests / 76 suites passing, typecheck clean, lint clean, build clean.
+- **Verification Baseline**: 280 tests / 81 suites passing, typecheck clean, lint clean, build clean.
