@@ -264,6 +264,36 @@ describe('Step 8 — Donor Accept / Decline Response Unit Tests', () => {
       assert.equal(result.error, 'BLOOD_INCOMPATIBLE');
     });
 
+    test('14b. Accept approves compatible non-homologous donor (B- donor for B+ request)', () => {
+      const fixture = createBaseFixture();
+      fixture.request.bloodGroup = 'B+';
+      fixture.donor.bloodGroup = 'B-';
+
+      const result = validateAcceptPrerequisites(fixture);
+      assert.equal(result.isValid, true);
+      assert.equal(result.error, undefined);
+    });
+
+    test('14c. Accept approves universal donor (O- donor for A+ request)', () => {
+      const fixture = createBaseFixture();
+      fixture.request.bloodGroup = 'A+';
+      fixture.donor.bloodGroup = 'O-';
+
+      const result = validateAcceptPrerequisites(fixture);
+      assert.equal(result.isValid, true);
+      assert.equal(result.error, undefined);
+    });
+
+    test('14d. Accept rejects non-compatible direction (B+ donor for B- request)', () => {
+      const fixture = createBaseFixture();
+      fixture.request.bloodGroup = 'B-';
+      fixture.donor.bloodGroup = 'B+';
+
+      const result = validateAcceptPrerequisites(fixture);
+      assert.equal(result.isValid, false);
+      assert.equal(result.error, 'BLOOD_INCOMPATIBLE');
+    });
+
     test('15. Accept revalidates donation interval/history', () => {
       const fixtureUnknown = createBaseFixture();
       fixtureUnknown.donor.lastDonationDate = null;

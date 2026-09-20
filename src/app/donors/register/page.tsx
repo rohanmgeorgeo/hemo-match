@@ -412,17 +412,27 @@ export default function DonorRegisterPage() {
               >
                 Last Donation Date <span className="text-neutral-400 dark:text-neutral-500 font-normal">(Optional)</span>
               </label>
-              <input
-                id="lastDonationDateInput"
-                type="date"
-                value={formData.lastDonationDate ?? ''}
-                onChange={(e) => updateField('lastDonationDate', e.target.value)}
-                className={`w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
-                  errors.lastDonationDate
-                    ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
-                    : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
-                }`}
-              />
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <input
+                  id="lastDonationDateInput"
+                  type="date"
+                  value={formData.lastDonationDate ?? ''}
+                  onChange={(e) => updateField('lastDonationDate', e.target.value)}
+                  className={`w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border transition-all focus:outline-none focus:ring-2 cursor-pointer ${
+                    errors.lastDonationDate
+                      ? 'border-rose-500 focus:ring-rose-500/20 dark:border-rose-600'
+                      : 'border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => updateField('lastDonationDate', '2026-01-01')}
+                  className="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                  title="Sets a recorded donation date meeting the 120-day recovery interval policy"
+                >
+                  Set to Eligible (&gt;120 days ago)
+                </button>
+              </div>
               <div className="mt-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200/70 dark:border-neutral-700 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed space-y-1">
                 <p>
                   <strong>Application Policy Notice:</strong> For this hackathon matching policy, donors with a known last donation date must have at least 120 calendar days of recovery time.

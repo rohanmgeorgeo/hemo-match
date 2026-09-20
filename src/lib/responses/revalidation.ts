@@ -186,8 +186,8 @@ export function validateAcceptPrerequisites(
     return { isValid: false, error: 'DISTRICT_MISMATCH' };
   }
 
-  // 5. Biological compatibility
-  if (!isRbcCompatible(donor.bloodGroup, request.bloodGroup)) {
+  // 5. Biological compatibility (recipient = request.bloodGroup, donor = donor.bloodGroup)
+  if (!isRbcCompatible(request.bloodGroup, donor.bloodGroup)) {
     return { isValid: false, error: 'BLOOD_INCOMPATIBLE' };
   }
 

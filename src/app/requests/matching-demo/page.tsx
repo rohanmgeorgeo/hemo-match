@@ -72,24 +72,32 @@ export default function MatchingDemoPage() {
 
     async function runSearch() {
       try {
-        // 1. First try fetching existing matches via GET (preserves notified/accepted states)
-        const getRes = await fetch(`/api/requests/matches?requestId=${currentRequestId}`);
-        if (getRes.ok) {
-          const getData: unknown = await getRes.json().catch(() => null);
-          const parsedGet = parseMatchApiResponse(getRes.status, getData);
-          if (parsedGet.status === 'success' && parsedGet.matches.length > 0) {
-            if (isSubscribed) {
-              setDataState({
-                id: currentRequestId,
-                count: retryCounter,
-                result: parsedGet,
-              });
+        // 1. On initial load without retry (retryCounter === 0), check if active coordination exists
+        // (notified, accepted, declined). If an active lifecycle state exists, use GET to preserve it.
+        if (retryCounter === 0) {
+          const getRes = await fetch(`/api/requests/matches?requestId=${currentRequestId}`);
+          if (getRes.ok) {
+            const getData: unknown = await getRes.json().catch(() => null);
+            const parsedGet = parseMatchApiResponse(getRes.status, getData);
+            const hasActiveCoordination =
+              parsedGet.status === 'success' &&
+              parsedGet.matches.some((m) => m.status !== 'candidate');
+
+            if (hasActiveCoordination) {
+              if (isSubscribed) {
+                setDataState({
+                  id: currentRequestId,
+                  count: retryCounter,
+                  result: parsedGet,
+                });
+              }
+              return;
             }
-            return;
           }
         }
 
-        // 2. Otherwise generate/evaluate matches via POST
+        // 2. Generate/evaluate fresh matches via POST (evaluates newly registered or updated donors,
+        // cleans up stale candidates, and deterministically ranks current candidates)
         const response = await fetch('/api/requests/matches', {
           method: 'POST',
           headers: {
@@ -849,9 +857,17 @@ export default function MatchingDemoPage() {
                     )}
 
                     {dispatchState.status === 'zero_notifications' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
-                        <div className="font-bold mb-1">Notice: Zero notifications dispatched</div>
+                      <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 leading-relaxed space-y-2">
+                        <div className="font-bold flex items-center gap-1.5">
+                          <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                          </svg>
+                          <span>Notice: Zero notifications dispatched</span>
+                        </div>
                         <p className="text-amber-800/90 dark:text-amber-300/80">{dispatchState.message}</p>
+                        <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 pt-1 border-t border-amber-200/50 dark:border-amber-900/40">
+                          To receive match notifications, candidate donors must have in-app match alerts enabled, availability set to Available, and last donation date satisfying the preliminary 120-day recovery interval in their profile.
+                        </p>
                       </div>
                     )}
 

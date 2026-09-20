@@ -464,6 +464,23 @@ export async function findAndCreateMatches(
   }
 
   // ---------------------------------------------------------------------------
+  // Step 9b: Reconcile stale un-notified candidate rows
+  // If an existing row with status === 'candidate' is no longer in the engine's
+  // eligible candidate set (e.g. donor updated their profile to unavailable,
+  // interval became invalid, or moved out of range), clean it up so we do not
+  // return ghost candidates that cannot be dispatched.
+  // Rows with lifecycle status ('notified', 'accepted', 'declined') are NEVER deleted.
+  // ---------------------------------------------------------------------------
+  const currentEligibleDonorIds = new Set(engineResult.candidates.map((c) => c.donorId));
+  const staleCandidateMatchIds = existingMatches
+    .filter((m) => m.status === 'candidate' && !currentEligibleDonorIds.has(m.donor_id))
+    .map((m) => m.id);
+
+  if (staleCandidateMatchIds.length > 0) {
+    await client.from('matches').delete().in('id', staleCandidateMatchIds);
+  }
+
+  // ---------------------------------------------------------------------------
   // Step 10: Re-query the authoritative current candidate match set
   // This includes rows created by this call AND rows from prior calls.
   // We filter to 'candidate' status for the Step 6 response; other lifecycle

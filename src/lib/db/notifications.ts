@@ -367,6 +367,34 @@ export async function dispatchNotificationsForRequest(
   const skippedCount = revalidation.skippedOutcomes.length;
 
   if (eligibleCount === 0) {
+    const skipReasons = revalidation.skippedOutcomes.map((o) => o.skipReason);
+    let message = 'No eligible candidate donors currently satisfy dispatch criteria.';
+
+    if (skipReasons.length > 0) {
+      const hasPreferenceDisabled = skipReasons.includes('EXCLUDE_PREFERENCE_DISABLED');
+      const hasUnavailable = skipReasons.includes('EXCLUDE_DONOR_UNAVAILABLE');
+      const hasIntervalTooShort = skipReasons.includes('EXCLUDE_INTERVAL_TOO_SHORT');
+      const hasHistoryUnknown = skipReasons.includes('EXCLUDE_DONATION_HISTORY_UNKNOWN');
+      const hasAlreadyNotified = skipReasons.includes('EXCLUDE_ALREADY_NOTIFIED');
+      const hasAlreadyResponded = skipReasons.includes('EXCLUDE_ALREADY_RESPONDED');
+
+      if (hasAlreadyNotified) {
+        message = 'All matching candidates have already been notified for this request.';
+      } else if (hasAlreadyResponded) {
+        message = 'All candidate donors have already submitted responses.';
+      } else if (hasPreferenceDisabled && skipReasons.every((r) => r === 'EXCLUDE_PREFERENCE_DISABLED')) {
+        message = '1 compatible donor found, but in-app match notifications are disabled in their settings.';
+      } else if (hasUnavailable && skipReasons.every((r) => r === 'EXCLUDE_DONOR_UNAVAILABLE')) {
+        message = '1 compatible donor found, but their status is currently marked as temporarily unavailable.';
+      } else if (hasIntervalTooShort && skipReasons.every((r) => r === 'EXCLUDE_INTERVAL_TOO_SHORT')) {
+        message = '1 compatible donor found, but preliminary 120-day recovery interval is not yet satisfied.';
+      } else if (hasHistoryUnknown && skipReasons.every((r) => r === 'EXCLUDE_DONATION_HISTORY_UNKNOWN')) {
+        message = '1 compatible donor found, but preliminary donation history is unrecorded (120-day recovery interval unconfirmed).';
+      } else {
+        message = 'Found candidate donors do not currently satisfy active dispatch criteria (e.g. notifications disabled, unavailable, or recovery interval unconfirmed).';
+      }
+    }
+
     return {
       success: true,
       requestId,
@@ -374,7 +402,7 @@ export async function dispatchNotificationsForRequest(
       totalCandidates,
       eligibleCount: 0,
       skippedCount,
-      message: 'No eligible candidate donors currently satisfy dispatch criteria.',
+      message,
     };
   }
 

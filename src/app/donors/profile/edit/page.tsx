@@ -389,13 +389,26 @@ export default function EditDonorProfilePage() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                 Used to evaluate Hemo Match&apos;s conservative 120-day matching interval.
               </p>
-              <input
-                id="lastDonationDateInput"
-                type="date"
-                value={formData.lastDonationDate ?? ''}
-                onChange={(e) => updateField('lastDonationDate', e.target.value)}
-                className="w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600 focus:outline-none focus:ring-2 cursor-pointer"
-              />
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  id="lastDonationDateInput"
+                  type="date"
+                  value={formData.lastDonationDate ?? ''}
+                  onChange={(e) => updateField('lastDonationDate', e.target.value)}
+                  className="w-full sm:w-64 h-11 px-3.5 rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 focus:ring-rose-500/20 focus:border-rose-600 focus:outline-none focus:ring-2 cursor-pointer"
+                />
+                <button
+                  type="button"
+                  onClick={() => updateField('lastDonationDate', '2026-01-01')}
+                  className="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                  title="Sets a recorded donation date meeting the 120-day recovery interval policy"
+                >
+                  Set to Eligible (&gt;120 days ago)
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] text-neutral-500 dark:text-neutral-400">
+                Leaving this blank indicates unrecorded donation history, which is excluded from matching under the 120-day recovery policy.
+              </p>
             </div>
 
             <div className="mb-5" id="availability">
