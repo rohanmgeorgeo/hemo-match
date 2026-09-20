@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { validateBloodRequest, parseIstDateTime } from '@/lib/validation';
 import { resolveDistrictId } from '@/lib/db/districts';
-import { createBloodRequest, type CreateBloodRequestParams } from '@/lib/db/requests';
+import { createBloodRequest, updateBloodRequest, type CreateBloodRequestParams } from "@/lib/db/requests";
+import { isValidUuid } from "@/lib/validation/matches";
 
 export const dynamic = 'force-dynamic';
 
@@ -158,5 +159,175 @@ export async function POST(request: Request) {
       request: insertResult.request,
     },
     { status: 201 }
+  );
+}
+
+export async function PUT(request: Request) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "invalid_json",
+        message: "Invalid JSON request payload.",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!body || typeof body !== "object") {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "validation_error",
+        message: "Invalid request payload.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const rawId = (body as Record<string, unknown>).id;
+  if (typeof rawId !== "string" || !isValidUuid(rawId.trim())) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "validation_error",
+        message: "A valid requestId UUID is required for updating a blood request.",
+        errors: { id: "Invalid or missing blood request ID." },
+      },
+      { status: 400 }
+    );
+  }
+
+  const requestId = rawId.trim();
+
+  // Validate form fields using existing validation
+  const validation = validateBloodRequest(body);
+  if (!validation.isValid || !validation.data) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "validation_error",
+        message: "Blood request validation failed.",
+        errors: validation.errors,
+      },
+      { status: 400 }
+    );
+  }
+
+  const validData = validation.data;
+
+  if (validData.unitsNeeded > 50) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "validation_error",
+        message: "Blood request validation failed.",
+        errors: { unitsNeeded: "Quantity cannot exceed 50 units." },
+      },
+      { status: 400 }
+    );
+  }
+
+  const districtResult = await resolveDistrictId(validData.districtId);
+  if (!districtResult.success) {
+    if (districtResult.error === "unconfigured") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "service_unavailable",
+          message: "Database service is temporarily unavailable.",
+        },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: "invalid_district",
+        message: "District could not be resolved.",
+        errors: { districtId: "Please select a valid district." },
+      },
+      { status: 400 }
+    );
+  }
+
+  const targetDate = parseIstDateTime(validData.requiredByDate, validData.requiredByTime);
+  if (!targetDate) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "validation_error",
+        message: "Invalid required date or time.",
+        errors: { requiredByDate: "Please enter a valid date and time" },
+      },
+      { status: 400 }
+    );
+  }
+
+  const updateResult = await updateBloodRequest({
+    id: requestId,
+    bloodGroup: validData.bloodGroup,
+    component: validData.component,
+    unitsNeeded: validData.unitsNeeded,
+    districtId: districtResult.districtId,
+    approximateArea: validData.approximateArea,
+    hospitalName: validData.hospitalName,
+    requiredBy: targetDate.toISOString(),
+    urgency: validData.urgency,
+    notes: validData.notes ?? null,
+    locationLatitude: validData.locationLatitude ?? null,
+    locationLongitude: validData.locationLongitude ?? null,
+  });
+
+  if (!updateResult.success) {
+    if (updateResult.error === "unconfigured") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "service_unavailable",
+          message: "Database service is temporarily unavailable.",
+        },
+        { status: 503 }
+      );
+    }
+    if (updateResult.error === "not_found") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "not_found",
+          message: "Blood request not found.",
+        },
+        { status: 404 }
+      );
+    }
+    if (updateResult.error === "locked") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "request_locked",
+          message: updateResult.message,
+        },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: "database_error",
+        message: updateResult.message || "An error occurred while updating the blood request.",
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      success: true,
+      request: updateResult.request,
+    },
+    { status: 200 }
   );
 }

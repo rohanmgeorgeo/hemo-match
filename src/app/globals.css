@@ -155,19 +155,19 @@ input[type="time"] {
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 10px 28px -6px rgba(0, 0, 0, 0.55), 0 2px 6px -1px rgba(0, 0, 0, 0.35);
 }
 
-/* Liquid Glass Floating Dock (for Mobile Bottom Nav and Floating Bars) */
+/* Liquid Glass Floating Dock (for Mobile Bottom Nav and Floating Bars) - High Opacity */
 .liquid-glass-dock {
-  background-color: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: rgba(0, 0, 0, 0.10);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
 }
 .dark .liquid-glass-dock {
-  background-color: rgba(18, 18, 21, 0.82);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(18, 18, 21, 0.94);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 12px 32px -4px rgba(0, 0, 0, 0.6), 0 2px 8px -1px rgba(0, 0, 0, 0.4);
 }
 
@@ -211,20 +211,20 @@ input[type="time"] {
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Backward-compatible Glass Classes (Calibrated to 18-20px max blur) */
+/* Backward-compatible Glass Classes - High-Opacity Navigation Bar */
 .glass-bar {
-  background-color: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(18px) saturate(170%);
-  -webkit-backdrop-filter: blur(18px) saturate(170%);
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: rgba(0, 0, 0, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.90), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
 }
 .dark .glass-bar {
-  background-color: rgba(11, 11, 12, 0.78);
-  backdrop-filter: blur(18px) saturate(170%);
-  -webkit-backdrop-filter: blur(18px) saturate(170%);
-  border-color: rgba(255, 255, 255, 0.10);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+  background-color: rgba(11, 11, 12, 0.94);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.10), 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
 
 .glass-floating {

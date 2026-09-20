@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useMemo, useSyncExternalStore, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
 import { Card, GlowSurface, LocationCapture } from '@/components/ui';
@@ -13,24 +13,110 @@ import {
   type BloodRequestFormData,
 } from '@/lib/validation';
 
-export default function NewBloodRequestPage() {
+
+function subscribeActiveRequest(callback: () => void): () => void {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+function getActiveRequestSnapshot(): string | null {
+  return window.localStorage.getItem("hemo_match_active_request");
+}
+function getActiveRequestServerSnapshot(): string | null {
+  return null;
+}
+
+function BloodRequestFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("mode") === "edit";
+
+  const storedRequestJson = useSyncExternalStore(
+    subscribeActiveRequest,
+    getActiveRequestSnapshot,
+    getActiveRequestServerSnapshot
+  );
+
+  const existingRequest = useMemo<BloodRequest | null>(() => {
+    if (!storedRequestJson || !isEditMode) return null;
+    try {
+      return JSON.parse(storedRequestJson) as BloodRequest;
+    } catch {
+      return null;
+    }
+  }, [storedRequestJson, isEditMode]);
+
+  const [initializedRequestId, setInitializedRequestId] = useState<string | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockReason, setLockReason] = useState<string>("");
 
   // Form State
   const [formData, setFormData] = useState<Partial<BloodRequestFormData>>({
     bloodGroup: undefined,
-    component: 'Whole Blood',
+    component: "Whole Blood",
     unitsNeeded: 1,
-    districtId: '',
-    approximateArea: '',
-    hospitalName: '',
-    requiredByDate: '',
-    requiredByTime: '',
-    urgency: 'urgent',
-    notes: '',
+    districtId: "",
+    approximateArea: "",
+    hospitalName: "",
+    requiredByDate: "",
+    requiredByTime: "",
+    urgency: "urgent",
+    notes: "",
     locationLatitude: null,
     locationLongitude: null,
   });
+
+  if (isEditMode && existingRequest && initializedRequestId !== existingRequest.id) {
+    setInitializedRequestId(existingRequest.id);
+
+    let locked = false;
+    let reason = "";
+
+    if (typeof window !== "undefined") {
+      try {
+        const revealsRaw = window.localStorage.getItem("hemo_match_contact_reveals");
+        if (revealsRaw) {
+          const reveals = JSON.parse(revealsRaw);
+          if (reveals && typeof reveals === "object" && Object.keys(reveals).length > 0) {
+            locked = true;
+            reason = "A volunteer donor contact has already been revealed for this request.";
+          }
+        }
+        const responsesRaw = window.localStorage.getItem("hemo_match_donor_responses");
+        if (responsesRaw) {
+          const responses = JSON.parse(responsesRaw);
+          if (responses && typeof responses === "object" && Object.keys(responses).length > 0) {
+            locked = true;
+            reason = "A volunteer donor has already responded to this request.";
+          }
+        }
+      } catch {}
+    }
+
+    if (existingRequest.status && existingRequest.status !== "open" && existingRequest.status !== "active") {
+      locked = true;
+      reason = `Request lifecycle status is "${existingRequest.status}".`;
+    }
+
+    if (locked) {
+      setIsLocked(true);
+      setLockReason(reason);
+    }
+
+    setFormData({
+      bloodGroup: existingRequest.bloodGroup,
+      component: existingRequest.component,
+      unitsNeeded: existingRequest.unitsNeeded,
+      districtId: existingRequest.districtId,
+      approximateArea: existingRequest.approximateArea,
+      hospitalName: existingRequest.hospitalName,
+      requiredByDate: existingRequest.requiredByDate,
+      requiredByTime: existingRequest.requiredByTime,
+      urgency: existingRequest.urgency,
+      notes: existingRequest.notes || "",
+      locationLatitude: existingRequest.locationLatitude ?? null,
+      locationLongitude: existingRequest.locationLongitude ?? null,
+    });
+  }
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,6 +190,110 @@ export default function NewBloodRequestPage() {
     }
 
     const d = validation.data;
+
+    // Edit mode handling
+    if (isEditMode && existingRequest?.id) {
+      try {
+        const response = await fetch("/api/requests", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: existingRequest.id,
+            bloodGroup: d.bloodGroup,
+            component: d.component,
+            unitsNeeded: d.unitsNeeded,
+            districtId: d.districtId,
+            approximateArea: d.approximateArea,
+            hospitalName: d.hospitalName,
+            requiredByDate: d.requiredByDate,
+            requiredByTime: d.requiredByTime,
+            urgency: d.urgency,
+            notes: d.notes || undefined,
+            locationLatitude: d.locationLatitude ?? null,
+            locationLongitude: d.locationLongitude ?? null,
+          }),
+        });
+
+        const result = await response.json().catch(() => null);
+
+        if (response.status === 409) {
+          setSubmitError(result?.message || "This request cannot be modified because donor coordination has already commenced.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (response.status === 400 && result?.errors) {
+          setErrors(result.errors);
+          setSubmitError(result?.message || "Please correct the errors indicated below.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const updatedRequest: BloodRequest = {
+          id: existingRequest.id,
+          bloodGroup: d.bloodGroup,
+          component: d.component,
+          unitsNeeded: d.unitsNeeded,
+          districtId: d.districtId,
+          districtName: selectedDistrict?.name ?? d.districtId,
+          approximateArea: d.approximateArea,
+          hospitalName: d.hospitalName,
+          requiredByDate: d.requiredByDate,
+          requiredByTime: d.requiredByTime,
+          urgency: d.urgency,
+          notes: d.notes,
+          status: "open",
+          locationLatitude: d.locationLatitude ?? null,
+          locationLongitude: d.locationLongitude ?? null,
+          createdAt: existingRequest.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+
+        try {
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              "hemo_match_active_request",
+              JSON.stringify(updatedRequest)
+            );
+            window.dispatchEvent(new Event("storage"));
+          }
+        } catch {
+          console.warn("Unable to update request in localStorage");
+        }
+
+        router.push("/requests/matching-demo");
+        return;
+      } catch {
+        // In offline/fallback environments, update localStorage directly
+        const fallbackRequest: BloodRequest = {
+          id: existingRequest.id,
+          bloodGroup: d.bloodGroup,
+          component: d.component,
+          unitsNeeded: d.unitsNeeded,
+          districtId: d.districtId,
+          districtName: selectedDistrict?.name ?? d.districtId,
+          approximateArea: d.approximateArea,
+          hospitalName: d.hospitalName,
+          requiredByDate: d.requiredByDate,
+          requiredByTime: d.requiredByTime,
+          urgency: d.urgency,
+          notes: d.notes,
+          status: "open",
+          locationLatitude: d.locationLatitude ?? null,
+          locationLongitude: d.locationLongitude ?? null,
+          createdAt: existingRequest.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+        try {
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("hemo_match_active_request", JSON.stringify(fallbackRequest));
+            window.dispatchEvent(new Event("storage"));
+          }
+        } catch {}
+        router.push("/requests/matching-demo");
+        return;
+      }
+    }
 
     // Send validated payload to POST /api/requests without client-generated ID
     const payload = {
@@ -219,18 +409,50 @@ export default function NewBloodRequestPage() {
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50/90 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60 liquid-glass-pill shadow-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
-              Requester Workspace • Step 1: Create Request
+              {isEditMode ? 'Requester Workspace • Step 1: Edit Request' : 'Requester Workspace • Step 1: Create Request'}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
-            Request Blood
+            {isEditMode ? 'Edit Blood Request' : 'Request Blood'}
           </h1>
           <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-2xl leading-relaxed">
-            Specify patient blood requirement and hospital facility to privately match with eligible
-            volunteer donors in your district.
+            {isEditMode ? 'Update patient blood requirement or hospital facility. Matching volunteer donors will be re-evaluated deterministically.' : 'Specify patient blood requirement and hospital facility to privately match with eligible volunteer donors in your district.'}
           </p>
         </div>
 
+        {isLocked && (
+          <div role="alert" className="mb-6 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/90 dark:bg-amber-950/40 text-neutral-900 dark:text-neutral-100 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center shrink-0 mt-0.5 text-amber-700 dark:text-amber-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">Request Editing Locked</h3>
+                <p className="text-xs text-amber-800 dark:text-amber-300 mt-1 leading-relaxed">
+                  {lockReason || "This blood request cannot be modified because volunteer donor coordination has already commenced."} Modifying clinical requirements or location at this stage would invalidate the active coordination.
+                </p>
+                <div className="mt-3 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/requests/matching-demo")}
+                    className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors cursor-pointer"
+                  >
+                    Return to Coordination Workspace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/requests/new")}
+                    className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:underline cursor-pointer"
+                  >
+                    Create New Request Instead
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Safety & Clinical Notice Banner */}
         <EmergencyBanner tone="notice" title="Safety & Clinical Notice" className="mb-8">
           Hemo Match facilitates preliminary district donor discovery and coordination only.
@@ -643,7 +865,7 @@ export default function NewBloodRequestPage() {
           </div>
 
           {/* RIGHT COLUMN: Live Request Summary & Sticky Action (4 cols) */}
-          <div className="lg:col-span-4 mt-6 lg:mt-0 space-y-4 lg:sticky lg:top-20">
+          <div className="lg:col-span-4 mt-6 lg:mt-0 space-y-4 lg:sticky lg:top-24">
             <GlowSurface variant="elevated" className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl liquid-glass-elevated shadow-sm border border-neutral-200/80 dark:border-white/10">
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800/80 mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -758,7 +980,7 @@ export default function NewBloodRequestPage() {
               <button
                 type="submit"
                 id="find-matching-donors-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLocked}
                 className="w-full py-3.5 px-4 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-sm transition-all duration-150 shadow-xs hover:shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
               >
                 {isSubmitting ? (
@@ -785,7 +1007,7 @@ export default function NewBloodRequestPage() {
                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                       />
                     </svg>
-                    <span>Find Matching Donors</span>
+                    <span>{isEditMode ? 'Save Changes & Re-evaluate' : 'Find Matching Donors'}</span>
                   </>
                 )}
               </button>
@@ -798,5 +1020,13 @@ export default function NewBloodRequestPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function NewBloodRequestPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
+      <BloodRequestFormContent />
+    </Suspense>
   );
 }

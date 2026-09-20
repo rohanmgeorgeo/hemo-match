@@ -7,7 +7,7 @@ import { GlowSurface } from '@/components/ui/GlowSurface';
 import { useHasDonorProfile } from '@/lib/donor-state';
 
 export default function HomePage() {
-  const [activeStage, setActiveStage] = useState<'match' | 'accepted' | 'revealed'>('accepted');
+  const [activeStage, setActiveStage] = useState<'match' | 'accepted' | 'revealed'>('match');
   const hasDonorProfile = useHasDonorProfile();
 
   return (
@@ -112,17 +112,32 @@ export default function HomePage() {
               <div
                 role="tablist"
                 aria-label="Demonstration Stages"
-                className="flex items-center gap-1.5 p-1 bg-neutral-200/60 dark:bg-neutral-800/80 rounded-full shrink-0 border border-neutral-200/60 dark:border-neutral-700/60"
+                className="relative grid grid-cols-3 p-1 bg-neutral-200/70 dark:bg-neutral-800/80 rounded-full shrink-0 border border-neutral-200/70 dark:border-neutral-700/60 w-full md:w-auto min-w-[320px] sm:min-w-[420px]"
               >
+                {/* Smooth sliding active indicator */}
+                <div
+                  aria-hidden="true"
+                  className="absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-full liquid-glass-pill border border-white/90 dark:border-white/15 shadow-xs transition-transform duration-200 ease-out pointer-events-none motion-reduce:transition-none"
+                  style={{
+                    transform:
+                      activeStage === 'match'
+                        ? 'translateX(0%)'
+                        : activeStage === 'accepted'
+                        ? 'translateX(100%)'
+                        : 'translateX(200%)',
+                  }}
+                />
+
                 <button
                   type="button"
                   role="tab"
+                  id="tab-stage-match"
                   aria-selected={activeStage === 'match'}
                   onClick={() => setActiveStage('match')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  className={`relative z-10 px-3 py-1.5 rounded-full text-xs font-semibold text-center transition-colors duration-150 cursor-pointer ${
                     activeStage === 'match'
-                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
+                      ? 'text-neutral-950 dark:text-white'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   1. Discovery
@@ -130,12 +145,13 @@ export default function HomePage() {
                 <button
                   type="button"
                   role="tab"
+                  id="tab-stage-accepted"
                   aria-selected={activeStage === 'accepted'}
                   onClick={() => setActiveStage('accepted')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  className={`relative z-10 px-3 py-1.5 rounded-full text-xs font-semibold text-center transition-colors duration-150 cursor-pointer ${
                     activeStage === 'accepted'
-                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
+                      ? 'text-neutral-950 dark:text-white'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   2. Accepted (Locked)
@@ -143,12 +159,13 @@ export default function HomePage() {
                 <button
                   type="button"
                   role="tab"
+                  id="tab-stage-revealed"
                   aria-selected={activeStage === 'revealed'}
                   onClick={() => setActiveStage('revealed')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  className={`relative z-10 px-3 py-1.5 rounded-full text-xs font-semibold text-center transition-colors duration-150 cursor-pointer ${
                     activeStage === 'revealed'
-                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
+                      ? 'text-neutral-950 dark:text-white'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
                   3. Explicit Reveal
@@ -157,11 +174,11 @@ export default function HomePage() {
             </div>
 
             {/* Visual Architecture Demonstration */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 items-start">
               {/* Left explanation of current stage */}
-              <div className="lg:col-span-6 space-y-4">
+              <div className="lg:col-span-6 min-h-[220px] sm:min-h-[195px] flex flex-col justify-start space-y-4">
                 {activeStage === 'match' && (
-                  <div className="space-y-3">
+                  <div key="stage-match" className="space-y-3 transition-opacity duration-200 ease-out motion-reduce:transition-none">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
                       <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
                       Stage 1: Algorithmic Discovery
@@ -187,7 +204,7 @@ export default function HomePage() {
                 )}
 
                 {activeStage === 'accepted' && (
-                  <div className="space-y-3">
+                  <div key="stage-accepted" className="space-y-3 transition-opacity duration-200 ease-out motion-reduce:transition-none">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                       Stage 2: Acceptance Without Exposure
@@ -212,7 +229,7 @@ export default function HomePage() {
                 )}
 
                 {activeStage === 'revealed' && (
-                  <div className="space-y-3">
+                  <div key="stage-revealed" className="space-y-3 transition-opacity duration-200 ease-out motion-reduce:transition-none">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                       Stage 3: Minimum Authorized Reveal
@@ -239,7 +256,7 @@ export default function HomePage() {
 
               {/* Right interactive representation card */}
               <div className="lg:col-span-6">
-                <div className="p-5 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 transition-all">
+                <div className="p-5 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 transition-all min-h-[175px] flex flex-col justify-between">
                   {/* Card Header Preview */}
                   <div className="flex items-center justify-between pb-3 border-b border-neutral-200/60 dark:border-neutral-800">
                     <div className="flex items-center gap-2.5">
@@ -262,7 +279,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Dynamic Reveal Simulation State */}
-                  <div className="mt-4 pt-1">
+                  <div className="mt-4 pt-1 min-h-[88px] flex flex-col justify-center">
                     {activeStage === 'match' && (
                       <div className="p-3.5 rounded-xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">

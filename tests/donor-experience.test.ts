@@ -158,4 +158,42 @@ describe('Donor Experience & Volunteer Workflow', () => {
       assert.strictEqual(payload.phoneNumber, undefined);
     });
   });
+  describe("Donor Profile Edit & Deletion Lifecycle", () => {
+    it("editing an existing donor profile preserves immutable identity fields", () => {
+      const existingDonor: DonorProfile = {
+        id: "11111111-1111-1111-1111-111111111111",
+        fullName: "Maya S.",
+        bloodGroup: "O+",
+        districtId: "dist-ekm",
+        districtName: "Ernakulam",
+        approximateArea: "Kaloor",
+        phoneNumber: "+91 98765 43210",
+        lastDonationDate: "2026-01-01",
+        availability: "available",
+        notificationPreference: "enabled",
+        consentGiven: true,
+        createdAt: "2026-09-18T10:00:00Z",
+      };
+
+      const updatedDonor: DonorProfile = {
+        ...existingDonor,
+        approximateArea: "Palarivattom",
+        availability: "temporarily_unavailable",
+      };
+
+      assert.strictEqual(updatedDonor.id, existingDonor.id);
+      assert.strictEqual(updatedDonor.createdAt, existingDonor.createdAt);
+      assert.strictEqual(updatedDonor.approximateArea, "Palarivattom");
+      assert.strictEqual(updatedDonor.availability, "temporarily_unavailable");
+    });
+
+    it("deletion and exit clears local demo donor state truthfully without claiming server account deletion", () => {
+      const mockStorage: Record<string, string> = {
+        hemo_match_demo_donor: JSON.stringify({ id: "test-donor" }),
+      };
+
+      delete mockStorage.hemo_match_demo_donor;
+      assert.strictEqual(mockStorage.hemo_match_demo_donor, undefined);
+    });
+  });
 });

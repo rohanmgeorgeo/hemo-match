@@ -368,7 +368,7 @@ export default function DonorNotificationsPage() {
                 <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mb-6 leading-relaxed">
                   No blood requests currently require matching for your blood group and district. You will be notified in-app as soon as a compatible need arises.
                 </p>
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex items-center justify-center pt-1">
                   <button
                     type="button"
                     onClick={() => setRetryTrigger((prev) => prev + 1)}
@@ -376,12 +376,6 @@ export default function DonorNotificationsPage() {
                   >
                     Check for Updates
                   </button>
-                  <Link
-                    href="/donors/profile"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 font-semibold text-xs border border-neutral-200/80 dark:border-white/10 shadow-xs transition-all"
-                  >
-                    View Donor Profile
-                  </Link>
                 </div>
               </Card>
             ) : (
@@ -624,15 +618,7 @@ export default function DonorNotificationsPage() {
               </span>
             </div>
 
-            {/* Navigation Actions */}
-            <div className="flex items-center justify-center pt-2">
-              <Link
-                href="/donors/profile"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 dark:bg-[#171717] dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-sm text-center transition-all"
-              >
-                Donor Profile
-              </Link>
-            </div>
+
           </div>
         )}
       </main>

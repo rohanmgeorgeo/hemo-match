@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { EmergencyBanner } from '@/components/ui/EmergencyBanner';
-import { notifyDonorUpdated } from '@/lib/donor-state';
+import Link from 'next/link';
+import { notifyDonorUpdated, useHasDonorProfile } from '@/lib/donor-state';
 import { Card, LocationCapture } from '@/components/ui';
 import { type DonorProfile, DEMO_DISTRICTS } from '@/types';
 import {
@@ -15,6 +16,7 @@ import {
 
 export default function DonorRegisterPage() {
   const router = useRouter();
+  const hasDonorProfile = useHasDonorProfile();
 
   const [formData, setFormData] = useState<Partial<DonorProfileFormData>>({
     fullName: '',
@@ -168,6 +170,21 @@ export default function DonorRegisterPage() {
         >
           <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.16),rgba(16,185,129,0.03)_45%,transparent_70%)]" />
         </div>
+        {hasDonorProfile && (
+          <div className="mb-6 p-4 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 text-neutral-800 dark:text-neutral-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>You already have an active demo profile on this browser. Want to modify your details instead?</span>
+            </div>
+            <Link
+              href="/donors/profile/edit"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full liquid-glass-pill hover:bg-neutral-200/80 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white font-bold text-xs shrink-0 transition-colors"
+            >
+              Edit Existing Profile →
+            </Link>
+          </div>
+        )}
+
         {/* Title & Introduction */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">

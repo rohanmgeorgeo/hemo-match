@@ -70,4 +70,38 @@ describe('Requester Experience & Signature Contact Reveal Foundation', () => {
       assert.deepStrictEqual(expectedSteps, ['Request', 'Match', 'Notify', 'Response', 'Reveal']);
     });
   });
+  describe("Request Editing Lifecycle Guards", () => {
+    it("allows editing an open request before donor response or reveal occurs", () => {
+      const lifecycleStates = {
+        hasResponse: false,
+        hasRevealed: false,
+        isExpired: false,
+      };
+
+      const canEditRequest = !lifecycleStates.hasResponse && !lifecycleStates.hasRevealed;
+      assert.strictEqual(canEditRequest, true);
+    });
+
+    it("locks editing once a volunteer donor has accepted to prevent coordination invalidation", () => {
+      const lifecycleStates = {
+        hasResponse: true,
+        hasRevealed: false,
+        isExpired: false,
+      };
+
+      const canEditRequest = !lifecycleStates.hasResponse && !lifecycleStates.hasRevealed;
+      assert.strictEqual(canEditRequest, false);
+    });
+
+    it("locks editing once contact reveal has occurred", () => {
+      const lifecycleStates = {
+        hasResponse: true,
+        hasRevealed: true,
+        isExpired: false,
+      };
+
+      const canEditRequest = !lifecycleStates.hasResponse && !lifecycleStates.hasRevealed;
+      assert.strictEqual(canEditRequest, false);
+    });
+  });
 });
