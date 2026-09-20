@@ -31,11 +31,11 @@ export function CandidateCard({
   return (
     <GlowSurface
       variant="subtle"
-      className={`bg-white dark:bg-[#171717] rounded-2xl sm:rounded-3xl border border-neutral-200/80 dark:border-neutral-800 p-5 sm:p-6 shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-all ${className}`}
+      className={`liquid-glass rounded-2xl sm:rounded-3xl border border-neutral-200/80 dark:border-white/10 p-5 sm:p-6 shadow-xs hover:border-neutral-300/90 dark:hover:border-neutral-700/80 hover:shadow-sm transition-all ${className}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100 dark:border-neutral-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-center font-black text-rose-600 dark:text-rose-500 text-sm">
+          <div className="w-10 h-10 rounded-xl liquid-glass-pill border border-rose-200/70 dark:border-rose-900/60 flex items-center justify-center font-black text-rose-600 dark:text-rose-400 text-sm shadow-xs">
             {candidate.bloodGroup}
           </div>
           <div>
@@ -72,7 +72,7 @@ export function CandidateCard({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Proximity / District Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200/80 dark:border-neutral-700/80">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium liquid-glass-pill text-neutral-700 dark:text-neutral-300 border border-neutral-200/70 dark:border-neutral-700/70 shadow-xs">
             <svg
               className="w-3 h-3 text-neutral-500 shrink-0"
               fill="none"
@@ -93,8 +93,8 @@ export function CandidateCard({
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
               badge.isHomologous
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'
-                : 'bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/60'
+                ? 'bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-300/80 dark:border-emerald-800/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
+                : 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border-blue-300/80 dark:border-blue-800/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.7)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]'
             }`}
           >
             <span

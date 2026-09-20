@@ -179,14 +179,14 @@ export default function CoordinatorDashboardPage() {
         {/* Top-Level Metric Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Active Requests */}
-          <GlowSurface className="rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 p-4 bg-white/70 dark:bg-[#121212]/70">
+          <GlowSurface variant="subtle" className="rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-4 sm:p-5 shadow-xs transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Active Requests
               </span>
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]" />
             </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight mt-2 text-neutral-950 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-black tracking-tight mt-2 tabular-nums text-neutral-950 dark:text-white">
               {isLoading ? '…' : metrics.activeRequests}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
@@ -195,18 +195,21 @@ export default function CoordinatorDashboardPage() {
           </GlowSurface>
 
           {/* Needs Attention */}
-          <GlowSurface className="rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 p-4 bg-white/70 dark:bg-[#121212]/70">
+          <GlowSurface variant="subtle" className="rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-4 sm:p-5 shadow-xs transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Needs Attention
               </span>
               {metrics.needsAttentionCount > 0 ? (
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                <span className="relative flex h-2 w-2" aria-label="Attention required">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 ring-2 ring-amber-400/40" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                </span>
               ) : (
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
               )}
             </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight mt-2 text-amber-600 dark:text-amber-400">
+            <div className="text-2xl sm:text-3xl font-black tracking-tight mt-2 tabular-nums text-amber-600 dark:text-amber-400">
               {isLoading ? '…' : metrics.needsAttentionCount}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
@@ -215,14 +218,14 @@ export default function CoordinatorDashboardPage() {
           </GlowSurface>
 
           {/* Donor Acceptances */}
-          <GlowSurface className="rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 p-4 bg-white/70 dark:bg-[#121212]/70">
+          <GlowSurface variant="subtle" className="rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-4 sm:p-5 shadow-xs transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Donor Acceptances
               </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
             </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight mt-2 text-emerald-600 dark:text-emerald-400">
+            <div className="text-2xl sm:text-3xl font-black tracking-tight mt-2 tabular-nums text-emerald-600 dark:text-emerald-400">
               {isLoading ? '…' : metrics.totalAccepted}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
@@ -231,14 +234,14 @@ export default function CoordinatorDashboardPage() {
           </GlowSurface>
 
           {/* Fulfilled */}
-          <GlowSurface className="rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 p-4 bg-white/70 dark:bg-[#121212]/70">
+          <GlowSurface variant="subtle" className="rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-4 sm:p-5 shadow-xs transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Fulfilled Requests
               </span>
-              <span className="w-2 h-2 rounded-full bg-purple-500" />
+              <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.5)]" />
             </div>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight mt-2 text-neutral-950 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-black tracking-tight mt-2 tabular-nums text-neutral-950 dark:text-white">
               {isLoading ? '…' : metrics.fulfilledRequests}
             </div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">

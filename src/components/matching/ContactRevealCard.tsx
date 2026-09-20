@@ -46,7 +46,7 @@ export function ContactRevealCard({
   if (revealedContact) {
     return (
       <div
-        className={`mt-4 p-4 sm:p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300/90 dark:border-emerald-800/80 shadow-xs transition-all animate-unmask ${className}`}
+        className={`mt-4 p-4 sm:p-5 rounded-2xl liquid-glass-emerald border border-emerald-300/90 dark:border-emerald-700/80 shadow-xs transition-all animate-unmask specular-rim ${className}`}
       >
         <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200/80 dark:border-emerald-800/60 mb-3">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 dark:text-emerald-200">
@@ -64,7 +64,7 @@ export function ContactRevealCard({
             </div>
             <span>Contact Unlocked for Coordination</span>
           </div>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide text-emerald-800 dark:text-emerald-300 liquid-glass-pill border border-emerald-300/80 dark:border-emerald-700/80">
             Authorized Reveal
           </span>
         </div>
@@ -90,7 +90,7 @@ export function ContactRevealCard({
 
               <a
                 href={`tel:${revealedContact.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-bold transition-all shadow-xs cursor-pointer shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4)]"
                 aria-label={`Call donor at ${revealedContact.phone}`}
               >
                 <svg
@@ -113,7 +113,7 @@ export function ContactRevealCard({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-full text-xs font-semibold liquid-glass-pill hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 text-emerald-950 dark:text-emerald-200 border border-emerald-300/80 dark:border-emerald-700/80 transition-colors cursor-pointer"
                 title="Copy phone number"
                 aria-label="Copy phone number"
               >
@@ -134,7 +134,7 @@ export function ContactRevealCard({
   if (candidateStatus === 'accepted') {
     return (
       <div
-        className={`mt-4 p-4 sm:p-5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 transition-all ${className}`}
+        className={`mt-4 p-4 sm:p-5 rounded-2xl liquid-glass border border-amber-300/80 dark:border-amber-700/60 shadow-xs transition-all ${className}`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -145,7 +145,7 @@ export function ContactRevealCard({
 
             <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2 flex-wrap">
               <span className="font-sans text-neutral-700 dark:text-neutral-300 font-medium">Phone:</span>
-              <span className="inline-flex items-center gap-1.5 bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-neutral-700">
+              <span className="inline-flex items-center gap-1.5 liquid-glass-pill text-neutral-800 dark:text-neutral-200 px-2.5 py-1 rounded-lg text-xs font-mono font-bold tracking-widest border border-neutral-300/70 dark:border-neutral-700">
                 <svg className="w-3 h-3 text-neutral-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                 </svg>
@@ -215,7 +215,7 @@ export function ContactRevealCard({
   if (candidateStatus === 'declined') {
     return (
       <div
-        className={`mt-4 p-3.5 rounded-2xl bg-neutral-100/70 dark:bg-neutral-900/50 border border-neutral-200/80 dark:border-neutral-800 transition-colors ${className}`}
+        className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 transition-colors ${className}`}
       >
         <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-1.5 font-medium">
@@ -236,12 +236,12 @@ export function ContactRevealCard({
   // State A: Notified / Awaiting Response
   return (
     <div
-      className={`mt-4 p-3.5 rounded-2xl bg-neutral-50/90 dark:bg-neutral-900/40 border border-neutral-200/70 dark:border-neutral-800 transition-colors ${className}`}
+      className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 transition-colors ${className}`}
     >
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 font-mono">
           <span className="font-sans text-neutral-600 dark:text-neutral-400 font-medium">Phone:</span>
-          <span className="bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 px-2 py-0.5 rounded text-[11px] font-semibold tracking-widest">
+          <span className="liquid-glass-pill text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold tracking-widest border border-neutral-200/80 dark:border-neutral-700">
             ••••••••••
           </span>
           <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-sans font-semibold tracking-wide">

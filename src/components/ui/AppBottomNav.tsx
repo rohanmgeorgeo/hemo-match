@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   href: string;
@@ -12,19 +12,19 @@ interface NavItem {
 }
 
 export const AppBottomNav: React.FC = () => {
-  const pathname = usePathname() || '/';
+  const pathname = usePathname() || "/";
 
   const navItems: NavItem[] = [
     {
-      href: '/requests/new',
-      label: 'Request',
-      isActive: (p) => p === '/requests/new',
+      href: "/requests/new",
+      label: "Request",
+      isActive: (p) => p === "/requests/new",
       icon: (active) => (
         <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
-          strokeWidth={active ? '2.5' : '2'}
+          strokeWidth={active ? "2.5" : "2"}
           stroke="currentColor"
           aria-hidden="true"
         >
@@ -33,15 +33,15 @@ export const AppBottomNav: React.FC = () => {
       ),
     },
     {
-      href: '/requests/matching-demo',
-      label: 'Matches',
-      isActive: (p) => p.startsWith('/requests/matching'),
+      href: "/requests/matching-demo",
+      label: "Matches",
+      isActive: (p) => p.startsWith("/requests/matching"),
       icon: (active) => (
         <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
-          fill={active ? 'currentColor' : 'none'}
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill={active ? "currentColor" : "none"}
           viewBox="0 0 24 24"
-          strokeWidth={active ? '0' : '2'}
+          strokeWidth={active ? "0" : "2"}
           stroke="currentColor"
           aria-hidden="true"
         >
@@ -58,15 +58,15 @@ export const AppBottomNav: React.FC = () => {
       ),
     },
     {
-      href: '/donors/notifications',
-      label: 'Inbox',
-      isActive: (p) => p.startsWith('/donors/notifications'),
+      href: "/donors/notifications",
+      label: "Inbox",
+      isActive: (p) => p.startsWith("/donors/notifications"),
       icon: (active) => (
         <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
-          fill={active ? 'currentColor' : 'none'}
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill={active ? "currentColor" : "none"}
           viewBox="0 0 24 24"
-          strokeWidth={active ? '0' : '2'}
+          strokeWidth={active ? "0" : "2"}
           stroke="currentColor"
           aria-hidden="true"
         >
@@ -83,15 +83,15 @@ export const AppBottomNav: React.FC = () => {
       ),
     },
     {
-      href: '/donors/profile',
-      label: 'Profile',
-      isActive: (p) => p.startsWith('/donors/profile') || p.startsWith('/donors/register'),
+      href: "/donors/profile",
+      label: "Profile",
+      isActive: (p) => p.startsWith("/donors/profile") || p.startsWith("/donors/register"),
       icon: (active) => (
         <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
-          fill={active ? 'currentColor' : 'none'}
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill={active ? "currentColor" : "none"}
           viewBox="0 0 24 24"
-          strokeWidth={active ? '0' : '2'}
+          strokeWidth={active ? "0" : "2"}
           stroke="currentColor"
           aria-hidden="true"
         >
@@ -108,15 +108,15 @@ export const AppBottomNav: React.FC = () => {
       ),
     },
     {
-      href: '/coordinator',
-      label: 'Ops',
-      isActive: (p) => p.startsWith('/coordinator'),
+      href: "/coordinator",
+      label: "Ops",
+      isActive: (p) => p.startsWith("/coordinator"),
       icon: (active) => (
         <svg
-          className={`w-5 h-5 transition-transform duration-150 ${active ? 'scale-110' : ''}`}
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
-          strokeWidth={active ? '2.5' : '2'}
+          strokeWidth={active ? "2.5" : "2"}
           stroke="currentColor"
           aria-hidden="true"
         >
@@ -133,33 +133,27 @@ export const AppBottomNav: React.FC = () => {
   return (
     <nav
       aria-label="Mobile Application Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-floating border-t border-neutral-200/80 dark:border-neutral-800/80 transition-colors duration-150"
+      className="md:hidden fixed inset-x-3 bottom-2.5 z-40 max-w-md mx-auto liquid-glass-dock rounded-2xl sm:rounded-3xl p-1.5 transition-all duration-150"
       style={{
-        paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom, 0px))',
+        marginBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
-      <div className="flex items-center justify-around px-2 h-14 max-w-lg mx-auto">
+      <div className="flex items-center justify-around gap-1">
         {navItems.map((item) => {
           const active = item.isActive(pathname);
           return (
             <Link
               key={item.href}
               href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={`flex-1 min-h-[44px] min-w-[48px] flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all select-none active:scale-95 ${
+              aria-current={active ? "page" : undefined}
+              className={`flex-1 min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 px-1.5 transition-all select-none pressable ${
                 active
-                  ? 'text-rose-600 dark:text-rose-400 font-bold'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium'
+                  ? "bg-rose-50/90 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold border border-rose-200/60 dark:border-rose-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40"
               }`}
             >
-              <div className="relative">
+              <div className="relative flex items-center justify-center">
                 {item.icon(active)}
-                {active && (
-                  <span
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-rose-600 dark:bg-rose-400"
-                    aria-hidden="true"
-                  />
-                )}
               </div>
               <span className="text-[10px] tracking-tight leading-none mt-0.5">{item.label}</span>
             </Link>

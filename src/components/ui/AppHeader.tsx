@@ -27,7 +27,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
   ];
 
   return (
-    <header className="w-full border-b border-neutral-200/80 dark:border-neutral-800/90 glass-bar sticky top-0 z-30 transition-colors duration-150">
+    <header className="w-full border-b border-neutral-200/70 dark:border-white/10 glass-bar specular-rim sticky top-0 z-30 transition-colors duration-150">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
         {/* Left: Brand Identity Strictly "Hemo Match" */}
         <Link
@@ -66,8 +66,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
                   href={link.href}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-950 dark:text-white font-semibold'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-semibold shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-200/40 dark:hover:bg-neutral-800/40'
                   }`}
                 >
                   {link.label}
@@ -82,7 +82,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ children }) => {
             suppressHydrationWarning
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50 dark:bg-[#171717] hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-neutral-200/80 dark:border-neutral-800 liquid-glass-pill hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
           >
             {mounted && isDark ? (
               // Sun icon (for switching to light)

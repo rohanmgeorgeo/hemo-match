@@ -14,10 +14,17 @@ export default function HomePage() {
       <AppHeader />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
+      <main className="relative flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
+        {/* Subtle ambient crimson radial wash behind hero */}
+        <div
+          className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[340px] -z-10 overflow-hidden opacity-35 dark:opacity-20 blur-3xl select-none"
+          aria-hidden="true"
+        >
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.18),rgba(225,29,72,0.04)_45%,transparent_70%)]" />
+        </div>
         {/* Hero Section */}
         <section className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 pt-2 sm:pt-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 px-3 py-1 text-xs font-semibold text-rose-800 dark:text-rose-300 mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 px-3 py-1 text-xs font-semibold text-rose-800 dark:text-rose-300 mb-4 liquid-glass-pill shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400" />
             District blood donor matching
           </div>
@@ -54,7 +61,7 @@ export default function HomePage() {
             <Link
               href="/donors/notifications"
               id="donor-notifications-btn"
-              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-white/90 dark:bg-[#171717] hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/90 dark:border-neutral-800 shadow-xs hover:shadow-xs transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/80 dark:border-white/10 shadow-xs hover:shadow-xs transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
             >
               <svg
                 aria-hidden="true"
@@ -77,7 +84,7 @@ export default function HomePage() {
 
         {/* Signature Privacy Architecture Showcase (Desktop Cursor Reactive) */}
         <section aria-label="Signature Privacy Architecture Showcase" className="mb-14">
-          <GlowSurface className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-8 shadow-xs">
+          <GlowSurface variant="elevated" className="rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xs">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
@@ -95,7 +102,7 @@ export default function HomePage() {
               <div
                 role="tablist"
                 aria-label="Demonstration Stages"
-                className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-full shrink-0"
+                className="flex items-center gap-1.5 p-1 bg-neutral-200/60 dark:bg-neutral-800/80 rounded-full shrink-0 border border-neutral-200/60 dark:border-neutral-700/60"
               >
                 <button
                   type="button"
@@ -104,8 +111,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('match')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'match'
-                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
                   }`}
                 >
                   1. Discovery
@@ -117,8 +124,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('accepted')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'accepted'
-                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
                   }`}
                 >
                   2. Accepted (Locked)
@@ -130,8 +137,8 @@ export default function HomePage() {
                   onClick={() => setActiveStage('revealed')}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeStage === 'revealed'
-                      ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                      ? 'liquid-glass-pill text-neutral-950 dark:text-white font-bold shadow-xs border border-white/80 dark:border-white/10'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-neutral-700/40 font-medium'
                   }`}
                 >
                   3. Explicit Reveal
@@ -222,7 +229,7 @@ export default function HomePage() {
 
               {/* Right interactive representation card */}
               <div className="lg:col-span-6">
-                <div className="p-5 rounded-2xl bg-neutral-50/80 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800 transition-all">
+                <div className="p-5 rounded-2xl liquid-glass border border-neutral-200/80 dark:border-white/10 transition-all">
                   {/* Card Header Preview */}
                   <div className="flex items-center justify-between pb-3 border-b border-neutral-200/60 dark:border-neutral-800">
                     <div className="flex items-center gap-2.5">
@@ -247,7 +254,7 @@ export default function HomePage() {
                   {/* Dynamic Reveal Simulation State */}
                   <div className="mt-4 pt-1">
                     {activeStage === 'match' && (
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-[#171717] border border-neutral-200/70 dark:border-neutral-800 flex items-center justify-between text-xs">
+                      <div className="p-3.5 rounded-xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <span className="text-neutral-400 dark:text-neutral-500 font-medium">Contact:</span>
                           <span className="font-mono bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-[11px] text-neutral-600 dark:text-neutral-400 font-semibold tracking-widest">
@@ -286,7 +293,7 @@ export default function HomePage() {
                     )}
 
                     {activeStage === 'revealed' && (
-                      <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300/90 dark:border-emerald-800/80 space-y-2 animate-unmask">
+                      <div className="p-3.5 rounded-xl liquid-glass-emerald border border-emerald-300/90 dark:border-emerald-800/80 space-y-2 animate-unmask">
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-1.5 text-emerald-950 dark:text-emerald-200 font-bold">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
@@ -323,7 +330,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Requester Role Card */}
-            <GlowSurface variant="elevated" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-900/60">
@@ -368,7 +375,7 @@ export default function HomePage() {
             </GlowSurface>
 
             {/* Donor Role Card */}
-            <GlowSurface variant="elevated" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
+            <GlowSurface variant="elevated" className="rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60">
@@ -417,7 +424,7 @@ export default function HomePage() {
 
         {/* Product Principles: Grouped Clean Surface (Reduces Card Clutter) */}
         <section aria-label="Core Coordination Principles" className="mb-12">
-          <GlowSurface variant="subtle" className="rounded-3xl bg-white dark:bg-[#171717] border border-neutral-200/80 dark:border-neutral-800 p-6 sm:p-8 shadow-xs">
+          <GlowSurface variant="subtle" className="rounded-3xl liquid-glass border border-neutral-200/80 dark:border-white/10 p-6 sm:p-8 shadow-xs">
             <div className="mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                 Domain Principles
