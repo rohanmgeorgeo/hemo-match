@@ -161,6 +161,33 @@ export default function DonorProfilePage() {
               </p>
             </div>
 
+            {/* Legacy Missing Date Notice */}
+            {!profile.lastDonationDate && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700/60 flex items-center justify-center shrink-0 text-amber-800 dark:text-amber-300">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                      Last donation date required
+                    </h3>
+                    <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
+                      Add your last donation date to participate in preliminary donor matching.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/donors/profile/edit"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  Update Profile
+                </Link>
+              </div>
+            )}
+
             {/* Profile Hero Card */}
             <GlowSurface variant="elevated" className="rounded-2xl sm:rounded-3xl liquid-glass-elevated border border-neutral-200/80 dark:border-white/10 p-6 sm:p-8 shadow-sm relative overflow-hidden">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5">

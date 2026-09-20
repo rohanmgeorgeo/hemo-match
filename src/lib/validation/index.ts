@@ -295,7 +295,7 @@ export interface DonorProfileFormData {
   districtId: string;
   approximateArea: string;
   phoneNumber: string;
-  lastDonationDate?: string;
+  lastDonationDate: string;
   availability: 'available' | 'temporarily_unavailable' | 'paused';
   notificationPreference: 'enabled' | 'disabled';
   consentGiven: boolean;
@@ -366,17 +366,42 @@ export function validateDonorProfile(
       'Please enter a valid phone number (7–15 digits, optional + prefix)';
   }
 
-  // 6. Last donation date — must NOT be in the future (optional field)
+  // 6. Last donation date — REQUIRED for Hemo Match's preliminary 120-day matching interval
   const lastDonationDate =
     typeof data.lastDonationDate === 'string'
       ? data.lastDonationDate.trim()
       : '';
-  if (lastDonationDate) {
-    const donationDate = new Date(lastDonationDate);
-    if (isNaN(donationDate.getTime())) {
-      errors.lastDonationDate = 'Please enter a valid date';
-    } else if (donationDate.getTime() > Date.now()) {
-      errors.lastDonationDate = 'Last donation date cannot be in the future';
+  if (!lastDonationDate) {
+    errors.lastDonationDate =
+      "Last donation date is required for Hemo Match's preliminary 120-day matching interval";
+  } else {
+    const dateMatch = lastDonationDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) {
+      errors.lastDonationDate = 'Please enter a valid date in YYYY-MM-DD format';
+    } else {
+      const year = parseInt(dateMatch[1], 10);
+      const month = parseInt(dateMatch[2], 10);
+      const day = parseInt(dateMatch[3], 10);
+
+      if (month < 1 || month > 12 || day < 1 || day > 31) {
+        errors.lastDonationDate = 'Please enter a valid calendar date';
+      } else {
+        const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        if (day > daysInMonth) {
+          errors.lastDonationDate = 'Please enter a valid calendar date';
+        } else {
+          const donationUtcMidnight = Date.UTC(year, month - 1, day);
+          const now = new Date();
+          const todayUtcMidnight = Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate()
+          );
+          if (donationUtcMidnight > todayUtcMidnight) {
+            errors.lastDonationDate = 'Last donation date cannot be in the future';
+          }
+        }
+      }
     }
   }
 
@@ -443,7 +468,7 @@ export function validateDonorProfile(
           districtId,
           approximateArea,
           phoneNumber,
-          lastDonationDate: lastDonationDate || undefined,
+          lastDonationDate,
           availability: availability as DonorProfileFormData['availability'],
           notificationPreference: notificationPreference as DonorProfileFormData['notificationPreference'],
           consentGiven: true,
