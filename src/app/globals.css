@@ -82,7 +82,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scrollbar-gutter: stable;
+  overflow-x: hidden;
+}
+
 body {
+  overflow-x: hidden;
   background-color: var(--canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);

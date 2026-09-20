@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useHasDonorProfile } from "@/lib/donor-state";
 
 interface NavItem {
   href: string;
@@ -13,8 +14,9 @@ interface NavItem {
 
 export const AppBottomNav: React.FC = () => {
   const pathname = usePathname() || "/";
+  const hasDonorProfile = useHasDonorProfile();
 
-  const navItems: NavItem[] = [
+  const registeredItems: NavItem[] = [
     {
       href: "/requests/new",
       label: "Request",
@@ -130,10 +132,103 @@ export const AppBottomNav: React.FC = () => {
     },
   ];
 
+  const unregisteredItems: NavItem[] = [
+    {
+      href: "/requests/new",
+      label: "Request",
+      isActive: (p) => p === "/requests/new",
+      icon: (active) => (
+        <svg
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={active ? "2.5" : "2"}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      ),
+    },
+    {
+      href: "/requests/matching-demo",
+      label: "Matches",
+      isActive: (p) => p.startsWith("/requests/matching"),
+      icon: (active) => (
+        <svg
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill={active ? "currentColor" : "none"}
+          viewBox="0 0 24 24"
+          strokeWidth={active ? "0" : "2"}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          {active ? (
+            <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.75H1.5v-.75ZM16.5 19.875v-.75a5.975 5.975 0 0 0-1.074-3.415 8.625 8.625 0 0 1 7.074 4.165h-6Z" />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+            />
+          )}
+        </svg>
+      ),
+    },
+    {
+      href: "/donors/register",
+      label: "Become Donor",
+      isActive: (p) => p.startsWith("/donors/register") || p.startsWith("/donors/profile"),
+      icon: (active) => (
+        <svg
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill={active ? "currentColor" : "none"}
+          viewBox="0 0 24 24"
+          strokeWidth={active ? "0" : "2"}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          {active ? (
+            <path d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z" />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z"
+            />
+          )}
+        </svg>
+      ),
+    },
+    {
+      href: "/coordinator",
+      label: "Ops",
+      isActive: (p) => p.startsWith("/coordinator"),
+      icon: (active) => (
+        <svg
+          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-150 ${active ? "scale-105" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={active ? "2.5" : "2"}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+          />
+        </svg>
+      ),
+    },
+  ];
+
+  const navItems = hasDonorProfile ? registeredItems : unregisteredItems;
+
   return (
     <nav
       aria-label="Mobile Application Navigation"
-      className="md:hidden fixed inset-x-3 bottom-2.5 z-40 max-w-md mx-auto liquid-glass-dock rounded-2xl sm:rounded-3xl p-1.5 transition-all duration-150"
+      className="md:hidden fixed inset-x-3 bottom-2.5 z-40 max-w-md mx-auto liquid-glass-dock rounded-2xl sm:rounded-3xl p-1.5 transition-transform duration-150"
       style={{
         marginBottom: "env(safe-area-inset-bottom, 0px)",
       }}
@@ -146,10 +241,10 @@ export const AppBottomNav: React.FC = () => {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex-1 min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 px-1.5 transition-all select-none pressable ${
+              className={`flex-1 min-h-[44px] min-w-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 px-1.5 transition-colors duration-150 select-none pressable ${
                 active
-                  ? "bg-rose-50/90 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold border border-rose-200/60 dark:border-rose-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-medium hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40 border border-transparent"
+                  ? "bg-rose-50/90 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-semibold border border-rose-200/60 dark:border-rose-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 font-semibold hover:bg-neutral-100/60 dark:hover:bg-neutral-800/40 border border-transparent"
               }`}
             >
               <div className="relative flex items-center justify-center">

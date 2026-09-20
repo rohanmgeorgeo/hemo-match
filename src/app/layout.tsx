@@ -14,9 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Hemo Match',
+  title: {
+    default: 'Hemo Match | Nearby Blood Donor Coordination',
+    template: '%s | Hemo Match',
+  },
   description:
-    'Rapid, privacy-preserving blood donor matching connecting patients, hospitals, and volunteer donors at the district level.',
+    'Hemo Match coordinates nearby potentially eligible blood donors using blood group, location and donation interval while keeping donor contact details private until acceptance.',
+  applicationName: 'Hemo Match',
   keywords: [
     'blood donation',
     'district donor matching',
@@ -24,6 +28,15 @@ export const metadata: Metadata = {
     'healthcare',
     'hemo match',
   ],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
+    apple: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {

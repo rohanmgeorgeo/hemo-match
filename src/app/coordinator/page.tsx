@@ -128,7 +128,7 @@ export default function CoordinatorDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-neutral-100 flex flex-col transition-colors pb-24 md:pb-12">
+    <div className="flex-1 flex flex-col bg-transparent text-neutral-900 dark:text-neutral-100 flex flex-col transition-colors pb-24 md:pb-12">
       <AppHeader roleContext="overview" />
 
       <main className="relative flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">

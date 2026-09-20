@@ -40,7 +40,7 @@ export const Button: React.FC<ButtonProps> = ({
     secondary:
       'bg-neutral-950 hover:bg-neutral-800 text-white shadow-xs dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-white dark:border-neutral-700 border border-transparent',
     outline:
-      'bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-300/90 shadow-xs dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700',
+      'liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-white/10 shadow-xs',
     quiet:
       'bg-transparent hover:bg-neutral-100/80 text-neutral-700 dark:hover:bg-neutral-800/80 dark:text-neutral-300 dark:hover:text-white border border-transparent',
     destructive:

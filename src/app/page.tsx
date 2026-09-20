@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { GlowSurface } from '@/components/ui/GlowSurface';
+import { useHasDonorProfile } from '@/lib/donor-state';
 
 export default function HomePage() {
   const [activeStage, setActiveStage] = useState<'match' | 'accepted' | 'revealed'>('accepted');
+  const hasDonorProfile = useHasDonorProfile();
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
+    <div className="flex-1 flex flex-col justify-between bg-transparent text-neutral-900 dark:text-neutral-100 transition-colors duration-150 selection:bg-rose-100 dark:selection:bg-rose-950/50 selection:text-rose-900 dark:selection:text-rose-200">
       {/* Global App Header */}
       <AppHeader />
 
@@ -59,9 +61,9 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/donors/notifications"
+              href={hasDonorProfile ? "/donors/notifications" : "/donors/register"}
               id="donor-notifications-btn"
-              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/80 dark:border-white/10 shadow-xs hover:shadow-xs transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
+              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl liquid-glass-pill hover:bg-neutral-100/80 dark:hover:bg-neutral-800/80 active:scale-[0.98] text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-200/80 dark:border-white/10 shadow-xs hover:shadow-xs transition-colors duration-150 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
             >
               <svg
                 aria-hidden="true"
@@ -71,13 +73,21 @@ export default function HomePage() {
                 strokeWidth="2"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                />
+                {hasDonorProfile ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 21.5c-4.142 0-7.5-3.358-7.5-7.5 0-3.309 3.428-7.697 6.54-11.233a1.25 1.25 0 0 1 1.92 0C16.072 6.303 19.5 10.691 19.5 14c0 4.142-3.358 7.5-7.5 7.5z"
+                  />
+                )}
               </svg>
-              <span>Donor Inbox</span>
+              <span>{hasDonorProfile ? 'Donor Inbox' : 'Become a Donor'}</span>
             </Link>
           </div>
         </section>
@@ -401,21 +411,21 @@ export default function HomePage() {
 
               <div className="space-y-2 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
                 <Link
-                  href="/donors/notifications"
+                  href={hasDonorProfile ? "/donors/notifications" : "/donors/register"}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-neutral-950 hover:bg-neutral-800 active:scale-[0.98] dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:border dark:border-neutral-700 dark:text-white text-white font-semibold text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
                 >
-                  <span>Open Donor Inbox</span>
+                  <span>{hasDonorProfile ? 'Open Donor Inbox' : 'Become a Volunteer Donor'}</span>
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                   </svg>
                 </Link>
 
                 <Link
-                  href="/donors/register"
+                  href={hasDonorProfile ? "/donors/profile" : "/donors/notifications"}
                   id="find-donors-btn"
                   className="w-full inline-flex items-center justify-center text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 font-medium py-1 transition-colors"
                 >
-                  Register volunteer donor profile →
+                  {hasDonorProfile ? 'View volunteer donor profile →' : 'Already registered? Open Inbox →'}
                 </Link>
               </div>
             </GlowSurface>

@@ -217,7 +217,7 @@ export function ContactRevealCard({
       <div
         className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-white/10 transition-colors ${className}`}
       >
-        <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600" />
             <span>Donor Unavailable / Declined</span>
@@ -238,7 +238,7 @@ export function ContactRevealCard({
     <div
       className={`mt-4 p-3.5 rounded-2xl liquid-glass border border-neutral-200/70 dark:border-neutral-800 transition-colors ${className}`}
     >
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 font-mono">
           <span className="font-sans text-neutral-600 dark:text-neutral-400 font-medium">Phone:</span>
           <span className="liquid-glass-pill text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold tracking-widest border border-neutral-200/80 dark:border-white/10">
